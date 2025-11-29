@@ -2,71 +2,44 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auto Download + Video</title>
-
+<title>MediaFire Auto Download</title>
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #0e0e17;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px;
+    background:#0f0f16;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+    font-family:Arial;
 }
-
-.card {
-    background: #1c1c29;
-    padding: 25px 30px;
-    border-radius: 16px;
-    box-shadow: 0 0 20px rgba(0,255,200,0.25);
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-}
-
-h1 {
-    font-size: 22px;
-    margin-bottom: 16px;
-    color: #00ffd5;
-}
-
-video {
-    width: 100%;
-    border-radius: 12px;
-    margin-top: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+button {
+    padding:15px 30px;
+    background:#00ffe0;
+    border:none;
+    font-size:20px;
+    border-radius:12px;
+    color:#000;
+    cursor:pointer;
+    font-weight:bold;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>📥 Fayl endirilir...</h1>
-
-    <h2 style="margin-top:25px;">🎬 Tutorial Video</h2>
-    <video controls controlsList="nodownload nofullscreen noremoteplayback" playsinline>
-        <source src="vd.mp4" type="video/mp4">
-        Sizin brauzer video dəstəkləmir.
-    </video>
-</div>
+<button onclick="indir()">📥 İndir</button>
 
 <script>
-// MediaFire linki — istifadəçiyə görünmür
-const mediafireUrl = "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file";
+function indir() {
+    // MediaFire linki İSTİFADƏÇİYƏ görsənmir
+    const link = "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file";
 
-// Sayt açılan kimi endir
-window.onload = () => {
-    setTimeout(() => {
-        let a = document.createElement("a");
-        a.href = mediafireUrl;
-        a.download = "";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-    }, 800); // 0.8 saniyə gecikmə daha stabil işləyir
-};
+    // MediaFire pəncərə açmasın deyə iframe ilə gizli yönləndirmə
+    let iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = link;
+    document.body.appendChild(iframe);
+}
 </script>
 
 </body>
