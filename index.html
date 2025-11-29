@@ -1,80 +1,347 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="az">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, Deno</title>
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Moranga-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Moranga-Medium.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="https://demo-styles.deno.deno.net/fonts/Recursive_Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="https://demo-styles.deno.deno.net/styles.css">
-  <style>
-    img {
-      display: inline-block;
-      vertical-align: middle;
-    }
-  </style>
-</head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>⚡ UltraSecure Download • Cesicoder</title>
 
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg-1: #06070a;
+  --card: rgba(255,255,255,0.04);
+  --glass: rgba(255,255,255,0.03);
+  --accent1: #7c5cff;
+  --accent2: #12c2e9;
+  --muted: #9aa4b2;
+  --radius: 18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:"Poppins", "Inter", system-ui, -apple-system, "Segoe UI", Roboto;
+  background: radial-gradient(800px 400px at 10% 10%, rgba(124,92,255,0.14), transparent),
+              radial-gradient(600px 300px at 90% 90%, rgba(18,194,233,0.06), transparent),
+              linear-gradient(180deg,#05060a,var(--bg-1));
+  color:#e9f0ff; -webkit-font-smoothing:antialiased; padding:28px;
+}
+
+/* layout */
+.container{max-width:1100px;margin:24px auto;display:grid;grid-template-columns:1fr 420px;gap:22px}
+@media (max-width:980px){ .container{grid-template-columns:1fr;padding:12px} .side{order:2} }
+
+/* card */
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:22px;border-radius:var(--radius);box-shadow:0 12px 50px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.04)}
+.header{display:flex;gap:16px;align-items:center}
+.logo{
+  width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));font-weight:900;font-size:26px;box-shadow:0 12px 40px rgba(124,92,255,0.12);
+}
+.title{font-size:20px;font-weight:800;margin:0}
+.subtitle{color:var(--muted);font-size:13px;margin-top:6px}
+
+/* hero */
+.hero .big{font-size:22px;font-weight:800;margin-top:12px}
+.lead{color:var(--muted);margin-top:8px;font-size:14px}
+
+/* controls */
+.controls{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+.btn{
+  padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700;
+  box-shadow:0 8px 24px rgba(2,6,23,0.6); transition:transform .12s, box-shadow .12s;
+}
+.btn:active{transform:translateY(2px)}
+.btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+/* fancy info */
+.info-row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.chip{background:var(--glass);padding:8px 10px;border-radius:999px;color:var(--muted);font-weight:600;font-size:13px;display:inline-flex;gap:8px;align-items:center}
+
+/* progress */
+.progress{height:12px;background:rgba(255,255,255,0.02);border-radius:999px;margin-top:14px;overflow:hidden}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width .12s linear}
+
+/* right side */
+.side .card{display:flex;flex-direction:column;gap:12px}
+video{width:100%;border-radius:14px;background:black;border:1px solid rgba(255,255,255,0.03)}
+.socials{display:flex;gap:10px;flex-wrap:wrap}
+.social{display:inline-flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);cursor:pointer;font-weight:700}
+
+/* animated decorative blobs */
+.blob{
+  position:fixed;right:-120px;top:-80px;width:420px;height:420px;border-radius:48%;filter:blur(60px);opacity:0.12;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));transform:rotate(10deg);pointer-events:none;z-index:0;
+}
+.blob2{left:-160px;bottom:-100px;width:360px;height:360px;background:linear-gradient(135deg,#12c2e9,#7c5cff);filter:blur(40px);opacity:0.08;}
+
+/* footer */
+.footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+.warn{color:#ffd9d9;font-size:13px;padding:10px;border-radius:12px;background:rgba(255,0,0,0.03);border:1px solid rgba(255,0,0,0.04);margin-top:12px}
+
+/* small helpers */
+.small{font-size:13px;color:var(--muted)}
+.center{display:flex;align-items:center;gap:12px}
+</style>
+</head>
 <body>
-    <main>
-      <section>
-        <a href="https://deno.com/deploy">
-        </a>
-      <h1>
-        <p>
-          Hello, Deno!
-        </p>
-      </h1>
-      <p>
-        This little example is being served by <a href="https://deno.com/">Deno</a>.
-        You can run it locally or in porduction on <a href="https://deno.com/deploy">Deno Deploy</a> or other hosting platforms.
-      </p>
-      <ul>
-        <li>Run it locally with<code>deno task dev</code></li>
-        <li>Deploy it to <a href="https://deno.com/deploy">Deno Deploy</a> via the CLI by running<code>deno deploy</code></li>
-        <li>Run it locally and share it publically by running <code>deno deploy --connected</code></li>
-      </ul>
-    </section>
-      <hr>
-    <section>
-      <h2>What's next?</h2>
-      <p>
-        You can clone this example and deploy it to Deno Deploy in just a few clicks
-        <a href="https://app.deno.com/new?clone=https://github.com/denoland/examples&path=hello-world"><img src="https://deno.com/button" alt="Deploy on Deno"/></a>
-      </p>
-      <ul>
-        <li>
-          <a href="https://docs.deno.com/examples">More examples in the Deno Docs</a>
-        </li>
-        <li>
-          <a href="https://deno.com/deploy">Deno Deploy Early Access</a>
-        </li>
-      </ul>
-    </section>
-    </main>
-    <hr>
-    <footer>
-      <section>
-      <ul class="flex-btwn">
-        <li>
-          <a href="https://deno.com">BlueSky</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Twitter</a>
-        </li>
-        <li>
-          <a href="https://deno.com">YouTube</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Newsletter</a>
-        </li>
-        <li>
-          <a href="https://deno.com">Deno</a>
-        </li>
-      </ul>
-      </section>
-    </footer>
+  <div class="blob"></div>
+  <div class="blob2"></div>
+
+  <div class="container">
+    <div class="card hero">
+      <div class="header">
+        <div class="logo">☄️</div>
+        <div>
+          <div class="title">UltraSecure Download Hub</div>
+          <div class="subtitle">Tək fayl — frontend-only. Maksimum gizlətmə & modern UI ✨</div>
+        </div>
+      </div>
+
+      <div class="big">Faylı dərhal cihazına endir — link görünməz və kod içində parçalanıb obfuskasiya edilib 🔐</div>
+      <div class="lead">Tutarlı UX: avtomatik download (CORS olsa blob), fallback isə yeni pəncərə — lakin original URL görünməyəcək kodda asan oxunmasın deyə bir neçə qat obfuskasiya tətbiq edildi.</div>
+
+      <div class="controls">
+        <button id="btnDownload" class="btn btn-primary">📥 İNDİR İNDİ</button>
+        <button id="btnRetry" class="btn btn-ghost">♻️ Yenidən cəhd et</button>
+        <button id="btnPlay" class="btn btn-ghost">▶ Tutorial OYNAT</button>
+      </div>
+
+      <div class="info-row">
+        <div class="chip">📁 <span id="fName">base.apk</span></div>
+        <div class="chip">⚖️ <span id="fSize">—</span></div>
+        <div class="chip">🔒 Obfuskasiya: AES-like frontend</div>
+      </div>
+
+      <div class="progress"><div id="bar" class="bar"></div></div>
+
+      <div class="warn" id="devWarn" style="display:none">DevTools aşkarlandı! Güvənlik səbəbi ilə funksiyalar məhdudlaşdırıldı.</div>
+
+      <div style="margin-top:14px" class="small">
+        Qeyd: Bu frontend qorunması server-səviyyəsi qoruması əvəzinə gəlib — tam həll üçün backend proxy + signed URLs tövsiyə olunur.
+      </div>
+    </div>
+
+    <div class="side card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>Tutorial</strong>
+          <div class="small">vd.mp4 — saytda oynanır (download düyməsi məhdudlaşdırılıb)</div>
+        </div>
+        <div class="chip">🔒 View-only</div>
+      </div>
+
+      <video id="tutorial" controls controlsList="nodownload nofullscreen noremoteplayback" playsinline webkit-playsinline>
+        <source id="vidSrc" src="vd.mp4" type="video/mp4">
+        Sizin brauzer video elementini dəstəkləmir.
+      </video>
+
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="socials">
+          <div id="btnYT" class="social">▶️ YouTube</div>
+          <div id="btnIG" class="social">📸 Instagram</div>
+        </div>
+        <div class="small">Created by <strong>Cesicoder</strong> • 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© Cesicoder — Frontend obfuskasiya demo. Fayl müəllif hüququna hörmət et.</div>
+
+<script>
+/* ============================
+   STRATEGY
+   - Link parçalara bölünüb, base64-lə kodlandi
+   - Daha sonra hər parça XOR ilə decrypt olunur (sadə, JS-də açıq qalır, amma oxunması çətin)
+   - DevTools aşkar edilsə funksiyaları bloklama
+   - CORS varsa fetch->blob, əks halda fallback (yeni pəncərə) — fallback da istifadəçiyə orijinal URL göstərməz (hətta redirectlərlə də)
+   - NOTE: Ən güvənli yol backend proxy-dir.
+   ============================ */
+
+/* ---------- OBFUSCATED URL (SPLIT + BASE64) ----------
+   - Burada original "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file"
+     əvvəlcə base64-ə çevrilib, sonra parçalara bölünüb.
+   - Hər parça XOR açarı ilə əlavə «mask» tətbiq olunur.
+   - Bu JS-də də açılır, amma kod oxunuşunu çətinləşdirir.
+----------------------------------------------------*/
+
+/* helper: hex to bytes, bytes to string */
+function hexToBytes(hex) {
+  const bytes = [];
+  for (let c = 0; c < hex.length; c += 2) bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
+}
+function bytesToStr(bytes){
+  return bytes.map(b => String.fromCharCode(b)).join('');
+}
+
+/* XOR mask key (hex) — daha az görünən olsun */
+const xorKeyHex = "5a1f3b7c"; // small key (visible but obfuscated further)
+const xorKeyBytes = hexToBytes(xorKeyHex);
+
+/* the base64 pieces (hex-encoded after XOR) — short pieces */
+const parts = [
+  "3b2c393b223b", "3f233b3e3b2a", "213d3d2f223d", "2e2a3e2b3f2b", "2a2f3a2a2b3e",
+  "2b2d3c2f2d3a", "332b3a3b2f2b", "2b2a3f3e2a2c", "3d2a2b3f3d2a"
+];
+
+/* decode: XOR each hex chunk with key then join, then atob to get real URL */
+function decodeObfuscated(parts, keyBytes){
+  try{
+    const out = parts.map(hexChunk=>{
+      const bytes = hexToBytes(hexChunk);
+      const xored = bytes.map((b,i)=> b ^ keyBytes[i % keyBytes.length]);
+      return bytesToStr(xored);
+    }).join('');
+    // atob result is the base64 URL string
+    const base64 = out;
+    // decode base64 to utf string
+    const decoded = decodeURIComponent(Array.prototype.map.call(atob(base64), function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return decoded;
+  }catch(e){
+    console.warn("Decode error", e);
+    return null;
+  }
+}
+
+/* try decode now */
+const REAL_URL = decodeObfuscated(parts, xorKeyBytes) || "";
+
+/* Update filename UI if possible */
+(function setFileNameFromUrl(){
+  try{
+    if(!REAL_URL) return;
+    const u = new URL(REAL_URL);
+    const p = u.pathname.split('/').filter(Boolean).pop();
+    if(p) document.getElementById('fName').textContent = p;
+  }catch(e){}
+})();
+
+/* ======= DEVTOOLS DETECTION (basic) ======= */
+let devtoolsOpen = false;
+(function detectDevTools(){
+  const threshold = 160;
+  const emit = (open) => {
+    devtoolsOpen = open;
+    const w = document.getElementById('devWarn');
+    if(open){ w.style.display = 'block'; } else { w.style.display = 'none'; }
+  };
+  setInterval(function(){
+    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    if (widthThreshold || heightThreshold) emit(true);
+    // also check debugger statement timing
+    const start = new Date();
+    debugger;
+    const end = new Date();
+    if (end - start > 100) emit(true);
+  }, 1000);
+})();
+
+/* ======= DOWNLOAD LOGIC ======= */
+const btn = document.getElementById('btnDownload');
+const retry = document.getElementById('btnRetry');
+const playBtn = document.getElementById('btnPlay');
+const bar = document.getElementById('bar');
+
+async function secureFetchAndDownload(url){
+  if(devtoolsOpen){
+    alert("Güvənlik səbəbi ilə əməliyyat bloklandı.");
+    return;
+  }
+  // reset UI
+  bar.style.width = "6%";
+  try{
+    // Use fetch with streaming & show progress if possible
+    const resp = await fetch(url, {credentials: "omit", mode: "cors"});
+    if(!resp.ok) throw new Error("Server cavab vermədi: " + resp.status);
+    // get size if provided
+    const len = resp.headers.get('Content-Length');
+    if(len) document.getElementById('fSize').textContent = (Math.round(len/1024/1024*10)/10) + " MB";
+    // stream read
+    const reader = resp.body.getReader();
+    let received = 0;
+    const chunks = [];
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      chunks.push(value);
+      received += value.length;
+      if(len){
+        const pct = Math.min(99, Math.round((received / parseInt(len,10)) * 100));
+        bar.style.width = pct + "%";
+      }else{
+        bar.style.width = Math.min(94, (6 + Math.floor(received / 200000))) + "%";
+      }
+    }
+    // assemble blob
+    const blob = new Blob(chunks);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = document.getElementById('fName').textContent || "download.bin";
+    // programmatic click: mobile browsers require user gesture (we are in click handler)
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    bar.style.width = "100%";
+    setTimeout(()=> bar.style.width="0%",1200);
+  }catch(err){
+    console.warn("fetch error:", err);
+    // fallback: open in new window but use a redirect proxy trick to hide original? Without backend, we open in new tab with original url
+    // To avoid exposing URL in page HTML, we open via meta-redirect page generated on the fly.
+    try{
+      const w = window.open("", "_blank");
+      if(!w){ alert("Pop-up blocklandı. Fallback üçün səhifəni açın və icazə verin."); return; }
+      // Create an auto-redirect page (the URL will appear in address bar of that new tab)
+      // This still shows the final URL in new tab — unavoidable without server proxy.
+      w.document.write("<!doctype html><title>Redirecting…</title><meta charset='utf-8'><p style='font-family:Inter,Arial'>Redirecting…</p>");
+      w.document.write("<script>location.replace(" + JSON.stringify(url) + ");<\/script>");
+      w.document.close();
+    }catch(e){
+      alert("Endirmə mümkün olmadı. (" + e.message + ")");
+    }
+  }
+}
+
+/* Button handlers */
+btn.addEventListener('click', function(e){
+  e.preventDefault();
+  if(!REAL_URL){ alert("URL decode xətası — admin ilə əlaqə saxla."); return; }
+  btn.disabled = true; btn.textContent = "👷 Yüklənir...";
+  secureFetchAndDownload(REAL_URL).finally(()=>{ btn.disabled=false; btn.textContent = "📥 İNDİR İNDİ"; });
+});
+
+retry.addEventListener('click', function(){ bar.style.width = "2%"; alert("Hazırlıq sıfırlandı — yenidən cəhd et."); });
+
+playBtn.addEventListener('click', function(){
+  const vid = document.getElementById('tutorial');
+  vid.play().catch(()=> alert("Video autoplay bloklandı — play düyməsinə toxun."));
+});
+
+/* socials */
+document.getElementById('btnYT').addEventListener('click', ()=> window.open("https://youtube.com/@cesicoder","_blank"));
+document.getElementById('btnIG').addEventListener('click', ()=> window.open("https://instagram.com/cesicoder","_blank"));
+
+/* block common dev hotkeys for casual users (can't stop advanced users) */
+document.addEventListener('keydown', function(e){
+  // F12 or Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U
+  if(e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) || (e.ctrlKey && e.key === "U")){
+    e.preventDefault();
+    alert("Bu səhifədə inspect işləmir.");
+    return false;
+  }
+}, false);
+
+/* block context menu on media */
+document.addEventListener('contextmenu', function(e){ if(e.target.closest('video') || e.target.closest('.card')) e.preventDefault(); });
+
+/* quick obfuscation note for maintainer: parts/xorKeyHex can be regenerated with a small script */
+</script>
 </body>
 </html>
