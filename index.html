@@ -1,596 +1,262 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CyberWrapped — Ultra TikTok Wrapped</title>
-
-<!-- Fonts and libs -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberWrapped — TikTok Wrapped</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
 <style>
 :root{
-  --bg1:#04040b;
+  --bg:#04040b;
   --neon-p:#ff2fa3;
   --neon-c:#00ffd6;
   --glass: rgba(255,255,255,0.03);
   --muted:#bcd5f0;
 }
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial;
-  background:
-    radial-gradient(800px 400px at 10% 10%, rgba(255,47,163,0.06), transparent 8%),
-    radial-gradient(700px 350px at 90% 90%, rgba(0,255,214,0.04), transparent 12%),
-    linear-gradient(180deg,var(--bg1), #03040a 140%);
-  color:#eaf2ff;
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  padding:28px;
-}
-
-/* Container */
-.app{ max-width:1200px; margin:0 auto; border-radius:18px; padding:18px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow: 0 20px 60px rgba(2,6,23,0.7); border:1px solid rgba(255,255,255,0.02); }
-
-/* Header */
-.header{ display:flex; gap:14px; align-items:center; }
-.logo{ width:74px;height:74px;border-radius:14px;background:linear-gradient(135deg,var(--neon-c),var(--neon-p)); display:flex;align-items:center;justify-content:center;font-weight:900;color:#001;font-size:28px; box-shadow: 0 10px 40px rgba(0,255,214,0.06);}
-.hmeta{ display:flex;flex-direction:column; }
-.hmeta .title{ font-size:22px; font-weight:800; letter-spacing:-0.02em; }
-.hmeta .sub{ color:var(--muted); font-size:13px; margin-top:6px }
-
-/* Controls */
-.controls{ margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center }
-.btn{ background:linear-gradient(90deg,var(--neon-p), #ff7bc1); color:#001; padding:10px 14px; border-radius:12px; border:none; cursor:pointer; font-weight:700; box-shadow: 0 12px 30px rgba(255,47,163,0.08); }
-.btn.alt{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04); box-shadow:none; }
-
-/* Drop */
-.drop{ margin-top:14px; border-radius:12px; padding:14px; background:var(--glass); border:1px dashed rgba(255,255,255,0.03); display:flex; gap:12px; align-items:center; transition:transform .15s ease, box-shadow .15s ease; }
-.drop.drag{ transform: translateY(-6px); box-shadow: 0 18px 50px rgba(0,255,214,0.06); border-color: rgba(0,255,214,0.12); }
-
-/* Layout */
-.grid{ margin-top:18px; display:grid; grid-template-columns: 360px 1fr; gap:16px; align-items:start; }
-@media (max-width:980px){ .grid{ grid-template-columns: 1fr; } .logo{display:none} }
-
-/* Left panel */
-.left{ padding:12px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02); min-height:520px; }
-.avatar{ display:flex; gap:12px; align-items:center }
-.pic{ width:96px;height:96px;border-radius:16px;background:linear-gradient(135deg,var(--neon-c),var(--neon-p)); display:flex;align-items:center;justify-content:center;font-weight:900;color:#001;font-size:26px; overflow:hidden }
-.pic img{ width:100%; height:100%; object-fit:cover; display:block }
-.meta h2{ margin:0; font-size:20px; font-weight:800 }
-.meta .small{ margin-top:6px; color:var(--muted); font-size:13px }
-
-/* KPIs */
-.kpis{ margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:8px }
-.kpi{ padding:12px;border-radius:10px;background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.02); text-align:center; }
-.kpi .n{ font-weight:900; font-size:20px; color:var(--neon-p) }
-.kpi .s{ color:var(--muted); font-size:13px; margin-top:6px }
-
-/* videos list */
-.vlist{ margin-top:12px; max-height:260px; overflow:auto; display:grid; gap:8px; padding-right:6px }
-.vcard{ display:flex; gap:10px; align-items:center; padding:8px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02); transform: perspective(600px) rotateX(0deg); transition: transform .25s ease; }
-.vcard:hover{ transform: perspective(600px) rotateX(6deg) translateY(-6px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,0.5) }
-.vcard img{ width:76px;height:76px;border-radius:10px; object-fit:cover; flex:0 0 76px; }
-
-/* Right preview */
-.right{ padding:12px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border:1px solid rgba(255,255,255,0.02); min-height:520px; display:flex; flex-direction:column; }
-.preview-top{ display:flex; justify-content:space-between; align-items:center; gap:10px }
-.big-title{ font-size:20px; font-weight:800 }
-.emoji{ font-size:30px }
-.chart-wrap{ margin-top:12px; display:flex; gap:12px; align-items:center; }
-.chart-block{ flex:1; padding:10px; border-radius:12px; background: rgba(0,0,0,0.18); border:1px solid rgba(255,255,255,0.02) }
-
-/* analysis */
-.analysis{ margin-top:12px; padding:12px; border-radius:10px; background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); color:var(--muted) }
-.analysis h4{ margin:0 0 8px 0; color:var(--neon-c) }
-
-/* footer controls */
-.controls2{ margin-top:auto; display:flex; gap:8px; justify-content:center; align-items:center }
-
-/* small style */
-.small{ font-size:13px; color:var(--muted) }
-
-/* scrollbar */
-.vlist::-webkit-scrollbar{ width:8px }
-.vlist::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,var(--neon-p),var(--neon-c)); border-radius:8px }
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;font-family:'Poppins',sans-serif;background:linear-gradient(180deg,var(--bg),#03040a);}
+.app{max-width:1200px;margin:0 auto;padding:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;color:#eaf2ff;}
+.header{display:flex;align-items:center;gap:12px;}
+.logo{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,var(--neon-c),var(--neon-p));display:flex;justify-content:center;align-items:center;font-weight:900;color:#001;font-size:28px;}
+.hmeta .title{font-weight:800;font-size:22px;}
+.hmeta .sub{color:var(--muted);font-size:13px;}
+.controls{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;}
+.btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--neon-p),#ff7bc1);color:#001;box-shadow:0 12px 30px rgba(255,47,163,0.08);}
+.btn.alt{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04);box-shadow:none;}
+.drop{margin-top:14px;border-radius:12px;padding:14px;background:var(--glass);border:1px dashed rgba(255,255,255,0.03);display:flex;gap:12px;align-items:center;transition:all .15s ease;}
+.drop.drag{transform:translateY(-6px);box-shadow:0 18px 50px rgba(0,255,214,0.06);border-color:rgba(0,255,214,0.12);}
+.grid{margin-top:18px;display:grid;grid-template-columns:360px 1fr;gap:16px;}
+@media(max-width:980px){.grid{grid-template-columns:1fr;}.logo{display:none;}}
+.left,.right{padding:12px;border-radius:12px;background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02);min-height:520px;}
+.avatar{display:flex;gap:12px;align-items:center;}
+.pic{width:96px;height:96px;border-radius:16px;background:linear-gradient(135deg,var(--neon-c),var(--neon-p));display:flex;align-items:center;justify-content:center;font-weight:900;color:#001;font-size:26px;overflow:hidden;}
+.pic img{width:100%;height:100%;object-fit:cover;}
+.meta h2{margin:0;font-size:20px;font-weight:800;}
+.meta .small{margin-top:6px;color:var(--muted);font-size:13px;}
+.kpis{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.kpi{padding:12px;border-radius:10px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.02);text-align:center;}
+.kpi .n{font-weight:900;font-size:20px;color:var(--neon-p);}
+.kpi .s{color:var(--muted);font-size:13px;margin-top:6px;}
+.vlist{margin-top:12px;max-height:260px;overflow:auto;display:grid;gap:8px;padding-right:6px;}
+.vcard{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02);transition: transform .25s ease;}
+.vcard:hover{transform: perspective(600px) rotateX(6deg) translateY(-6px) scale(1.01);box-shadow:0 20px 40px rgba(0,0,0,0.5);}
+.vcard img{width:76px;height:76px;border-radius:10px;object-fit:cover;}
+.right .preview-top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.big-title{font-size:20px;font-weight:800;}
+.chart-wrap{margin-top:12px;display:flex;gap:12px;align-items:center;}
+.chart-block{flex:1;padding:10px;border-radius:12px;background: rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.02);}
+.analysis{margin-top:12px;padding:12px;border-radius:10px;background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);color:var(--muted);}
+.analysis h4{margin:0 0 8px 0;color:var(--neon-c);}
+.vlist::-webkit-scrollbar{width:8px;}
+.vlist::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--neon-p),var(--neon-c));border-radius:8px;}
 </style>
 </head>
 <body>
-  <div class="app" role="main">
-    <div class="header">
-      <div class="logo">W</div>
-      <div class="hmeta">
-        <div class="title">CyberWrapped — Ultra TikTok Wrapped</div>
-        <div class="sub">Upload JSON / ZIP / TXT · Anime / Cyberpunk visuals · Charts & AI heuristics</div>
-      </div>
+<div class="app">
+  <div class="header">
+    <div class="logo">W</div>
+    <div class="hmeta">
+      <div class="title">CyberWrapped — Ultra TikTok Wrapped</div>
+      <div class="sub">JSON / ZIP / TXT · Cyberpunk visuals · Charts & AI analysis</div>
     </div>
-
-    <div class="controls">
-      <button class="btn" id="btn-json">📄 JSON seç</button>
-      <button class="btn" id="btn-zip">🗜️ ZIP seç</button>
-      <button class="btn alt" id="btn-sample">📥 Sample JSON</button>
-      <button class="btn alt" id="btn-reset">♻️ Reset</button>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-json">📄 JSON seç</button>
+    <button class="btn" id="btn-zip">🗜️ ZIP seç</button>
+    <button class="btn alt" id="btn-reset">♻️ Reset</button>
+  </div>
+  <div class="drop" id="drop">
+    <div>
+      <div style="font-weight:800">Faylı sürüşdür və burax — JSON / ZIP / TXT</div>
+      <div class="small">ZIP içindəki .json/.txt/.png faylları oxunur</div>
     </div>
-
-    <div class="drop" id="drop">
-      <div>
-        <div style="font-weight:800">Faylı sürüşdür və burax — JSON / ZIP / TXT</div>
-        <div class="small">ZIP içindəki .json/.txt/.png/.jpg faylları avtomatik oxunur</div>
+  </div>
+  <div class="grid">
+    <div class="left">
+      <div class="avatar">
+        <div class="pic" id="pic">CZ</div>
+        <div class="meta">
+          <h2 id="display_name">—</h2>
+          <div class="small" id="username">@—</div>
+          <div class="small" id="files-info">Files: 0 JSON · 0 TXT · 0 images</div>
+        </div>
       </div>
-      <div style="margin-left:auto" class="small">🔥 Anime • Neon • 3D</div>
+      <div class="kpis">
+        <div class="kpi"><div class="n" id="k_views">0</div><div class="s">👁️ Views</div></div>
+        <div class="kpi"><div class="n" id="k_likes">0</div><div class="s">❤️ Likes</div></div>
+        <div class="kpi"><div class="n" id="k_videos">0</div><div class="s">🎬 Videos</div></div>
+      </div>
+      <div class="vlist" id="vlist"></div>
     </div>
-
-    <div class="grid">
-      <div class="left">
-        <div class="avatar">
-          <div class="pic" id="pic">CZ</div>
-          <div class="meta">
-            <h2 id="display_name">—</h2>
-            <div class="small" id="username">@— · <span id="months">0</span> months</div>
-            <div class="small" id="files-info">Files: 0 JSON · 0 TXT · 0 images</div>
-          </div>
-        </div>
-
-        <div class="kpis">
-          <div class="kpi"><div class="n" id="k_views">0</div><div class="s">👁️ Total views</div></div>
-          <div class="kpi"><div class="n" id="k_likes">0</div><div class="s">❤️ Total likes</div></div>
-          <div class="kpi"><div class="n" id="k_videos">0</div><div class="s">🎬 Videos</div></div>
-          <div class="kpi"><div class="n" id="k_eng">0%</div><div class="s">📈 Avg engagement</div></div>
-        </div>
-
-        <div style="margin-top:12px" class="small">Top videos</div>
-        <div class="vlist" id="vlist"></div>
-
+    <div class="right">
+      <div class="preview-top">
+        <div class="big-title">Wrapped Preview</div>
+        <div class="emoji">🔥 📈 💖</div>
       </div>
-
-      <div class="right">
-        <div class="preview-top">
-          <div class="big-title">Wrapped Preview</div>
-          <div class="emoji">🔥 📈 💖</div>
-        </div>
-
-        <div class="chart-wrap">
-          <div class="chart-block"><canvas id="chartViews" height="140"></canvas></div>
-          <div class="chart-block"><canvas id="chartLikes" height="140"></canvas></div>
-        </div>
-
-        <div class="analysis" id="analysis">
-          <h4>AI Analiz (heuristic)</h4>
-          <div id="analysisText">Heç bir data yoxdur — fayl yüklə.</div>
-        </div>
-
-        <div class="controls2">
-          <button class="btn" id="export-png">⬇️ Export PNG</button>
-          <button class="btn alt" id="btn-advanced">⚙️ Extract details</button>
-        </div>
-
+      <div class="chart-wrap">
+        <div class="chart-block"><canvas id="chartViews" height="140"></canvas></div>
+        <div class="chart-block"><canvas id="chartLikes" height="140"></canvas></div>
+      </div>
+      <div class="analysis" id="analysis">
+        <h4>AI Analiz</h4>
+        <div id="analysisText">Heç bir data yoxdur — fayl yüklə.</div>
       </div>
     </div>
   </div>
+</div>
 
-  <input type="file" id="fjson" accept=".json,application/json" style="display:none" />
-  <input type="file" id="fzip" accept=".zip,application/zip" style="display:none" />
+<input type="file" id="fjson" accept=".json" style="display:none;">
+<input type="file" id="fzip" accept=".zip" style="display:none;">
 
 <script>
-// ---------- Helpers ----------
-const el = id => document.getElementById(id);
-const fmt = n => {
-  if (typeof n !== 'number') return n;
-  if (n >= 1e9) return (n/1e9).toFixed(1) + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-  return String(n);
-};
-const safe = v => v==null? '—' : v;
+// ---- Helper functions ----
+const el=id=>document.getElementById(id);
+const fmt=n=>n>=1e9? (n/1e9).toFixed(1)+'B':n>=1e6? (n/1e6).toFixed(1)+'M':n>=1e3? (n/1e3).toFixed(1)+'K':n;
 
-// ---------- State ----------
-let state = {
-  jsonCount:0, txtCount:0, imgCount:0,
-  totalViews:0, totalLikes:0, totalVideos:0,
-  months:0, favorite_tag:'—',
-  display_name:'—', username:'—',
-  profile_image:'',
-  videos:[], // {title, views, likes, thumb, source}
-  zipImages: {}
-};
+// ---- State ----
+let state={jsonCount:0,txtCount:0,imgCount:0,totalViews:0,totalLikes:0,totalVideos:0,videos:[],zipImages:{}};
 
-// Chart placeholders
-let chartViews=null, chartLikes=null;
+// ---- File inputs ----
+el('btn-json').onclick=()=>el('fjson').click();
+el('btn-zip').onclick=()=>el('fzip').click();
+el('fjson').addEventListener('change',async e=>{if(e.target.files[0])await handleJSON(e.target.files[0]);e.target.value='';});
+el('fzip').addEventListener('change',async e=>{if(e.target.files[0])await handleZIP(e.target.files[0]);e.target.value='';});
 
-// Wire buttons
-el('btn-json').onclick = ()=> el('fjson').click();
-el('btn-zip').onclick = ()=> el('fzip').click();
-el('btn-sample').onclick = downloadSample;
-el('btn-reset').onclick = ()=> location.reload();
-el('fjson').addEventListener('change', async e=> { if(e.target.files[0]) await handleJSONFile(e.target.files[0]); e.target.value=''; });
-el('fzip').addEventListener('change', async e=> { if(e.target.files[0]) await handleZIPFile(e.target.files[0]); e.target.value=''; });
-
-// drag & drop
-const drop = el('drop');
-['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('drag'); }));
-['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('drag'); }));
-drop.addEventListener('drop', async e=>{
-  const f = e.dataTransfer.files[0];
-  if(!f) return;
-  if(f.name.toLowerCase().endsWith('.zip')) await handleZIPFile(f);
-  else if(f.name.toLowerCase().endsWith('.json')) await handleJSONFile(f);
-  else if(f.name.toLowerCase().endsWith('.txt')) await handleTXTFile(f);
-  else alert('Yalnız .zip / .json / .txt qəbul olunur.');
+// ---- Drag & drop ----
+const drop=el('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+drop.addEventListener('drop',async e=>{
+  const f=e.dataTransfer.files[0];
+  if(!f)return;
+  if(f.name.toLowerCase().endsWith('.zip')) await handleZIP(f);
+  else if(f.name.toLowerCase().endsWith('.json')) await handleJSON(f);
+  else if(f.name.toLowerCase().endsWith('.txt')) await handleTXT(f);
+  else alert('Yalnız .zip / .json / .txt faylları qəbul olunur.');
 });
 
-// ---------- File handlers ----------
-async function handleJSONFile(file){
+// ---- Handlers ----
+async function handleJSON(file){
   try{
-    const text = await file.text();
-    const obj = JSON.parse(text);
+    const text=await file.text();
+    const obj=JSON.parse(text);
     state.jsonCount++;
-    extractFromJSON(obj, file.name);
-    finalizeAndRender();
-  }catch(e){
-    console.error('JSON parse error', e);
-    alert('JSON parse xətası — faylı yoxla.');
-  }
+    extractFromJSON(obj);
+    renderAll();
+  }catch(e){ alert('JSON Parse xətası — faylı yoxla'); }
 }
 
-async function handleTXTFile(file){
+async function handleTXT(file){
+  const txt=await file.text();
+  state.txtCount++;
+  parseTXT(txt);
+  renderAll();
+}
+
+async function handleZIP(file){
   try{
-    const txt = await file.text();
-    state.txtCount++;
-    // try to extract simple stats
-    parseTXTContent(txt, file.name);
-    finalizeAndRender();
-  }catch(e){ console.warn(e); }
+    const buffer=await file.arrayBuffer();
+    const zip=await JSZip.loadAsync(buffer);
+    for(const name of Object.keys(zip.files)){
+      const f=zip.files[name];
+      if(f.dir) continue;
+      const low=name.toLowerCase();
+      if(low.endsWith('.json')){
+        const txt=await f.async('string');
+        try{ extractFromJSON(JSON.parse(txt)); state.jsonCount++; }catch(e){console.warn('JSON fail',name);}
+      }else if(low.endsWith('.txt')){
+        const txt=await f.async('string'); parseTXT(txt); state.txtCount++;
+      }else if(/\.(png|jpe?g|webp|gif)$/.test(low)){
+        const blob=await f.async('blob'); state.imgCount++;
+        state.zipImages[name]=URL.createObjectURL(blob);
+      }
+    }
+    renderAll();
+  }catch(e){alert('ZIP oxunarkən xəta: '+(e.message||e));}
 }
 
-async function handleZIPFile(file){
-  try{
-    const arrayBuffer = await file.arrayBuffer();
-    const zip = await JSZip.loadAsync(arrayBuffer);
-
-    // first read images
-    for(const name of Object.keys(zip.files)){
-      const entry = zip.files[name];
-      if(entry.dir) continue;
-      const low = name.toLowerCase();
-      if(/\.(png|jpe?g|webp|gif)$/i.test(low)){
-        try{
-          const blob = await entry.async('blob');
-          const url = URL.createObjectURL(blob);
-          const base = name.split('/').pop().toLowerCase();
-          state.zipImages[base] = url;
-          state.zipImages[name.toLowerCase()] = url;
-          state.imgCount++;
-        }catch(e){ console.warn('img read fail', name, e); }
+// ---- Parsing ----
+function extractFromJSON(obj){
+  if(!obj||typeof obj!=='object') return;
+  if(typeof obj.total_views==='number') state.totalViews+=obj.total_views;
+  if(typeof obj.total_likes==='number') state.totalLikes+=obj.total_likes;
+  if(typeof obj.total_videos==='number') state.totalVideos+=obj.total_videos;
+  // video array detection
+  for(const k in obj){
+    const v=obj[k];
+    if(Array.isArray(v)&&v.length>0&&typeof v[0]==='object'){
+      for(const vid of v){
+        const title=vid.title||vid.name||vid.caption||'Untitled';
+        const views=Number(vid.views||vid.view_count||0);
+        const likes=Number(vid.likes||vid.like_count||0);
+        const thumb=vid.thumbnail||vid.thumb||'';
+        state.videos.push({title,views,likes,thumb});
       }
     }
-
-    // then parse json/txt
-    for(const name of Object.keys(zip.files)){
-      const entry = zip.files[name];
-      if(entry.dir) continue;
-      const low = name.toLowerCase();
-      try{
-        if(low.endsWith('.json')){
-          const txt = await entry.async('string');
-          const obj = JSON.parse(txt);
-          state.jsonCount++;
-          extractFromJSON(obj, name);
-        } else if(low.endsWith('.txt')){
-          const txt = await entry.async('string');
-          state.txtCount++;
-          parseTXTContent(txt, name);
-        }
-      }catch(e){
-        console.warn('file parse fail', name, e);
-      }
-    }
-
-    // map thumbnails/profile filenames to blob URLs
-    state.videos = state.videos.map(v=>{
-      if(v.thumbnail){
-        const base = v.thumbnail.split('/').pop().toLowerCase();
-        if(state.zipImages[base]) v.thumb = state.zipImages[base];
-      }
-      return v;
-    });
-
-    if(!state.profile_image){
-      const candidates = ['profile.jpg','profile.png','avatar.jpg','avatar.png','profile.webp','avatar.webp'];
-      for(const c of candidates) if(state.zipImages[c]){ state.profile_image = state.zipImages[c]; break; }
-    }
-
-    finalizeAndRender();
-
-  }catch(e){
-    console.error('ZIP error', e);
-    alert('ZIP oxunarkən xəta: '+(e.message||e));
   }
 }
-
-// ---------- Parsing logic ----------
-function extractFromJSON(obj, source){
-  if(!obj || typeof obj !== 'object') return;
-
-  // try common fields
-  if(obj.display_name || obj.name) state.display_name = state.display_name === '—' ? (obj.display_name||obj.name) : state.display_name;
-  if(obj.username || obj.handle) state.username = (obj.username||obj.handle)||state.username;
-  if(obj.months_active || obj.months) state.months = Math.max(state.months, Number(obj.months_active||obj.months||0));
-  if(obj.favorite_hashtag || obj.favorite_tag) state.favorite_tag = obj.favorite_hashtag||obj.favorite_tag||state.favorite_tag;
-
-  // accumulate simple totals
-  if(typeof obj.total_views === 'number') state.totalViews += obj.total_views;
-  if(typeof obj.total_likes === 'number') state.totalLikes += obj.total_likes;
-  if(typeof obj.total_videos === 'number') state.totalVideos += obj.total_videos;
-
-  // deep traversal to find numbers and arrays that look like videos
-  const seen = new Set();
-  function walk(node){
-    if(!node || typeof node !== 'object') return;
-    if(seen.has(node)) return;
-    seen.add(node);
-
-    // detect arrays of objects which look like videos
-    for(const k in node){
-      const v = node[k];
-      if(Array.isArray(v) && v.length>0 && typeof v[0] === 'object'){
-        let score=0; let found=[];
-        for(const item of v){
-          const keys = Object.keys(item||{});
-          const hasViews = keys.some(x=>/view|play|watch/i.test(x));
-          const hasLikes = keys.some(x=>/like|heart/i.test(x));
-          const hasTitle = keys.some(x=>/title|name|caption|desc/i.test(x));
-          if(hasViews||hasLikes) score++;
-          if(hasViews||hasLikes||hasTitle){
-            const title = item.title || item.name || item.caption || item.desc || 'Untitled';
-            const views = Number(item.views || item.view_count || item.play_count || item.playcount || item.plays || 0) || 0;
-            const likes = Number(item.likes || item.like_count || item.hearts || item.favorites || 0) || 0;
-            const thumbnail = item.thumbnail || item.thumb || item.cover || item.image || '';
-            found.push({ title: String(title).slice(0,120), views, likes, thumbnail, source });
-          }
-        }
-        if(score >= Math.max(1, Math.floor(v.length/4)) && found.length>0){
-          for(const f of found){
-            state.videos.push(f);
-            state.totalVideos += 1;
-            state.totalViews += Number(f.views||0);
-            state.totalLikes += Number(f.likes||0);
-          }
-        }
-      }
-
-      // if numeric fields that look like totals (fallback)
-      if(typeof v === 'number'){
-        const lk = k.toLowerCase();
-        if(lk.includes('view')) state.totalViews += v;
-        if(lk.includes('like')) state.totalLikes += v;
-        if(lk.includes('video') && lk.includes('count')) state.totalVideos += v;
-      }
-
-      if(typeof v === 'object') walk(v);
-    }
-  }
-  walk(obj);
-}
-
-// Very simple txt heuristics
-function parseTXTContent(txt, name){
-  // count words/lines for debug; try to extract lines like "views: 1234"
-  const lines = txt.split(/\r?\n/);
+function parseTXT(txt){
+  const lines=txt.split(/\r?\n/);
   for(const line of lines){
-    const m = line.match(/(views|likes|play|plays|views_count|like_count|video[s]?)[^0-9]*([0-9,]+)/i);
+    const m=line.match(/(views|likes)[^0-9]*([0-9,]+)/i);
     if(m){
-      const key = m[1].toLowerCase();
-      const num = Number(m[2].replace(/,/g,''));
-      if(/view|play/.test(key)) state.totalViews += num;
-      if(/like/.test(key)) state.totalLikes += num;
-      if(/video/.test(key)) state.totalVideos += num;
+      const n=Number(m[2].replace(/,/g,''));
+      if(/view/i.test(m[1])) state.totalViews+=n;
+      if(/like/i.test(m[1])) state.totalLikes+=n;
     }
   }
 }
 
-// ---------- Finalize & render ----------
-function finalizeAndRender(){
-  // dedupe & merge videos by title
-  const map = new Map();
-  for(const v of state.videos){
-    const key = (v.title||'').toLowerCase().trim();
-    if(!key) continue;
-    if(!map.has(key)) map.set(key, Object.assign({}, v, {views:0, likes:0}));
-    const cur = map.get(key);
-    cur.views = (cur.views||0) + Number(v.views||0);
-    cur.likes = (cur.likes||0) + Number(v.likes||0);
-    if(v.thumbnail && !cur.thumb) cur.thumb = v.thumbnail;
-    if(v.thumb && !cur.thumb) cur.thumb = v.thumb;
+// ---- Render ----
+function renderAll(){
+  el('files-info').textContent=`Files: ${state.jsonCount} JSON · ${state.txtCount} TXT · ${state.imgCount} images`;
+  el('k_views').textContent=fmt(state.totalViews);
+  el('k_likes').textContent=fmt(state.totalLikes);
+  el('k_videos').textContent=state.totalVideos;
+  // videos
+  const vlist=el('vlist'); vlist.innerHTML='';
+  for(const v of state.videos.slice(0,30)){
+    const thumb=v.thumb||'https://placehold.co/76x76?text=Video';
+    vlist.insertAdjacentHTML('beforeend',`<div class="vcard"><img src="${thumb}"><div><div style="font-weight:800">${v.title}</div><div class="small">👁️ ${fmt(v.views)} · ❤️ ${fmt(v.likes)}</div></div></div>`);
   }
-  state.videos = Array.from(map.values()).sort((a,b)=> (b.views||0) - (a.views||0));
-
-  // update derived metrics
-  const avgEng = state.totalViews ? (state.totalLikes / state.totalViews) * 100 : 0;
-
-  // profile image if filename map exists
-  if(state.profile_image && typeof state.profile_image === 'string'){
-    const base = state.profile_image.split('/').pop().toLowerCase();
-    if(state.zipImages[base]) state.profile_image = state.zipImages[base];
-  } else if(!state.profile_image){
-    // try pick first zip image as profile
-    const keys = Object.keys(state.zipImages||{});
-    for(const k of keys){ if(k.includes('profile')||k.includes('avatar')||k.includes('face')){ state.profile_image = state.zipImages[k]; break; } }
-    if(!state.profile_image && keys.length>0) state.profile_image = state.zipImages[keys[0]];
-  }
-
-  // render UI
-  renderUI();
-  // render charts
   renderCharts();
-  // compute AI analysis
-  runAIAnalysis();
+  renderAnalysis();
 }
 
-function renderUI(){
-  el('display_name').textContent = safe(state.display_name);
-  el('username').textContent = '@' + (state.username || '—');
-  el('months').textContent = state.months || 0;
-  el('k_views').textContent = fmt(state.totalViews || 0);
-  el('k_likes').textContent = fmt(state.totalLikes || 0);
-  el('k_videos').textContent = (state.totalVideos || state.videos.length || 0);
-  const eng = state.totalViews ? ((state.totalLikes / state.totalViews) * 100).toFixed(2) : '0.00';
-  el('k_eng').textContent = eng + '%';
-  el('files-info').textContent = `Files: ${state.jsonCount} JSON · ${state.txtCount} TXT · ${state.imgCount} images`;
-
-  // profile pic
-  const pic = el('pic');
-  if(state.profile_image && (state.profile_image.startsWith('blob:') || state.profile_image.startsWith('http'))){
-    pic.innerHTML = `<img src="${state.profile_image}" alt="profile">`;
-  } else {
-    const initials = (state.display_name || 'CZ').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-    pic.textContent = initials;
-    pic.style.background = 'linear-gradient(135deg,var(--neon-c),var(--neon-p))';
-  }
-
-  // videos list
-  const vlist = el('vlist'); vlist.innerHTML = '';
-  if(state.videos.length === 0){
-    vlist.innerHTML = `<div class="small center">No videos detected — upload JSON/ZIP from TikTok export or your own data.</div>`;
-  } else {
-    for(const v of state.videos.slice(0,40)){
-      const thumb = v.thumb || v.thumbnail || `https://placehold.co/400x400?text=${encodeURIComponent((v.title||'video').slice(0,18))}`;
-      const html = `<div class="vcard"><img src="${thumb}" alt=""><div><div style="font-weight:800">${escapeHTML(v.title)}</div><div class="small">👁️ ${fmt(Number(v.views)||0)} · ❤️ ${fmt(Number(v.likes)||0)}</div></div></div>`;
-      vlist.insertAdjacentHTML('beforeend', html);
-    }
-  }
-}
-
+// ---- Charts ----
+let chartViews=null, chartLikes=null;
 function renderCharts(){
-  // build datasets for top N videos
-  const top = state.videos.slice(0,10).reverse();
-  const labels = top.map(v=> v.title.slice(0,18) + (v.title.length>18? '…':'' ) );
-  const viewsData = top.map(v=> v.views || 0);
-  const likesData = top.map(v=> v.likes || 0);
-
-  // destroy existing
+  const top=state.videos.slice(0,10).reverse();
+  const labels=top.map(v=>v.title.slice(0,18));
+  const viewsData=top.map(v=>v.views);
+  const likesData=top.map(v=>v.likes);
   if(chartViews) chartViews.destroy();
   if(chartLikes) chartLikes.destroy();
-
-  const ctxV = el('chartViews').getContext('2d');
-  chartViews = new Chart(ctxV, {
-    type:'bar',
-    data:{
-      labels, datasets:[{ label:'Views', data:viewsData, backgroundColor: 'rgba(255,47,163,0.9)' }]
-    },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#cfe6ff' } }, y:{ ticks:{ color:'#cfe6ff' } } } }
+  chartViews=new Chart(el('chartViews').getContext('2d'),{
+    type:'bar',data:{labels,datasets:[{label:'Views',data:viewsData,backgroundColor:'rgba(255,47,163,0.9)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}}}
   });
-
-  const ctxL = el('chartLikes').getContext('2d');
-  chartLikes = new Chart(ctxL, {
-    type:'bar',
-    data:{ labels, datasets:[{ label:'Likes', data:likesData, backgroundColor: 'rgba(0,255,214,0.9)' }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#cfe6ff' } }, y:{ ticks:{ color:'#cfe6ff' } } } }
+  chartLikes=new Chart(el('chartLikes').getContext('2d'),{
+    type:'bar',data:{labels,datasets:[{label:'Likes',data:likesData,backgroundColor:'rgba(0,255,214,0.9)'}]},
+    options:{responsive:true,plugins:{legend:{display:false}}}
   });
 }
 
-// Very small heuristic "AI" analysis
-function runAIAnalysis(){
-  const out = [];
-  const total = state.totalViews || 0;
-  const likes = state.totalLikes || 0;
-  const avgEng = total ? (likes/total) : 0;
-
-  out.push(`<b>Total views:</b> ${fmt(total)} · <b>Total likes:</b> ${fmt(likes)}`);
-  out.push(`<b>Avg engagement:</b> ${(avgEng*100).toFixed(2)}%`);
-
-  if(state.videos.length){
-    const best = state.videos[0];
-    out.push(`<b>Top video:</b> ${escapeHTML(best.title)} · 👁️ ${fmt(best.views)} · ❤️ ${fmt(best.likes)}`);
-    // quick advice: if engagement > 3% good, else tips
-    if(avgEng > 0.03) out.push('✅ Engagement is strong — keep using similar format & hashtags.');
-    else out.push('⚠️ Engagement is low — try shorter hooks, clearer captions, call-to-action.');
-    // detect common words in titles
-    const wordCount = {};
-    state.videos.slice(0,50).forEach(v=>{
-      const words = (v.title||'').toLowerCase().replace(/[^\w\s#@]/g,'').split(/\s+/).filter(Boolean);
-      words.forEach(w=>{
-        if(w.length<3) return;
-        wordCount[w] = (wordCount[w]||0)+1;
-      });
-    });
-    const popular = Object.entries(wordCount).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
-    if(popular.length) out.push(`<b>Popular words/tags:</b> ${popular.join(', ')}`);
-  } else {
-    out.push('No video-level data found — upload real TikTok export JSON or ZIP.');
-  }
-
-  el('analysisText').innerHTML = out.map(x=> `<div style="margin-bottom:6px">${x}</div>`).join('');
+// ---- Simple AI analysis ----
+function renderAnalysis(){
+  if(state.videos.length===0){el('analysisText').textContent='Heç bir data yoxdur — fayl yüklə.';return;}
+  const totalViews=state.totalViews||0, totalLikes=state.totalLikes||0;
+  const engagement=(totalViews?((totalLikes/totalViews)*100):0).toFixed(2);
+  const topVideo=state.videos[0];
+  el('analysisText').innerHTML=`
+<b>Total views:</b> ${fmt(totalViews)} · <b>Total likes:</b> ${fmt(totalLikes)}<br>
+<b>Engagement:</b> ${engagement}%<br>
+<b>Top video:</b> ${topVideo.title} 👁️ ${fmt(topVideo.views)} · ❤️ ${fmt(topVideo.likes)}
+  `;
 }
-
-// Escape
-function escapeHTML(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
-
-// Export PNG
-el('export-png').addEventListener('click', async ()=>{
-  const node = document.querySelector('.right');
-  try{
-    const canvas = await html2canvas(node, {scale:2, useCORS:true});
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a'); a.href = url; a.download = 'cyberwrapped_preview.png'; a.click();
-  }catch(e){ console.error(e); alert('Export error: '+(e.message||e)); }
-});
-
-// Advanced extract (open raw JSON list in new window)
-el('btn-advanced').addEventListener('click', ()=>{
-  const summary = {
-    jsonCount: state.jsonCount, txtCount: state.txtCount, imgCount: state.imgCount,
-    totals: { views: state.totalViews, likes: state.totalLikes, videos: state.totalVideos },
-    topVideos: state.videos.slice(0,30)
-  };
-  const w = window.open();
-  w.document.body.style.background = '#000'; w.document.body.style.color = '#fff';
-  w.document.title = 'Extracted details';
-  const pre = w.document.createElement('pre');
-  pre.style.whiteSpace='pre-wrap';
-  pre.style.fontFamily='JetBrains Mono, monospace';
-  pre.textContent = JSON.stringify(summary, null, 2);
-  w.document.body.appendChild(pre);
-});
-
-// sample
-function downloadSample(){
-  const sample = {
-    username:"cesicoder",
-    display_name:"CesiCoder",
-    months_active: 17,
-    total_views: 1234567,
-    total_likes: 98765,
-    total_videos: 42,
-    favorite_hashtag: "#cesi",
-    top_videos:[
-      { title:"Hack Tutorial 🔥", views:456789, likes:12000, thumbnail:"thumb1.jpg" },
-      { title:"Android Trick ⚡", views:230000, likes:8000, thumbnail:"thumb2.jpg" }
-    ]
-  };
-  const b = new Blob([JSON.stringify(sample,null,2)],{type:'application/json'});
-  const url = URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='wrapped_sample.json'; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-}
-
-// initialize demo sample
-(function init(){
-  // small prefill for UI
-  state.display_name = 'CesiCoder';
-  state.username = 'cesicoder';
-  state.months = 17;
-  state.totalViews = 1234567;
-  state.totalLikes = 98765;
-  state.totalVideos = 42;
-  state.videos = [
-    { title:'Hack Tutorial 🔥', views:456789, likes:12000 },
-    { title:'Android Trick ⚡', views:230000, likes:8000 },
-    { title:'UI Design Tips', views:120000, likes:6000 }
-  ];
-  finalizeAndRender();
-})();
 </script>
 </body>
 </html>
