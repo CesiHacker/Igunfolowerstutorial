@@ -1,152 +1,570 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="az">
 <head>
-<meta charset="UTF-8">
-<title>TikTok Wrapped</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ultra TikTok Wrapped — JSON/ZIP Analyzer</title>
+
+<!-- Fonts & libs -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-+x6J4h7C6n6kGz2w0q6mK0j6qQqW0Qd+4B5Z5Cq6uXQ9uY8y9r0s7z6eKf4nY7L0p2q3b8f6z9n2M4Y1b3eVg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <style>
-body {
-    background: #0d0d0d;
-    color: #fff;
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    padding: 30px;
+:root{
+  --bg:#05060b;
+  --panel: rgba(255,255,255,0.03);
+  --accent1: #ff2fa3;
+  --accent2: #00ffd6;
+  --glass: rgba(255,255,255,0.02);
 }
-h1 {
-    font-size: 45px;
-    color: #ff0050;
-    text-shadow: 0 0 15px #ff0050;
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Poppins',sans-serif; background: radial-gradient(circle at 10% 10%, rgba(255,47,163,0.06), transparent 6%), linear-gradient(180deg,var(--bg), #000); color:#eaf2ff;
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px;
 }
-.upload-box {
-    margin-top: 25px;
-    padding: 20px;
-    border: 2px dashed #ff0050;
-    border-radius: 15px;
+
+/* Card */
+.app{
+  width:100%; max-width:1200px; border-radius:18px; padding:22px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 20px 60px rgba(2,6,23,0.8); border:1px solid rgba(255,255,255,0.02);
 }
-button {
-    background: #ff0050;
-    padding: 12px 22px;
-    font-size: 18px;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    cursor: pointer;
-    margin: 10px;
-    transition: 0.2s;
+
+.header{ display:flex; gap:16px; align-items:center; }
+.logo{
+  width:72px; height:72px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:28px; color:#001; background: linear-gradient(135deg,var(--accent2),var(--accent1)); box-shadow: 0 8px 28px rgba(0,0,0,0.6);
 }
-button:hover {
-    background: #ff2067;
-    transform: scale(1.05);
+.title{ font-size:26px; font-weight:800; letter-spacing:-0.02em; }
+.subtitle{ font-size:13px; color:#cfe6ff; margin-top:6px; }
+
+/* controls */
+.controls{ margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; }
+.btn{
+  background:linear-gradient(90deg,var(--accent1), #ff7bbd); color:#021; padding:10px 14px; border-radius:12px; border:none; cursor:pointer; font-weight:700;
+  box-shadow: 0 10px 30px rgba(255,47,163,0.12);
 }
-#output {
-    margin-top: 40px;
-    background: #1a1a1a;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: left;
+.btn.alt{ background:transparent; color:#dbefff; border:1px solid rgba(255,255,255,0.04); box-shadow:none; }
+.sample{ background:linear-gradient(90deg,#33ffd7,#7b5cff); color:#001; }
+
+/* drop area */
+.drop{
+  margin-top:16px; border-radius:14px; padding:14px; background:var(--glass); border:1px dashed rgba(255,255,255,0.03);
+  display:flex; align-items:center; gap:12px; transition:all .15s ease;
 }
-.stat-box {
-    background: #111;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 12px;
-    border-left: 5px solid #ff0050;
+.drop.drag{ transform:translateY(-6px); border-color: rgba(0,255,214,0.18); box-shadow: 0 18px 50px rgba(0,255,214,0.04); }
+
+/* layout */
+.grid{ margin-top:18px; display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+@media (max-width:980px){ .grid{ grid-template-columns: 1fr; } .avatar{ margin:0 auto } }
+
+/* left panel */
+.left{
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.02);
 }
+.avatar{ width:100%; display:flex; gap:12px; align-items:center; padding:8px; }
+.avatar .pic{ width:88px; height:88px; border-radius:14px; overflow:hidden; background:linear-gradient(135deg,var(--accent2),var(--accent1)); display:flex; align-items:center; justify-content:center; font-weight:800; color:#001; }
+.avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.meta h3{ margin:0; font-size:18px; font-weight:800 }
+.meta .small{ color:#cfe6ff; font-size:13px; margin-top:6px }
+
+/* kpis */
+.kpis{ margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.kpi{ background: rgba(255,255,255,0.02); padding:10px; border-radius:10px; text-align:center; border:1px solid rgba(255,255,255,0.02); }
+.kpi .num{ font-weight:800; font-size:20px; color:var(--accent1); text-shadow:0 0 12px rgba(255,47,163,0.08) }
+
+/* videos list */
+.vlist{ margin-top:10px; display:grid; grid-template-columns:1fr; gap:8px; max-height:420px; overflow:auto; padding-right:6px; }
+.vcard{ display:flex; gap:10px; align-items:center; padding:8px; background: rgba(255,255,255,0.01); border-radius:10px; border:1px solid rgba(255,255,255,0.01); }
+.vcard img{ width:72px; height:72px; border-radius:8px; object-fit:cover; flex:0 0 72px; }
+.vmeta .t{ font-weight:700 } .vmeta .s{ color:#cfe6ff; font-size:13px; margin-top:4px }
+
+/* right big preview */
+.right{
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.02);
+  min-height:420px; display:flex; flex-direction:column;
+}
+.preview-header{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.big-title{ font-size:22px; font-weight:800; }
+.emoji-row{ font-size:34px; text-align:center; margin-top:8px }
+.big-stats{ display:flex; gap:8px; justify-content:center; margin-top:12px }
+.big-block{ background: rgba(255,255,255,0.02); padding:10px; border-radius:10px; text-align:center; min-width:120px }
+.big-block .n{ font-weight:900; font-size:22px; color:var(--accent2) }
+
+/* footer and notices */
+.notice{ margin-top:12px; padding:10px; border-radius:8px; background: rgba(0,0,0,0.25); color:#cfe6ff; font-size:13px }
+
+/* tiny */
+.small{ font-size:13px; color:#cfe6ff }
+.center{ text-align:center }
+
 </style>
 </head>
 <body>
+  <div class="app" role="main">
+    <div class="header">
+      <div class="logo">W</div>
+      <div>
+        <div class="title">Ultra TikTok Wrapped</div>
+        <div class="subtitle">JSON/ZIP/TXT analyzer · avtomatik çıxarış · ultra vizual</div>
+      </div>
+    </div>
 
-<h1>🔥 TikTok Wrapped Generator</h1>
+    <div class="controls">
+      <button class="btn" id="btn-json">📄 Upload JSON</button>
+      <button class="btn" id="btn-zip">🗜️ Upload ZIP</button>
+      <button class="btn alt" id="btn-sample">📥 Sample JSON</button>
+      <button class="btn alt" id="btn-clear">♻️ Reset</button>
+    </div>
 
-<div class="upload-box">
-    <p>📁 JSON və ya ZIP yüklə:</p>
-    <input type="file" id="fileInput" accept=".json,.zip">
-    <br><br>
-    <button onclick="processFile()">Yüklə və Analiz Et</button>
-</div>
+    <div class="drop" id="drop">
+      <div>
+        <div style="font-weight:800">Drop JSON or ZIP here</div>
+        <div class="small">ZIP içindəki .json, .txt və şəkilləri avtomatik oxuyur və Wrapped statistikası çıxarır.</div>
+      </div>
+      <div style="margin-left:auto" class="small">🔥 Emojili • Neon • Modern</div>
+    </div>
 
-<div id="output"></div>
+    <div class="grid">
+      <div class="left">
+        <div class="avatar">
+          <div class="pic" id="pic">CZ</div>
+          <div class="meta">
+            <h3 id="display_name">—</h3>
+            <div class="small" id="username">@— · <span id="months">0</span> months</div>
+          </div>
+        </div>
+
+        <div class="kpis" id="kpis">
+          <div class="kpi"><div class="small">👁️ Views</div><div class="num" id="k_views">0</div></div>
+          <div class="kpi"><div class="small">❤️ Likes</div><div class="num" id="k_likes">0</div></div>
+          <div class="kpi"><div class="small">🎬 Videos</div><div class="num" id="k_videos">0</div></div>
+          <div class="kpi"><div class="small">🏷 Favorite</div><div class="num" id="k_tag">—</div></div>
+        </div>
+
+        <div style="margin-top:12px"><div class="small">Top videos (auto-detected)</div></div>
+        <div class="vlist" id="vlist"></div>
+
+        <div class="notice" id="left-notice">Heç bir fayl yüklənməyib.</div>
+      </div>
+
+      <div class="right">
+        <div class="preview-header">
+          <div class="big-title">🎉 Wrapped Preview</div>
+          <div class="small" id="files-info">Files: 0 JSON · 0 TXT · 0 images</div>
+        </div>
+
+        <div class="emoji-row">🔥 📈 💖</div>
+
+        <div class="big-stats" id="big-stats">
+          <div class="big-block"><div class="n" id="b_views">0</div><div class="small">Total views</div></div>
+          <div class="big-block"><div class="n" id="b_likes">0</div><div class="small">Total likes</div></div>
+          <div class="big-block"><div class="n" id="b_videos">0</div><div class="small">Videos</div></div>
+        </div>
+
+        <div style="margin-top:12px" id="extracted-info"></div>
+
+        <div style="margin-top:auto; display:flex; gap:8px; justify-content:center;">
+          <button class="btn" id="export-png">⬇️ Export PNG</button>
+          <button class="btn alt" id="btn-advanced">⚙️ Extract details</button>
+        </div>
+
+        <div class="notice" id="right-notice">Pro tip: ZIP içində olan şəkillər avtomatik göstərilir.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- hidden inputs -->
+  <input type="file" id="fjson" accept=".json,application/json" style="display:none" />
+  <input type="file" id="fzip" accept=".zip,application/zip" style="display:none" />
 
 <script>
-async function processFile() {
-    const file = document.getElementById("fileInput").files[0];
-    if (!file) return alert("Fayl seç!");
+/*
+ Robust JSON & ZIP extractor.
+ - Searches recursively inside JSON for numeric fields named *views, like(s), comments, plays*
+ - Detects arrays of objects where elements have those numeric keys -> considers them video lists
+ - Merges totals across multiple JSON files
+ - Replaces thumbnails/profile with images found in ZIP (filename matching)
+*/
 
-    let stats = {
-        videos: 0,
-        views: 0,
-        likes: 0,
-        txt_words: 0,
-        txt_lines: 0,
-        json_files: 0,
-        txt_files: 0
-    };
+const el = id => document.getElementById(id);
+const nice = n => {
+  if (typeof n !== 'number') return n;
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return n.toString();
+};
 
-    if (file.name.endsWith(".json")) {
-        const text = await file.text();
-        readJSON(text, stats);
-        showResults(stats);
-    } 
-    else if (file.name.endsWith(".zip")) {
-        let zip = await JSZip.loadAsync(file);
+let state = {
+  jsonCount:0, txtCount:0, imgCount:0,
+  totalViews:0, totalLikes:0, totalVideos:0,
+  months:0, favorite_tag:'—',
+  display_name:'—', username:'—',
+  profile_image:'',
+  videos:[], // {title, views, likes, thumb, sourceFile}
+  zipImages: {} // basename->blobURL
+};
 
-        for (const name of Object.keys(zip.files)) {
-            const entry = zip.files[name];
+// wire UI
+el('btn-json').onclick = ()=> el('fjson').click();
+el('btn-zip').onclick = ()=> el('fzip').click();
+el('btn-sample').onclick = downloadSample;
+el('btn-clear').onclick = ()=> location.reload();
+el('fjson').addEventListener('change', async e=> {
+  const f = e.target.files[0]; if(!f) return;
+  await handleJSONFile(f);
+  e.target.value='';
+});
+el('fzip').addEventListener('change', async e=> {
+  const f = e.target.files[0]; if(!f) return;
+  await handleZIPFile(f);
+  e.target.value='';
+});
 
-            if (name.endsWith(".json")) {
-                let content = await entry.async("string");
-                readJSON(content, stats);
-                stats.json_files++;
-            }
-            if (name.endsWith(".txt")) {
-                let txt = await entry.async("string");
-                stats.txt_files++;
-                stats.txt_lines += txt.split("\n").length;
-                stats.txt_words += txt.split(/\s+/).length;
-            }
-        }
+// drag & drop
+const drop = el('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('drag'); }));
+drop.addEventListener('drop', async e=>{
+  const f = e.dataTransfer.files[0]; if(!f) return;
+  if(f.name.endsWith('.zip')) await handleZIPFile(f);
+  else if(f.name.endsWith('.json')) await handleJSONFile(f);
+  else alert('Yalnız .json və .zip faylları qəbul olunur.');
+});
 
-        showResults(stats);
+// sample
+function downloadSample(){
+  const sample = {
+    username:"cesicoder",
+    display_name:"CesiCoder",
+    months_active: 17,
+    total_views: 1234567,
+    total_likes: 98765,
+    total_videos: 42,
+    favorite_hashtag: "#cesi",
+    top_videos:[
+      { title:"Hack Tutorial", views:456789, likes:12000, thumbnail:"thumb1.jpg" },
+      { title:"Android Trick", views:230000, likes:8000, thumbnail:"thumb2.jpg" }
+    ]
+  };
+  const b = new Blob([JSON.stringify(sample,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(b);
+  const a = document.createElement('a'); a.href=url; a.download='wrapped_sample.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+// ---------- main handlers ----------
+async function handleJSONFile(file){
+  try{
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    state.jsonCount++;
+    extractFromJSON(obj, file.name);
+    finalizeAndRender();
+  }catch(err){
+    console.error(err); alert('JSON oxunarkən xəta: '+err.message);
+  }
+}
+
+async function handleZIPFile(file){
+  try{
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+
+    // load images first (create blob URLs)
+    for(const name of Object.keys(zip.files)){
+      const entry = zip.files[name];
+      if(entry.dir) continue;
+      const lower = name.toLowerCase();
+      if(/\.(png|jpe?g|webp|gif)$/i.test(lower)){
+        try{
+          const blob = await entry.async('blob');
+          const url = URL.createObjectURL(blob);
+          const base = name.split('/').pop().toLowerCase();
+          state.zipImages[base] = url;
+          state.zipImages[name.toLowerCase()] = url;
+          state.imgCount++;
+        }catch(e){ console.warn('img read fail', name, e); }
+      }
     }
-}
 
-function readJSON(text, stats) {
-    try {
-        let json = JSON.parse(text);
-
-        if (json.videos) stats.videos += json.videos.length;
-        if (json.total_views) stats.views += json.total_views;
-        if (json.total_likes) stats.likes += json.total_likes;
-
-        if (json.videos) {
-            json.videos.forEach(v => {
-                stats.views += v.views || 0;
-                stats.likes += v.likes || 0;
-            });
+    // parse json and txt
+    for(const name of Object.keys(zip.files)){
+      const entry = zip.files[name];
+      if(entry.dir) continue;
+      const lower = name.toLowerCase();
+      try{
+        if(lower.endsWith('.json')){
+          const text = await entry.async('string');
+          const obj = JSON.parse(text);
+          state.jsonCount++;
+          extractFromJSON(obj, name);
+        } else if(lower.endsWith('.txt')){
+          const text = await entry.async('string');
+          state.txtCount++;
+          // simple parse: try to find lines like key: value
+          parseTXTContent(text, name);
         }
+      }catch(e){
+        console.warn('file parse fail', name, e);
+      }
+    }
 
-        stats.json_files++;
-    } catch(e) {}
+    // map thumbnails/profile filenames to blob URLs
+    // if videos have thumbnail names, replace with zip image urls
+    state.videos = state.videos.map(v=>{
+      if(v.thumbnail){
+        const base = v.thumbnail.split('/').pop().toLowerCase();
+        if(state.zipImages[base]) v.thumb = state.zipImages[base];
+      }
+      return v;
+    });
+
+    // if no profile_image but zip has common names, set it
+    if(!state.profile_image){
+      const candidates = ['profile.jpg','profile.jpeg','profile.png','avatar.jpg','avatar.png','profile.webp','avatar.webp'];
+      for(const c of candidates){
+        if(state.zipImages[c]){ state.profile_image = state.zipImages[c]; break;}
+      }
+    }
+
+    finalizeAndRender();
+
+  }catch(err){
+    console.error(err); alert('ZIP oxunarkən xəta: '+(err.message||err));
+  }
 }
 
-function showResults(s) {
-    document.getElementById("output").innerHTML = `
-        <h2>📊 Wrapped Analizi Hazırdır!</h2>
+// ---------- parsing logic ----------
+function extractFromJSON(obj, sourceName){
+  // attempt to extract profile info
+  const tryProfile = (o) => {
+    if(!o) return;
+    if(!state.display_name && (o.display_name || o.name || o.full_name)) state.display_name = o.display_name || o.name || o.full_name;
+    if(!state.username && (o.username || o.handle || o.user)) state.username = (o.username || o.handle || o.user).toString().replace(/^@/,'');
+    if(!state.profile_image && o.profile_image) {
+      // if it's a filename, record; mapping to zip images happens later
+      state.profile_image = o.profile_image;
+    }
+    if(!state.favorite_tag && (o.favorite_hashtag || o.favorite_tag || o.top_tag)) state.favorite_tag = o.favorite_hashtag || o.favorite_tag || o.top_tag;
+    if(!state.months && (o.months_active || o.months)) state.months = Number(o.months_active||o.months) || state.months;
+  };
 
-        <div class="stat-box">🎬 Video sayı: <b>${s.videos}</b></div>
-        <div class="stat-box">👁️ Ümumi baxış: <b>${s.views}</b></div>
-        <div class="stat-box">❤️ Ümumi like: <b>${s.likes}</b></div>
+  // recursive traversal to find totals and video arrays
+  const seen = new Set();
+  function walk(node, path=[]){
+    if(!node || typeof node !== 'object') return;
+    if(seen.has(node)) return; // guard
+    seen.add(node);
 
-        <div class="stat-box">📄 Oxunan JSON faylları: <b>${s.json_files}</b></div>
-        <div class="stat-box">📝 Oxunan TXT faylları: <b>${s.txt_files}</b></div>
+    // profile try
+    tryProfile(node);
 
-        <div class="stat-box">🔤 TXT söz sayı: <b>${s.txt_words}</b></div>
-        <div class="stat-box">📏 TXT sətir sayı: <b>${s.txt_lines}</b></div>
+    // direct totals
+    for(const k of Object.keys(node)){
+      const low = k.toLowerCase();
+      const v = node[k];
+      if(typeof v === 'number'){
+        if(low.includes('view')) state.totalViews += v;
+        if(low.includes('like')) state.totalLikes += v;
+        if(low.includes('video') && low.includes('count')) state.totalVideos += v;
+      }
+      // if string numbers
+      if(typeof v === 'string' && /^\d+$/.test(v)){
+        const num = Number(v);
+        if(low.includes('view')) state.totalViews += num;
+        if(low.includes('like')) state.totalLikes += num;
+      }
+    }
 
-        <h3>🔥 Ultra Vizual TikTok Wrapped Hazırlandı!</h3>
-    `;
+    // detect arrays that look like videos
+    for(const k of Object.keys(node)){
+      const v = node[k];
+      if(Array.isArray(v) && v.length>0 && typeof v[0] === 'object'){
+        // check if many elements have views/likes keys
+        let score=0; let vids = [];
+        for(const el of v){
+          const lk = Object.keys(el || {});
+          const hasViews = lk.some(x=>/view|play|watch/i.test(x));
+          const hasLikes = lk.some(x=>/like|heart/i.test(x));
+          if(hasViews || hasLikes) score++;
+          // gather candidate video object
+          if(hasViews || hasLikes || lk.some(x=>/title|name|desc|caption/i.test(x))){
+            const title = el.title || el.name || el.caption || el.desc || el.t || el.filename || 'Untitled';
+            const views = Number(el.views || el.view_count || el.playcount || el.play_count || el.plays || el.watch || 0) || 0;
+            const likes = Number(el.likes || el.like_count || el.hearts || el.fav || el.favorites || 0) || 0;
+            const thumbnail = el.thumbnail || el.thumb || el.image || el.cover || '';
+            vids.push({ title: String(title).slice(0,80), views, likes, thumbnail, source: sourceName });
+          }
+        }
+        if(score >= Math.max(1, Math.floor(v.length/4)) && vids.length>0){
+          // it's likely a videos array
+          for(const vv of vids){
+            state.videos.push(vv);
+            // count into totals (we already aggregated some totals above, but include videos length)
+            state.totalVideos += 1;
+            state.totalViews += Number(vv.views || 0);
+            state.totalLikes += Number(vv.likes || 0);
+          }
+        }
+      }
+    }
+
+    // continue recursion
+    for(const k of Object.keys(node)){
+      try{ walk(node[k], path.concat(k)); }catch(e){}
+    }
+  }
+
+  walk(obj, []);
 }
+
+// simple txt parse to find lines like "views: 1234"
+function parseTXTContent(text, name){
+  const lines = text.split(/\r?\n/);
+  for(const line of lines){
+    const m = line.match(/(views|view|plays|play_count|likes|like|hearts|comments|videos?)\s*[:=-]\s*([\d,]+)/i);
+    if(m){
+      const key = m[1].toLowerCase();
+      const num = Number(m[2].replace(/,/g,''));
+      if(/view|play/.test(key)) state.totalViews += num;
+      if(/like|heart/.test(key)) state.totalLikes += num;
+      if(/video/.test(key)) state.totalVideos += num;
+    }
+  }
+}
+
+// after parsing all, finalize and render
+function finalizeAndRender(){
+  // dedupe videos by title and sum same ones
+  const map = new Map();
+  for(const v of state.videos){
+    const key = (v.title||'').toLowerCase().trim();
+    if(!key) continue;
+    if(!map.has(key)) map.set(key, Object.assign({}, v, {views:0, likes:0}));
+    const cur = map.get(key);
+    cur.views = (cur.views||0) + (Number(v.views)||0);
+    cur.likes = (cur.likes||0) + (Number(v.likes)||0);
+    if(v.thumb && !cur.thumb) cur.thumb = v.thumb;
+  }
+  const merged = Array.from(map.values());
+  // sort by views desc
+  merged.sort((a,b)=> (b.views||0) - (a.views||0));
+  state.videos = merged;
+
+  // limit top 20
+  state.totalVideos = Math.max(state.totalVideos, state.videos.length);
+
+  // profile image: if it's a filename, try map
+  if(state.profile_image && typeof state.profile_image === 'string'){
+    const base = state.profile_image.split('/').pop().toLowerCase();
+    if(state.zipImages[base]) state.profile_image = state.zipImages[base];
+  }
+
+  // if no profile image but zip images contains 'profile' pick it
+  if(!state.profile_image){
+    const candidates = Object.keys(state.zipImages || {});
+    for(const c of candidates){
+      if(c.includes('profile')||c.includes('avatar')||c.includes('face')){ state.profile_image = state.zipImages[c]; break;}
+    }
+  }
+
+  // render UI
+  renderUI();
+}
+
+function renderUI(){
+  // left
+  el('display_name').textContent = state.display_name || '—';
+  el('username').textContent = '@' + (state.username || '—');
+  el('months').textContent = state.months || 0;
+  el('k_views').textContent = nice(state.totalViews || 0);
+  el('k_likes').textContent = nice(state.totalLikes || 0);
+  el('k_videos').textContent = state.totalVideos || 0;
+  el('k_tag').textContent = state.favorite_tag || '—';
+
+  const pic = el('pic');
+  if(state.profile_image && state.profile_image.startsWith('blob:')){
+    pic.innerHTML = `<img src="${state.profile_image}" alt="profile">`;
+  } else if(state.profile_image && state.profile_image.startsWith('http')){
+    pic.innerHTML = `<img src="${state.profile_image}" alt="profile">`;
+  } else {
+    // initials
+    const initials = (state.display_name || 'CZ').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    pic.textContent = initials;
+    pic.style.background = 'linear-gradient(135deg,var(--accent2),var(--accent1))';
+  }
+
+  // vlist
+  const vlist = el('vlist');
+  vlist.innerHTML = '';
+  if(state.videos.length === 0){
+    vlist.innerHTML = '<div class="small center">No videos auto-detected — yüklediyiniz JSON-ları yoxlayın.</div>';
+  } else {
+    for(const v of state.videos.slice(0,40)){
+      const thumb = v.thumb || v.thumbnail || (v.title?`https://placehold.co/400x400?text=${encodeURIComponent(v.title.slice(0,18))}` : 'https://placehold.co/400x400?text=No+Thumb');
+      const html = `<div class="vcard"><img src="${thumb}" alt=""><div class="vmeta"><div class="t">${escapeHTML(v.title)}</div><div class="s">👁️ ${nice(Number(v.views)||0)} · ❤️ ${nice(Number(v.likes)||0)}</div></div></div>`;
+      vlist.insertAdjacentHTML('beforeend', html);
+    }
+  }
+
+  // right big stats
+  el('b_views').textContent = nice(state.totalViews||0);
+  el('b_likes').textContent = nice(state.totalLikes||0);
+  el('b_videos').textContent = state.totalVideos||0;
+
+  el('files-info').textContent = `Files: ${state.jsonCount} JSON · ${state.txtCount} TXT · ${state.imgCount} images`;
+
+  el('left-notice').textContent = 'Data hazırdır ✓ — detalları sağdakı "Extract details" ilə görə bilərsən.';
+  el('right-notice').textContent = 'Export & advanced parsing available (experimental).';
+}
+
+// escape for HTML
+function escapeHTML(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+// allow direct adding of zip image mapping into state.zipImages when reading zip
+// to ensure earlier functions can use them, expose an accessor:
+Object.defineProperty(window,'__stateZipImages',{ get: ()=> state.zipImages, set: v => { state.zipImages = v; } });
+
+// ---------- Export PNG (simple via html2canvas dynamic load) ----------
+el('export-png').addEventListener('click', async ()=>{
+  if(!window.html2canvas){
+    // dynamically load html2canvas
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; document.body.appendChild(s);
+    s.onload = ()=> doExport();
+    s.onerror = ()=> alert('html2canvas yüklenə bilmədi');
+  } else doExport();
+});
+async function doExport(){
+  const node = document.querySelector('.right');
+  try{
+    const canvas = await html2canvas(node, {scale:2, useCORS:true});
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href = url; a.download = 'wrapped_preview.png'; a.click();
+  }catch(e){
+    console.error(e); alert('Export zamanı xəta: '+ (e.message||e));
+  }
+}
+
+// ---------- On load: show small sample automatically ----------
+(function initSample(){
+  // prefill with sample for UX
+  const sample = {
+    username:"cesicoder",
+    display_name:"CesiCoder",
+    months_active: 17,
+    total_views: 1234567,
+    total_likes: 98765,
+    total_videos: 42,
+    favorite_hashtag: "#cesi",
+    top_videos:[
+      { title:"Hack Tutorial", views:456789, likes:12000, thumbnail:"" },
+      { title:"Android Trick", views:230000, likes:8000, thumbnail:"" }
+    ]
+  };
+  extractFromJSON(sample, 'sample');
+  finalizeAndRender();
+})();
 </script>
-
 </body>
 </html>
