@@ -1,159 +1,150 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚀 Ultimate MediaFire İndirici</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>TikTok Wrapped</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 <style>
-/* ⚙️ Qlobal və Font Parametrləri */
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0a0a14, #000000); /* Dərin Qara fon */
-    color: #f0f8ff; /* Açıq mavi-ağ mətn */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 60px 20px;
-    min-height: 100vh;
-    margin: 0;
-}
-
-/* 💠 Kart Dizaynı */
-.card {
-    background: #1c1c2c;
-    border: 2px solid #3366ff; /* Mavi Çərçivə */
-    padding: 30px 40px;
-    border-radius: 20px;
-    box-shadow: 0 0 40px rgba(0, 150, 255, 0.5), 0 0 15px rgba(255, 255, 255, 0.1); /* Neon Kölgə */
-    max-width: 550px;
-    width: 100%;
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'Arial', sans-serif;
     text-align: center;
-    margin-bottom: 30px;
-    transition: all 0.5s ease-in-out;
+    padding: 30px;
 }
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 50px rgba(0, 200, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-/* 🌟 Başlıqlar */
 h1 {
-    font-size: 32px;
-    margin-bottom: 20px;
-    color: #00eaff; /* Neon Mavi */
-    text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff;
-    font-weight: 700;
+    font-size: 45px;
+    color: #ff0050;
+    text-shadow: 0 0 15px #ff0050;
 }
-
-h2 {
-    font-size: 22px;
-    margin-top: 35px;
-    margin-bottom: 15px;
-    color: #ff9900; /* Enerjili Narıncı */
-    font-weight: 600;
-    text-shadow: 0 0 5px #ff9900;
-}
-
-/* ⬇️ Yükləmə Düğməsi */
-button {
-    padding: 15px 35px;
-    font-size: 20px;
-    font-weight: 700;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    /* Dərin Qradient Neon Mavi */
-    background: linear-gradient(90deg, #00aaff, #00eaff, #00aaff);
-    background-size: 300% 300%;
-    color: #000000;
-    box-shadow: 0 0 25px #00aaff, inset 0 0 5px rgba(255, 255, 255, 0.5);
-    transition: all 0.4s ease;
-    animation: gradient-animation 4s ease infinite;
-}
-
-button:hover {
-    transform: scale(1.1); /* Daha böyük zərbə */
-    box-shadow: 0 0 40px #00eaff, 0 0 60px #00aaff;
-    color: #1a1a1a;
-    letter-spacing: 1px;
-}
-
-@keyframes gradient-animation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* 🎥 Video Stilistikası */
-video {
-    width: 100%;
-    border-radius: 15px;
+.upload-box {
     margin-top: 25px;
-    box-shadow: 0 0 20px rgba(255, 50, 100, 0.4); /* Qırmızımtıl Kölgə */
-    border: 3px solid #ff55aa; /* Çəhrayı Çərçivə */
-    background-color: #000;
+    padding: 20px;
+    border: 2px dashed #ff0050;
+    border-radius: 15px;
 }
-
-/* 📱 Responsiv Dizayn */
-@media (max-width: 600px) {
-    .card {
-        padding: 20px 25px;
-    }
-    h1 {
-        font-size: 26px;
-    }
-    button {
-        padding: 12px 25px;
-        font-size: 18px;
-    }
+button {
+    background: #ff0050;
+    padding: 12px 22px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    margin: 10px;
+    transition: 0.2s;
+}
+button:hover {
+    background: #ff2067;
+    transform: scale(1.05);
+}
+#output {
+    margin-top: 40px;
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: left;
+}
+.stat-box {
+    background: #111;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border-left: 5px solid #ff0050;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>
-        <span style="color:#ff55aa;">⚡️</span> 
-        Ultimate MediaFire Endirici 
-        <span style="color:#00eaff;">🔥</span>
-    </h1>
-    
-    <button onclick="startDownload()">
-        💾 İNDİR / DOWNLOAD 🚀
-    </button>
+<h1>🔥 TikTok Wrapped Generator</h1>
 
-    <h2>
-        <span style="color:#ff9900;">🎬</span> 
-        Quraşdırma Videosu
-        <span style="color:#ff9900;">⚙️</span>
-    </h2>
-    
-    <video controls controlsList="nodownload nofullscreen noremoteplayback" playsinline>
-        <source src="vd.mp4" type="video/mp4">
-        Sizin brauzer video elementini dəstəkləmir. 😢
-    </video>
+<div class="upload-box">
+    <p>📁 JSON və ya ZIP yüklə:</p>
+    <input type="file" id="fileInput" accept=".json,.zip">
+    <br><br>
+    <button onclick="processFile()">Yüklə və Analiz Et</button>
 </div>
 
-<script>
-// MediaFire linki burada açıq saxlanıb
-const mediafireLink = "https://www.mediafire.com/file/66fpi0hcgxtrttl/base.apk/file";
+<div id="output"></div>
 
-function startDownload() {
-    // 🎉 Kullanıcıya görsel geribildirim verilebilir (isteğe bağlı)
-    document.querySelector('button').innerText = "✅ Endirilir...";
-    
-    const a = document.createElement('a');
-    a.href = mediafireLink;
-    a.download = "base.apk"; // Faylın adını da təyin etdim
-    document.body.appendChild(a);
-    a.click();
-    
-    setTimeout(() => {
-        a.remove();
-        document.querySelector('button').innerText = "💾 İNDİR / DOWNLOAD 🚀"; // Yenidən yüklə düyməsini bərpa et
-    }, 1000);
+<script>
+async function processFile() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) return alert("Fayl seç!");
+
+    let stats = {
+        videos: 0,
+        views: 0,
+        likes: 0,
+        txt_words: 0,
+        txt_lines: 0,
+        json_files: 0,
+        txt_files: 0
+    };
+
+    if (file.name.endsWith(".json")) {
+        const text = await file.text();
+        readJSON(text, stats);
+        showResults(stats);
+    } 
+    else if (file.name.endsWith(".zip")) {
+        let zip = await JSZip.loadAsync(file);
+
+        for (const name of Object.keys(zip.files)) {
+            const entry = zip.files[name];
+
+            if (name.endsWith(".json")) {
+                let content = await entry.async("string");
+                readJSON(content, stats);
+                stats.json_files++;
+            }
+            if (name.endsWith(".txt")) {
+                let txt = await entry.async("string");
+                stats.txt_files++;
+                stats.txt_lines += txt.split("\n").length;
+                stats.txt_words += txt.split(/\s+/).length;
+            }
+        }
+
+        showResults(stats);
+    }
+}
+
+function readJSON(text, stats) {
+    try {
+        let json = JSON.parse(text);
+
+        if (json.videos) stats.videos += json.videos.length;
+        if (json.total_views) stats.views += json.total_views;
+        if (json.total_likes) stats.likes += json.total_likes;
+
+        if (json.videos) {
+            json.videos.forEach(v => {
+                stats.views += v.views || 0;
+                stats.likes += v.likes || 0;
+            });
+        }
+
+        stats.json_files++;
+    } catch(e) {}
+}
+
+function showResults(s) {
+    document.getElementById("output").innerHTML = `
+        <h2>📊 Wrapped Analizi Hazırdır!</h2>
+
+        <div class="stat-box">🎬 Video sayı: <b>${s.videos}</b></div>
+        <div class="stat-box">👁️ Ümumi baxış: <b>${s.views}</b></div>
+        <div class="stat-box">❤️ Ümumi like: <b>${s.likes}</b></div>
+
+        <div class="stat-box">📄 Oxunan JSON faylları: <b>${s.json_files}</b></div>
+        <div class="stat-box">📝 Oxunan TXT faylları: <b>${s.txt_files}</b></div>
+
+        <div class="stat-box">🔤 TXT söz sayı: <b>${s.txt_words}</b></div>
+        <div class="stat-box">📏 TXT sətir sayı: <b>${s.txt_lines}</b></div>
+
+        <h3>🔥 Ultra Vizual TikTok Wrapped Hazırlandı!</h3>
+    `;
 }
 </script>
 
