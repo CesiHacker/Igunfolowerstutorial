@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cesi Data Query Dashboard | Ultra Premium</title>
+    <meta name="description" content="Professional Data Analysis Dashboard">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --accent: #ff0055;
+            --success: #00ff9d;
+            --warning: #ffb800;
+            --dark-bg: #050510;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* --- Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* --- Background Effects --- */
+        .bg-blobs {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 10s infinite alternate;
+        }
+        .blob-1 { width: 400px; height: 400px; background: var(--secondary); top: -100px; left: -100px; }
+        .blob-2 { width: 500px; height: 500px; background: var(--primary); bottom: -100px; right: -100px; animation-delay: -5s; }
+        .blob-3 { width: 300px; height: 300px; background: var(--accent); top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.2; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(20px, 40px) scale(1.1); }
+        }
+
+        /* --- Utilities --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+        .hidden { display: none !important; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        .btn {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 242, 255, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 242, 255, 0.5); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+        .btn-outline:hover { background: var(--glass-highlight); }
+        .text-gradient {
+            background: linear-gradient(to right, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Auth Screen --- */
+        #auth-screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+        .auth-tabs { display: flex; margin-bottom: 30px; border-bottom: 1px solid var(--glass-border); }
+        .auth-tab {
+            flex: 1; padding: 15px; cursor: pointer; color: var(--text-muted);
+            transition: 0.3s; border-bottom: 2px solid transparent;
+        }
+        .auth-tab.active { color: var(--primary); border-color: var(--primary); }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.9em; color: var(--text-muted); }
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            transition: 0.3s;
+        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0, 242, 255, 0.1); }
+
+        /* --- Dashboard --- */
+        #dashboard-screen {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            padding: 30px 20px;
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+        .brand {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-item {
+            padding: 14px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--glass-highlight);
+            color: var(--text-main);
+        }
+        .nav-item.active { border-left: 3px solid var(--primary); }
+        .user-info { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+        
+        /* Main Content */
+        .main-content { padding: 30px; overflow-y: auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .search-bar-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        /* Grid System */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        /* Data Card */
+        .data-card {
+            padding: 20px;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .avatar {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.2em;
+        }
+        .card-details p {
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+            display: flex; justify-content: space-between;
+        }
+        .card-details span { color: var(--text-main); font-weight: 500; }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            width: 90%; max-width: 600px;
+            padding: 30px;
+            transform: scale(0.9); transition: 0.3s;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        
+        /* Admin Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card { padding: 20px; text-align: center; }
+        .stat-number { font-size: 2.5em; font-weight: 700; color: var(--primary); margin: 10px 0; }
+        
+        /* IP & Location Section */
+        .ip-section {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px dashed var(--glass-border);
+            border-radius: 10px;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+        }
+        .toast {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-left: 4px solid var(--primary);
+            padding: 15px 25px;
+            margin-top: 10px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(100%);
+            animation: slideIn 0.3s forwards;
+            display: flex; align-items: center; gap: 10px;
+        }
+        @keyframes slideIn { to { transform: translateX(0); } }
+
+        /* Loading */
+        .loader-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark-bg); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #dashboard-screen { grid-template-columns: 1fr; }
+            .sidebar { display: none; } /* Mobile sidebar hidden for simplicity in single file, normally toggle */
+            .sidebar.mobile-active { display: flex; position: fixed; width: 100%; z-index: 100; background: var(--dark-bg); }
+            .mobile-menu-btn { display: block; }
+        }
+        @media (min-width: 769px) { .mobile-menu-btn { display: none; } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .tag {
+            padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600;
+        }
+        .tag-admin { background: rgba(255, 0, 85, 0.2); color: #ff0055; border: 1px solid rgba(255, 0, 85, 0.3); }
+        .tag-user { background: rgba(0, 242, 255, 0.2); color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div id="globalLoader" class="loader-container">
+        <div class="spinner"></div>
+        <p style="margin-top: 20px; letter-spacing: 2px;">SİSTEM YÜKLƏNİR...</p>
+    </div>
+
+    <div id="auth-screen">
+        <div class="glass auth-card">
+            <h2 class="text-gradient" style="margin-bottom: 10px; font-size: 2em;">CESI DATA</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Qabaqcıl Məlumat Analiz Platforması</p>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchAuth('login')">Giriş</div>
+                <div class="auth-tab" onclick="switchAuth('register')">Qeydiyyat</div>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="input-group">
+                    <label>İstifadəçi adı</label>
+                    <input type="text" id="username" class="form-input" required placeholder="ad daxil edin" maxlength="20">
+                </div>
+                <div class="input-group">
+                    <label>Şifrə</label>
+                    <input type="password" id="password" class="form-input" required placeholder="••••••••" minlength="4">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-rocket"></i> <span id="authBtnText">Sistemə Daxil Ol</span>
+                </button>
+            </form>
+            <p style="margin-top: 20px; font-size: 0.8em; color: var(--text-muted);">
+                Təhlükəsizlik: SHA-256 Hashing | LocalStorage Session
+            </p>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden">
+        <div class="glass sidebar">
+            <div class="brand text-gradient">
+                <i class="fas fa-cube"></i> CESI.AI
+            </div>
+            <div class="nav-item active" onclick="switchTab('main')">
+                <i class="fas fa-home"></i> Əsas Panel
+            </div>
+            <div class="nav-item" id="adminStatsLink" onclick="switchTab('stats')">
+                <i class="fas fa-chart-pie"></i> Statistika
+            </div>
+            <div class="nav-item" onclick="switchTab('ip-tools')">
+                <i class="fas fa-globe"></i> IP və Konum
+            </div>
+            
+            <div class="user-info">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9em;" id="sidebarAvatar">U</div>
+                    <div>
+                        <div style="font-weight: 600;" id="sidebarUsername">User</div>
+                        <div style="font-size: 0.8em; color: var(--text-muted);" id="sidebarRole">İstifadəçi</div>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn btn-outline" style="width: 100%; justify-content: center; font-size: 0.9em;">
+                    <i class="fas fa-sign-out-alt"></i> Çıxış
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <button class="mobile-menu-btn btn btn-outline" style="margin-right: 10px;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 id="pageTitle">Məlumat Bazası</h2>
+                <div class="glass" style="padding: 5px 15px; border-radius: 20px; font-size: 0.9em;">
+                    <i class="fas fa-database" style="color: var(--success);"></i> <span id="totalRecords">0</span> Yazı
+                </div>
+            </div>
+
+            <div id="tab-main">
+                <div class="glass" style="padding: 20px; margin-bottom: 30px; display: flex; flex-wrap: wrap; gap: 15px; align-items: end;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; display: block;">Ümumi Axtarış</label>
+                        <input type="text" id="searchInput" class="form-input" placeholder="Ad, Soyad, Şəhər, Telefon..." onkeyup="filterData()">
+                    </div>
+                    <div style="width: 150px;">
+                        <label style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; display: block;">Doğum İli</label>
+                        <input type="number" id="yearFilter" class="form-input" placeholder="Məs: 1990" onkeyup="filterData()">
+                    </div>
+                    <div>
+                         <button class="btn btn-outline" onclick="loadData(true)"><i class="fas fa-sync"></i> Yenilə</button>
+                    </div>
+                </div>
+
+                <div id="dataGrid" class="grid-container">
+                    </div>
+                <div id="emptyState" class="hidden" style="text-align: center; padding: 50px;">
+                    <i class="fas fa-search" style="font-size: 3em; color: var(--glass-border); margin-bottom: 20px;"></i>
+                    <p style="color: var(--text-muted);">Axtarışa uyğun nəticə tapılmadı.</p>
+                </div>
+            </div>
+
+            <div id="tab-stats" class="hidden">
+                <div class="stats-grid">
+                    <div class="glass stat-card">
+                        <div style="color: var(--text-muted);">Ümumi İstifadəçi</div>
+                        <div class="stat-number" id="statTotal">0</div>
+                    </div>
+                    <div class="glass stat-card">
+                        <div style="color: var(--text-muted);">Orta Yaş</div>
+                        <div class="stat-number" style="color: var(--success);" id="statAvgAge">0</div>
+                    </div>
+                    <div class="glass stat-card">
+                        <div style="color: var(--text-muted);">Unikal Şəhərlər</div>
+                        <div class="stat-number" style="color: var(--warning);" id="statCities">0</div>
+                    </div>
+                </div>
+
+                <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+                    <div class="glass" style="padding: 20px;">
+                        <h4 style="margin-bottom: 15px;">Şəhər Paylanması</h4>
+                        <canvas id="cityChart"></canvas>
+                    </div>
+                    <div class="glass" style="padding: 20px;">
+                        <h4 style="margin-bottom: 15px;">Mobil Operatorlar</h4>
+                        <canvas id="operatorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-ip-tools" class="hidden">
+                <div class="glass" style="padding: 30px; max-width: 800px; margin: 0 auto;">
+                    <h3><i class="fas fa-globe-americas"></i> IP və Məkan Analizi</h3>
+                    <p style="color: var(--text-muted); margin: 10px 0 20px;">
+                        Məxfilik Siyasəti: IP ünvanınız və məkan məlumatlarınız yalnız sizin açıq razılığınızla bu sessiya üçün alınır və heç bir serverdə saxlanılmır.
+                    </p>
+                    
+                    <div class="ip-section">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 20px;">
+                            <input type="checkbox" id="ipConsent" style="width: 20px; height: 20px;">
+                            <span>Məkan məlumatlarımın oxunmasına razıyam</span>
+                        </label>
+                        
+                        <button class="btn btn-primary" onclick="fetchIpInfo()">
+                            <i class="fas fa-satellite-dish"></i> IP Məlumatlarını Gətir
+                        </button>
+
+                        <div id="ipResult" class="hidden" style="margin-top: 30px;">
+                            <div class="grid-container">
+                                <div class="glass" style="padding: 15px;">
+                                    <small style="color: var(--text-muted);">IP Ünvan</small>
+                                    <h3 id="resIP">...</h3>
+                                </div>
+                                <div class="glass" style="padding: 15px;">
+                                    <small style="color: var(--text-muted);">Ölkə / Şəhər</small>
+                                    <h3 id="resLoc">...</h3>
+                                </div>
+                                <div class="glass" style="padding: 15px;">
+                                    <small style="color: var(--text-muted);">Provayder (ISP)</small>
+                                    <h3 id="resISP">...</h3>
+                                </div>
+                                <div class="glass" style="padding: 15px;">
+                                    <small style="color: var(--text-muted);">Timezone</small>
+                                    <h3 id="resTime">...</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+                        <h4>Cihaz Məlumatları</h4>
+                        <p id="browserInfo" style="font-family: monospace; color: var(--primary); margin-top: 10px;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal-overlay">
+        <div class="glass modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                <h2 id="modalName" class="text-gradient">Ad Soyad</h2>
+                <button class="btn btn-outline" onclick="closeModal('profileModal')"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div class="avatar" style="width: 100px; height: 100px; font-size: 2.5em; margin: 0 auto 15px;" id="modalAvatar">A</div>
+                <div class="tag" id="modalAgeTag" style="display: inline-block;">00 Yaş</div>
+            </div>
+
+            <div class="grid-container" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="glass" style="padding: 15px;">
+                    <small style="color: var(--text-muted);">Doğum İli</small>
+                    <div id="modalYear" style="font-weight: 600;">-</div>
+                </div>
+                <div class="glass" style="padding: 15px;">
+                    <small style="color: var(--text-muted);">Şəhər</small>
+                    <div id="modalCity" style="font-weight: 600;">-</div>
+                </div>
+                <div class="glass" style="padding: 15px; grid-column: span 2;">
+                    <small style="color: var(--text-muted);">Telefon</small>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span id="modalPhone" style="font-family: monospace; font-size: 1.2em;">-</span>
+                        <span id="modalOperator" class="tag tag-user">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255,184,0,0.1); border-radius: 10px; font-size: 0.8em; border: 1px solid rgba(255,184,0,0.3);">
+                <i class="fas fa-shield-alt"></i> Bu məlumatlar "cesisorgu.txt" faylından statik olaraq oxunub. Məlumat dəqiqliyinə zəmanət verilmir.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const APP_STATE = {
+            currentUser: null,
+            db: [],
+            isAuthModeLogin: true
+        };
+
+        const ADMIN_CREDS = { user: 'cesi', pass: 'cesi123' }; // Hash verification happens in logic
+        
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            setTimeout(() => {
+                document.getElementById('globalLoader').classList.add('hidden');
+                checkSession();
+            }, 1500); // Fake Loading for aesthetic
+            
+            // Browser Info
+            document.getElementById('browserInfo').textContent = navigator.userAgent;
+        });
+
+        // --- Authentication Logic ---
+        function switchAuth(mode) {
+            APP_STATE.isAuthModeLogin = (mode === 'login');
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-tab')[mode === 'login' ? 0 : 1].classList.add('active');
+            document.getElementById('authBtnText').textContent = mode === 'login' ? 'Sistemə Daxil Ol' : 'Qeydiyyatdan Keç';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+
+            if (!u || !p) return showToast('Zəhmət olmasa məlumatları doldurun', 'error');
+
+            const hashedPass = await hashString(p);
+
+            if (APP_STATE.isAuthModeLogin) {
+                // Admin Check
+                if (u === ADMIN_CREDS.user && p === ADMIN_CREDS.pass) {
+                    loginSuccess({ username: u, role: 'admin' });
+                    return;
+                }
+
+                // User Check
+                const storedUser = localStorage.getItem('user_' + u);
+                if (storedUser) {
+                    const parsed = JSON.parse(storedUser);
+                    if (parsed.password === hashedPass) {
+                        loginSuccess(parsed);
+                    } else {
+                        showToast('Şifrə yanlışdır!', 'error');
+                    }
+                } else {
+                    showToast('İstifadəçi tapılmadı.', 'error');
+                }
+            } else {
+                // Register
+                if (localStorage.getItem('user_' + u)) return showToast('Bu istifadəçi adı artıq tutulub', 'error');
+                if (u === ADMIN_CREDS.user) return showToast('Bu ad rezerv olunub', 'error');
+
+                const newUser = { username: u, password: hashedPass, role: 'user', joined: new Date() };
+                localStorage.setItem('user_' + u, JSON.stringify(newUser));
+                showToast('Qeydiyyat uğurludur! İndi daxil olun.', 'success');
+                switchAuth('login');
+            }
+        }
+
+        function loginSuccess(user) {
+            APP_STATE.currentUser = user;
+            localStorage.setItem('cesi_session', JSON.stringify(user));
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            
+            setupDashboard();
+            loadData();
+            showToast(`Xoş gəldin, ${user.username}!`, 'success');
+        }
+
+        function checkSession() {
+            const sess = localStorage.getItem('cesi_session');
+            if (sess) loginSuccess(JSON.parse(sess));
+        }
+
+        function logout() {
+            localStorage.removeItem('cesi_session');
+            window.location.reload();
+        }
+
+        async function hashString(str) {
+            const msgBuffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- Data Handling ---
+        async function loadData(force = false) {
+            if (APP_STATE.db.length > 0 && !force) return;
+
+            try {
+                const response = await fetch('cesisorgu.txt?t=' + new Date().getTime());
+                if (!response.ok) throw new Error("Fayl oxunmadı");
+                const text = await response.text();
+                parseData(text);
+                showToast('Məlumatlar uğurla yükləndi', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('cesisorgu.txt tapılmadı və ya səhv var. Zəhmət olmasa faylı yoxlayın.', 'error');
+                // Use dummy data for display if file is missing (Demo purpose)
+                // parseData("Aliyev|Vali|1990|Baki|0501234567"); 
+            }
+        }
+
+        function parseData(text) {
+            const lines = text.split('\n');
+            const data = [];
+            
+            lines.forEach((line, index) => {
+                line = line.trim();
+                if (!line) return;
+                const parts = line.split('|');
+                if (parts.length >= 5) {
+                    data.push({
+                        id: index,
+                        soyad: sanitize(parts[0]),
+                        ad: sanitize(parts[1]),
+                        il: parseInt(parts[2]),
+                        seher: sanitize(parts[3]),
+                        tel: sanitize(parts[4])
+                    });
+                }
+            });
+
+            APP_STATE.db = data;
+            document.getElementById('totalRecords').innerText = data.length;
+            filterData(); // Initial render
+            if (APP_STATE.currentUser.role === 'admin') generateStats();
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('dataGrid');
+            const empty = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            data.forEach(item => {
+                const age = new Date().getFullYear() - item.il;
+                const card = document.createElement('div');
+                card.className = 'glass data-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="avatar">${item.ad[0]}${item.soyad[0]}</div>
+                        <div>
+                            <h4 style="font-weight:700;">${item.ad} ${item.soyad}</h4>
+                            <span class="tag tag-user">${item.seher}</span>
+                        </div>
+                    </div>
+                    <div class="card-details">
+                        <p>Telefon: <span>${formatPhone(item.tel)}</span></p>
+                        <p>Doğum ili: <span>${item.il} (${age} yaş)</span></p>
+                    </div>
+                    <button class="btn btn-outline" style="width:100%; margin-top:15px; justify-content:center; font-size:0.8em;" onclick="openProfile(${item.id})">
+                        Profilə Bax <i class="fas fa-arrow-right"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- UI Logic ---
+        function setupDashboard() {
+            const u = APP_STATE.currentUser;
+            document.getElementById('sidebarUsername').innerText = u.username;
+            document.getElementById('sidebarAvatar').innerText = u.username[0].toUpperCase();
+            document.getElementById('sidebarRole').innerText = u.role === 'admin' ? 'Administrator' : 'Standard User';
+            
+            if (u.role !== 'admin') {
+                document.getElementById('adminStatsLink').classList.add('hidden');
+            } else {
+                document.getElementById('sidebarRole').style.color = 'var(--accent)';
+                document.getElementById('sidebarAvatar').style.background = 'var(--accent)';
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.main-content > div[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            if (tabId === 'stats' && APP_STATE.currentUser.role === 'admin') generateStats();
+        }
+
+        function filterData() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const y = document.getElementById('yearFilter').value;
+            
+            const filtered = APP_STATE.db.filter(item => {
+                const matchText = (item.ad + ' ' + item.soyad + ' ' + item.seher + ' ' + item.tel).toLowerCase().includes(q);
+                const matchYear = y ? item.il == y : true;
+                return matchText && matchYear;
+            });
+            
+            renderGrid(filtered);
+        }
+
+        // --- Profile Modal & Logic ---
+        function openProfile(id) {
+            const item = APP_STATE.db.find(x => x.id === id);
+            if (!item) return;
+
+            const age = new Date().getFullYear() - item.il;
+            const opInfo = analyzeOperator(item.tel);
+
+            document.getElementById('modalName').innerText = `${item.ad} ${item.soyad}`;
+            document.getElementById('modalAvatar').innerText = item.ad[0];
+            document.getElementById('modalAgeTag').innerText = `${age} Yaş`;
+            document.getElementById('modalYear').innerText = item.il;
+            document.getElementById('modalCity').innerText = item.seher;
+            document.getElementById('modalPhone').innerText = formatPhone(item.tel);
+            
+            const opEl = document.getElementById('modalOperator');
+            opEl.innerText = opInfo.name;
+            opEl.className = `tag ${opInfo.class}`;
+
+            document.getElementById('profileModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // --- Analysis Tools ---
+        function analyzeOperator(phone) {
+            // Remove non-digit
+            const clean = phone.replace(/\D/g, '');
+            // Check prefixes (Simple checks for AZ)
+            if (/^(050|051)/.test(clean)) return { name: 'Azercell', class: 'tag-user' }; // Purple-ish
+            if (/^(055|099)/.test(clean)) return { name: 'Bakcell', class: 'tag-admin' }; // Red-ish
+            if (/^(070|077)/.test(clean)) return { name: 'Nar', class: 'tag-warning' }; // Orange-ish
+            return { name: 'Naməlum', class: 'tag-muted' };
+        }
+
+        function formatPhone(p) {
+            // Attempt to format 0XX XXX XX XX
+            const c = p.replace(/\D/g, '');
+            if (c.length === 10) return `${c.substring(0,3)} ${c.substring(3,6)} ${c.substring(6,8)} ${c.substring(8,10)}`;
+            return p;
+        }
+
+        function sanitize(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --- Admin Statistics ---
+        function generateStats() {
+            if (APP_STATE.currentUser.role !== 'admin') return;
+            
+            const data = APP_STATE.db;
+            if(!data.length) return;
+
+            // Basic Numbers
+            document.getElementById('statTotal').innerText = data.length;
+            const totalAge = data.reduce((acc, curr) => acc + (new Date().getFullYear() - curr.il), 0);
+            document.getElementById('statAvgAge').innerText = Math.round(totalAge / data.length);
+            const cities = [...new Set(data.map(i => i.seher))];
+            document.getElementById('statCities').innerText = cities.length;
+
+            // Chart: City
+            const cityCounts = {};
+            data.forEach(i => cityCounts[i.seher] = (cityCounts[i.seher] || 0) + 1);
+            
+            renderChart('cityChart', 'bar', Object.keys(cityCounts), Object.values(cityCounts), 'Şəhər üzrə say');
+
+            // Chart: Operator
+            const opCounts = { 'Azercell': 0, 'Bakcell': 0, 'Nar': 0, 'Digər': 0 };
+            data.forEach(i => {
+                const op = analyzeOperator(i.tel).name;
+                opCounts[op] = (opCounts[op] || 0) + 1;
+            });
+            renderChart('operatorChart', 'doughnut', Object.keys(opCounts), Object.values(opCounts), 'Operator Paylanması');
+        }
+
+        let charts = {};
+        function renderChart(canvasId, type, labels, dataArr, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (charts[canvasId]) charts[canvasId].destroy();
+
+            charts[canvasId] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: dataArr,
+                        backgroundColor: [
+                            'rgba(0, 242, 255, 0.6)',
+                            'rgba(112, 0, 255, 0.6)',
+                            'rgba(255, 0, 85, 0.6)',
+                            'rgba(255, 184, 0, 0.6)'
+                        ],
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: type === 'bar' ? {
+                        y: { beginAtZero: true, ticks: { color: '#a0a0b0' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: '#a0a0b0' }, grid: { display: false } }
+                    } : {}
+                }
+            });
+        }
+
+        // --- IP API ---
+        function fetchIpInfo() {
+            if (!document.getElementById('ipConsent').checked) {
+                return showToast('Zəhmət olmasa razılıq qutusunu işarələyin.', 'error');
+            }
+
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yüklənir...';
+            btn.disabled = true;
+
+            // Using ipapi.co (Free tier, HTTPS required usually, may fail on local file:// depending on browser security settings)
+            fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('ipResult').classList.remove('hidden');
+                    document.getElementById('resIP').innerText = data.ip || 'Tapılmadı';
+                    document.getElementById('resLoc').innerText = `${data.country_name}, ${data.city}`;
+                    document.getElementById('resISP').innerText = data.org || data.asn;
+                    document.getElementById('resTime').innerText = data.timezone;
+                    showToast('IP məlumatları alındı', 'success');
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('API Xətası. Adblock və ya HTTPS problemi ola bilər.', 'error');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        // --- Toast Notification ---
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = type === 'error' ? 'var(--accent)' : (type === 'success' ? 'var(--success)' : 'var(--primary)');
+            
+            let icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-circle' : 'info-circle');
+            
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Keyboard Nav ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+    </script>
+</body>
+</html>
