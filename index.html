@@ -3,343 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEON DATA CORE</title>
-
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>Data Query Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 :root{
-  --bg:#05070f;
-  --panel:rgba(10,14,30,.75);
-  --border:rgba(120,180,255,.25);
-  --txt:#dfe7ff;
-  --mut:#8fa3ff;
-  --neon:#00f6ff;
-  --vio:#a855ff;
-  --good:#2dff9f;
-  --bad:#ff3b3b;
+  --bg:#0b0f1a;--card:rgba(255,255,255,.08);--txt:#e6e9f0;--mut:#aab0c0;
+  --pri:#6cf;--acc:#9f6cff;--ok:#3ddc97;--bad:#ff6b6b;
 }
-
-*{
-  box-sizing:border-box;
-  font-family:"JetBrains Mono",monospace;
-}
-
-body{
-  margin:0;
-  background:
-    radial-gradient(800px 400px at 10% -10%, #0a2a3a, transparent),
-    radial-gradient(900px 500px at 90% 10%, #2a0a3a, transparent),
-    linear-gradient(180deg,#02030a,#05070f);
-  color:var(--txt);
-  overflow-x:hidden;
-}
-
-/* SCANLINE */
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.03) 0px,
-    rgba(255,255,255,.03) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-
-/* HEADER */
-header{
-  position:sticky;
-  top:0;
-  z-index:9;
-  backdrop-filter:blur(18px);
-  background:rgba(5,7,15,.8);
-  border-bottom:1px solid var(--border);
-}
-
-.wrap{
-  max-width:1200px;
-  margin:auto;
-  padding:20px;
-}
-
-.brand{
-  font-size:20px;
-  font-weight:800;
-  letter-spacing:2px;
-  color:var(--neon);
-  text-shadow:0 0 15px var(--neon);
-}
-
-/* BUTTONS */
-.btn{
-  padding:10px 16px;
-  border-radius:10px;
-  background:transparent;
-  color:var(--neon);
-  border:1px solid var(--neon);
-  cursor:pointer;
-  transition:.25s;
-  box-shadow:0 0 10px rgba(0,246,255,.2);
-}
-
-.btn:hover{
-  background:var(--neon);
-  color:#000;
-  box-shadow:0 0 25px var(--neon);
-}
-
-.btn.violet{
-  border-color:var(--vio);
-  color:var(--vio);
-}
-.btn.violet:hover{
-  background:var(--vio);
-  box-shadow:0 0 25px var(--vio);
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
-}
-
-/* PANELS */
-.panel{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:16px;
-  backdrop-filter:blur(20px);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.03),
-    0 20px 40px rgba(0,0,0,.6),
-    inset 0 0 40px rgba(0,246,255,.05);
-  position:relative;
-}
-
-.panel::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:16px;
-  background:linear-gradient(120deg,transparent,rgba(0,246,255,.12),transparent);
-  opacity:.3;
-  pointer-events:none;
-}
-
-/* INPUT */
-input{
-  width:100%;
-  padding:12px;
-  background:#020412;
-  border:1px solid var(--border);
-  border-radius:10px;
-  color:var(--txt);
-  outline:none;
-}
-
-input:focus{
-  border-color:var(--neon);
-  box-shadow:0 0 12px var(--neon);
-}
-
-/* AUTH */
+*{box-sizing:border-box;font-family:Inter,system-ui}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a1f3a,transparent),
+radial-gradient(900px 500px at 110% 10%,#2a1f3a,transparent),var(--bg);color:var(--txt)}
+a{color:var(--pri);text-decoration:none}
 .hidden{display:none}
-
-/* CARDS */
-.card{
-  transition:.25s;
-}
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 0 30px rgba(0,246,255,.25);
-}
-
-/* BADGES */
-.badge{
-  font-size:12px;
-  padding:4px 10px;
-  border-radius:999px;
-}
-.ok{color:var(--good)}
-.bad{color:var(--bad)}
-
-/* MODAL */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.8);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:20;
-}
-
-/* FOOTER */
-footer{
-  opacity:.5;
-  text-align:center;
-  padding:40px 0;
-}
-
-/* SPINNER */
-.spinner{
-  width:28px;
-  height:28px;
-  border:3px solid rgba(255,255,255,.2);
-  border-top-color:var(--neon);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
+.container{max-width:1200px;margin:auto;padding:24px}
+.header{position:sticky;top:0;backdrop-filter:blur(12px);background:rgba(5,8,18,.6);z-index:5}
+.header .container{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.brand{font-weight:800;letter-spacing:.5px}
+.btn{background:linear-gradient(135deg,var(--pri),var(--acc));border:none;color:#000;
+padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;color:var(--txt);border:1px solid rgba(255,255,255,.15)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:var(--card);backdrop-filter:blur(14px);border-radius:16px;padding:14px;
+box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.card h3{margin:0 0 8px 0}
+.input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+background:rgba(0,0,0,.3);color:var(--txt)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.badge{padding:4px 8px;border-radius:999px;font-size:12px}
+.badge.ok{background:rgba(61,220,151,.15);color:var(--ok)}
+.badge.bad{background:rgba(255,107,107,.15);color:var(--bad)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.kv div{font-size:13px;color:var(--mut)}
+.footer{opacity:.7;text-align:center;padding:30px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
+.modal .card{max-width:520px;width:100%}
+.toggle{cursor:pointer}
+.spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;
+animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
-
 <body>
 
-<header>
-  <div class="wrap grid" style="grid-template-columns:1fr auto">
-    <div class="brand">NEON_DATA_CORE</div>
-    <button id="logout" class="btn violet hidden">LOGOUT</button>
+<header class="header">
+  <div class="container">
+    <div class="brand">🔎 Data Query Dashboard</div>
+    <div class="row">
+      <button id="logoutBtn" class="btn ghost hidden">Çıxış</button>
+      <button id="themeBtn" class="btn ghost">🌙/☀️</button>
+    </div>
   </div>
 </header>
 
-<div class="wrap">
+<div class="container">
 
+<!-- AUTH -->
 <section id="auth" class="grid">
-  <div class="panel">
-    <h3>LOGIN</h3>
-    <input id="lu" placeholder="USERNAME">
-    <input id="lp" type="password" placeholder="PASSWORD">
-    <button class="btn" onclick="login()">ENTER</button>
+  <div class="card">
+    <h3>Giriş</h3>
+    <input id="l_user" class="input" placeholder="İstifadəçi adı">
+    <input id="l_pass" class="input" type="password" placeholder="Şifrə">
+    <button class="btn" onclick="login()">Daxil ol</button>
   </div>
-
-  <div class="panel">
-    <h3>REGISTER</h3>
-    <input id="ru" placeholder="USERNAME">
-    <input id="rp" type="password" placeholder="PASSWORD">
-    <button class="btn violet" onclick="register()">CREATE</button>
+  <div class="card">
+    <h3>Qeydiyyat</h3>
+    <input id="r_user" class="input" placeholder="İstifadəçi adı">
+    <input id="r_pass" class="input" type="password" placeholder="Şifrə">
+    <button class="btn" onclick="register()">Qeydiyyat</button>
   </div>
 </section>
 
+<!-- APP -->
 <section id="app" class="hidden">
   <div class="grid">
-    <div class="panel">
-      <h3>QUERY</h3>
-      <input id="q" placeholder="NAME | CITY | PHONE | YEAR">
-      <div id="count" class="badge ok"></div>
+    <div class="card">
+      <h3>Axtarış</h3>
+      <input id="q" class="input" placeholder="Ad / Soyad / Şəhər / Telefon / İl">
+      <div class="row">
+        <button class="btn ghost" onclick="reloadTxt()">TXT yenilə</button>
+        <span id="count" class="badge ok"></span>
+      </div>
     </div>
 
-    <div class="panel">
-      <h3>IP TRACE</h3>
-      <label><input type="checkbox" id="consent"> I AGREE</label>
-      <button class="btn" onclick="getIP()">SCAN</button>
-      <div id="ipBox"></div>
+    <div class="card">
+      <h3>IP & Konum</h3>
+      <label><input type="checkbox" id="consent"> Razıyam, IP/konumumu göstər</label>
+      <button class="btn ghost" onclick="getIP()">Göstər</button>
+      <div id="ipBox" class="kv"></div>
     </div>
 
-    <div class="panel">
-      <h3>STATS</h3>
+    <div class="card">
+      <h3>Statistika</h3>
       <canvas id="chart"></canvas>
     </div>
   </div>
 
-  <h3 style="margin-top:30px">RESULTS</h3>
+  <h3 style="margin-top:20px">Nəticələr</h3>
   <div id="list" class="grid"></div>
 </section>
-
 </div>
 
 <div id="modal" class="modal hidden">
-  <div class="panel">
-    <h3>PROFILE</h3>
-    <div id="profile"></div>
-    <button class="btn violet" onclick="modal.classList.add('hidden')">CLOSE</button>
+  <div class="card">
+    <h3>Profil</h3>
+    <div id="profile" class="kv"></div>
+    <button class="btn ghost" onclick="closeModal()">Bağla</button>
   </div>
 </div>
 
-<footer>NEON CORE ©</footer>
+<footer class="footer">© Dashboard</footer>
 
 <script>
-/* ==== AUTH ==== */
+/* ====== THEME ====== */
+const themeBtn=document.getElementById('themeBtn');
+themeBtn.onclick=()=>document.body.classList.toggle('light');
+
+/* ====== AUTH ====== */
+const auth=document.getElementById('auth');
+const app=document.getElementById('app');
+const logoutBtn=document.getElementById('logoutBtn');
 const ADMIN={u:'cesi',p:'cesi123'};
-const H=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))
-.then(b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''));
+const hash=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))
+.then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''));
 
 async function register(){
- if(!ru.value||!rp.value) return alert("EMPTY");
- localStorage.setItem("u_"+ru.value,await H(rp.value));
- alert("CREATED");
+  const u=r_user.value.trim(),p=r_pass.value;
+  if(!u||!p) return alert('Boş olmaz');
+  const h=await hash(p); localStorage.setItem('u_'+u,h); alert('Hazırdır');
 }
-
 async function login(){
- if(lu.value===ADMIN.u && lp.value===ADMIN.p){start();return;}
- const h=await H(lp.value);
- if(h===localStorage.getItem("u_"+lu.value)) start();
- else alert("DENIED");
+  const u=l_user.value.trim(),p=l_pass.value;
+  if(u===ADMIN.u && p===ADMIN.p){session('admin');return}
+  const h=await hash(p),s=localStorage.getItem('u_'+u);
+  if(h===s){session('user')} else alert('Yanlış');
 }
-
-function start(){
- auth.classList.add('hidden');
- app.classList.remove('hidden');
- logout.classList.remove('hidden');
- loadTxt();
+function session(role){
+  localStorage.setItem('sess',role);
+  auth.classList.add('hidden'); app.classList.remove('hidden'); logoutBtn.classList.remove('hidden');
+  loadTxt();
 }
-logout.onclick=()=>location.reload();
+logoutBtn.onclick=()=>{localStorage.removeItem('sess');location.reload()}
 
-/* ==== DATA ==== */
+/* ====== DATA ====== */
 let DATA=[];
 async function loadTxt(){
- const t=await fetch("cesisorgu.txt",{cache:"no-store"}).then(r=>r.text());
- DATA=t.split("\n").map(l=>{
-  const [s,a,y,c,p]=l.split("|");
-  return s?{s,a,y:+y,c,p}:null;
- }).filter(Boolean);
- count.textContent=DATA.length+" FOUND";
- render(DATA); stats();
+  const r=await fetch('cesisorgu.txt',{cache:'no-store'});
+  const t=await r.text();
+  DATA=t.split('\n').map(l=>{
+    const [soyad,ad,il,seher,tel]=l.split('|').map(x=>x?.trim());
+    if(!ad||!tel) return null;
+    return {soyad,ad,il:+il,seher,tel};
+  }).filter(Boolean);
+  document.getElementById('count').textContent=DATA.length+' qeyd';
+  render(DATA); stats();
 }
+function reloadTxt(){loadTxt()}
 
+/* ====== SEARCH & RENDER ====== */
 q.oninput=()=>render(DATA.filter(d=>JSON.stringify(d).toLowerCase().includes(q.value.toLowerCase())));
-
 function render(arr){
- list.innerHTML="";
- arr.forEach(d=>{
-  const el=document.createElement("div");
-  el.className="panel card";
-  el.innerHTML=`<b>${d.a} ${d.s}</b><br>${d.c}<br>${d.p}
-  <br><button class="btn">PROFILE</button>`;
-  el.querySelector("button").onclick=()=>show(d);
-  list.appendChild(el);
- });
+  list.innerHTML='';
+  arr.forEach(d=>{
+    const c=document.createElement('div'); c.className='card';
+    c.innerHTML=`<h3>${d.ad} ${d.soyad}</h3>
+    <div class="kv">
+      <div>Şəhər: ${d.seher}</div><div>İl: ${d.il}</div>
+      <div>Telefon: ${d.tel}</div><div>${operator(d.tel)}</div>
+    </div>
+    <button class="btn ghost">Profil</button>`;
+    c.querySelector('button').onclick=()=>profile(d);
+    list.appendChild(c);
+  });
 }
 
-function show(d){
- profile.innerHTML=`NAME: ${d.a}<br>SURNAME: ${d.s}<br>CITY: ${d.c}<br>YEAR: ${d.y}`;
- modal.classList.remove('hidden');
+/* ====== PROFILE ====== */
+function operator(t){
+  if(/^05[01]/.test(t)) return 'Azercell';
+  if(/^055/.test(t)) return 'Bakcell';
+  if(/^07[07]/.test(t)) return 'Nar';
+  return 'Naməlum';
 }
+function profile(d){
+  const age=new Date().getFullYear()-d.il;
+  profileBox=`<div>Ad: ${d.ad}</div><div>Soyad: ${d.soyad}</div>
+  <div>Şəhər: ${d.seher}</div><div>Yaş: ${age}</div>
+  <div>Telefon: ${d.tel}</div><div>Operator: ${operator(d.tel)}</div>`;
+  profileEl.innerHTML=profileBox; modal.classList.remove('hidden');
+}
+function closeModal(){modal.classList.add('hidden')}
 
-/* ==== IP ==== */
+/* ====== IP (CONSENT) ====== */
 async function getIP(){
- if(!consent.checked) return alert("CONSENT REQUIRED");
- ipBox.innerHTML='<div class="spinner"></div>';
- const j=await fetch("https://ipapi.co/json/").then(r=>r.json());
- ipBox.innerHTML=`IP: ${j.ip}<br>${j.city}, ${j.country_name}<br>${j.org}`;
+  if(!consent.checked) return alert('Razılıq lazımdır');
+  ipBox.innerHTML='<div class="spinner"></div>';
+  const r=await fetch('https://ipapi.co/json/');
+  const j=await r.json();
+  ipBox.innerHTML=`
+  <div>IP: ${j.ip}</div><div>Ölkə: ${j.country_name}</div>
+  <div>Şəhər: ${j.city}</div><div>ISP: ${j.org}</div>`;
 }
 
-/* ==== STATS ==== */
+/* ====== STATS ====== */
+let chart;
 function stats(){
- const m={}; DATA.forEach(d=>m[d.c]=(m[d.c]||0)+1);
- new Chart(chart,{type:"bar",
- data:{labels:Object.keys(m),datasets:[{data:Object.values(m)}]},
- options:{plugins:{legend:{display:false}}}});
+  const m={}; DATA.forEach(d=>m[d.seher]=(m[d.seher]||0)+1);
+  const ctx=document.getElementById('chart');
+  chart?.destroy();
+  chart=new Chart(ctx,{type:'bar',data:{labels:Object.keys(m),
+  datasets:[{data:Object.values(m)}]}});
 }
-</script>
 
+/* ====== INIT ====== */
+if(localStorage.getItem('sess')) session(localStorage.getItem('sess'));
+</script>
 </body>
 </html>
