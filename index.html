@@ -1,221 +1,2312 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Query Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-:root{
-  --bg:#0b0f1a;--card:rgba(255,255,255,.08);--txt:#e6e9f0;--mut:#aab0c0;
-  --pri:#6cf;--acc:#9f6cff;--ok:#3ddc97;--bad:#ff6b6b;
-}
-*{box-sizing:border-box;font-family:Inter,system-ui}
-body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1a1f3a,transparent),
-radial-gradient(900px 500px at 110% 10%,#2a1f3a,transparent),var(--bg);color:var(--txt)}
-a{color:var(--pri);text-decoration:none}
-.hidden{display:none}
-.container{max-width:1200px;margin:auto;padding:24px}
-.header{position:sticky;top:0;backdrop-filter:blur(12px);background:rgba(5,8,18,.6);z-index:5}
-.header .container{display:flex;gap:12px;align-items:center;justify-content:space-between}
-.brand{font-weight:800;letter-spacing:.5px}
-.btn{background:linear-gradient(135deg,var(--pri),var(--acc));border:none;color:#000;
-padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;color:var(--txt);border:1px solid rgba(255,255,255,.15)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:var(--card);backdrop-filter:blur(14px);border-radius:16px;padding:14px;
-box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.card h3{margin:0 0 8px 0}
-.input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
-background:rgba(0,0,0,.3);color:var(--txt)}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.badge{padding:4px 8px;border-radius:999px;font-size:12px}
-.badge.ok{background:rgba(61,220,151,.15);color:var(--ok)}
-.badge.bad{background:rgba(255,107,107,.15);color:var(--bad)}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.kv div{font-size:13px;color:var(--mut)}
-.footer{opacity:.7;text-align:center;padding:30px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
-.modal .card{max-width:520px;width:100%}
-.toggle{cursor:pointer}
-.spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;
-animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CesiSorgu | Premium Data Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+    <style>
+        /* Reset və əsas CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            /* Neon gradient colors */
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-gradient: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --accent-color: #00d4ff;
+            --danger-color: #ff4757;
+            --success-color: #2ed573;
+            --warning-color: #ffa502;
+            --card-bg: rgba(15, 23, 42, 0.7);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --transition: all 0.3s ease;
+        }
+
+        .light-mode {
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text-primary: #1e293b;
+            --text-secondary: rgba(30, 41, 59, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: var(--dark-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar dizaynı */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00a8cc;
+        }
+
+        /* Loading animasiyası */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-gradient);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 5px solid transparent;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Glassmorphism container */
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .badge {
+            background: var(--secondary-gradient);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Auth ekranı */
+        .auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            background: var(--primary-gradient);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Axtarış paneli */
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        /* Nəticələr */
+        .results-container {
+            margin-bottom: 30px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            padding: 20px;
+            transition: var(--transition);
+            cursor: pointer;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .card-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .card-info {
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .pagination-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalAppear 0.3s ease;
+        }
+
+        @keyframes modalAppear {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--danger-color);
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .modal-section {
+            padding: 15px;
+        }
+
+        .modal-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Admin panel */
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .admin-table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .admin-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            padding: 20px;
+            height: 300px;
+        }
+
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 15px 20px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border-left: 5px solid var(--accent-color);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* IP consent */
+        .consent-container {
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--warning-color);
+        }
+
+        .consent-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+        }
+
+        .ip-info-container {
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ip-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--accent-color);
+        }
+
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .user-menu {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-body {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .modal {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .auth-container {
+                padding: 15px;
+            }
+
+            .filter-group {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-10 {
+            margin-bottom: 10px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mt-30 {
+            margin-top: 30px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 50px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
-
-<header class="header">
-  <div class="container">
-    <div class="brand">🔎 Data Query Dashboard</div>
-    <div class="row">
-      <button id="logoutBtn" class="btn ghost hidden">Çıxış</button>
-      <button id="themeBtn" class="btn ghost">🌙/☀️</button>
-    </div>
-  </div>
-</header>
-
-<div class="container">
-
-<!-- AUTH -->
-<section id="auth" class="grid">
-  <div class="card">
-    <h3>Giriş</h3>
-    <input id="l_user" class="input" placeholder="İstifadəçi adı">
-    <input id="l_pass" class="input" type="password" placeholder="Şifrə">
-    <button class="btn" onclick="login()">Daxil ol</button>
-  </div>
-  <div class="card">
-    <h3>Qeydiyyat</h3>
-    <input id="r_user" class="input" placeholder="İstifadəçi adı">
-    <input id="r_pass" class="input" type="password" placeholder="Şifrə">
-    <button class="btn" onclick="register()">Qeydiyyat</button>
-  </div>
-</section>
-
-<!-- APP -->
-<section id="app" class="hidden">
-  <div class="grid">
-    <div class="card">
-      <h3>Axtarış</h3>
-      <input id="q" class="input" placeholder="Ad / Soyad / Şəhər / Telefon / İl">
-      <div class="row">
-        <button class="btn ghost" onclick="reloadTxt()">TXT yenilə</button>
-        <span id="count" class="badge ok"></span>
-      </div>
+    <!-- Loading ekranı -->
+    <div class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">CesiSorgu yüklənir...</div>
     </div>
 
-    <div class="card">
-      <h3>IP & Konum</h3>
-      <label><input type="checkbox" id="consent"> Razıyam, IP/konumumu göstər</label>
-      <button class="btn ghost" onclick="getIP()">Göstər</button>
-      <div id="ipBox" class="kv"></div>
+    <!-- Toast notifications container -->
+    <div class="toast-container"></div>
+
+    <!-- Auth ekranı (ilk açılışda görünən) -->
+    <div class="auth-screen">
+        <div class="auth-container glass-container">
+            <div class="logo mb-20">
+                <i class="fas fa-search"></i>
+                <span>CesiSorgu</span>
+            </div>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Giriş</div>
+                <div class="auth-tab" data-tab="register">Qeydiyyat</div>
+            </div>
+            
+            <!-- Giriş formu -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label class="form-label" for="loginUsername">İstifadəçi adı</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="İstifadəçi adınızı daxil edin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Şifrə</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Şifrənizi daxil edin" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Daxil ol
+                </button>
+            </form>
+            
+            <!-- Qeydiyyat formu -->
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label" for="registerUsername">İstifadəçi adı</label>
+                    <input type="text" id="registerUsername" class="form-input" placeholder="Yeni istifadəçi adı" required maxlength="20">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Şifrə</label>
+                    <input type="password" id="registerPassword" class="form-input" placeholder="Minimum 8 simvol" required minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="registerConfirmPassword">Şifrə təsdiqi</label>
+                    <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Şifrəni təsdiq edin" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i>
+                    Qeydiyyatdan keç
+                </button>
+            </form>
+            
+            <div class="text-center mt-20">
+                <small class="text-secondary">
+                    Admin girişi: cesi / cesi123
+                </small>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-      <h3>Statistika</h3>
-      <canvas id="chart"></canvas>
+    <!-- Dashboard (girişdən sonra görünən) -->
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-search"></i>
+                    <span>CesiSorgu</span>
+                </div>
+                
+                <div class="user-menu">
+                    <div class="badge" id="userRoleBadge">İstifadəçi</div>
+                    <button class="btn btn-icon" id="themeToggle" title="Tema dəyiş">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn btn-secondary" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Çıxış
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Admin panel (yalnız admin üçün) -->
+        <div class="admin-panel" id="adminPanel">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-crown"></i> Admin Panel</h1>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="refreshDataBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Məlumatları yenilə
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Admin statistikalar -->
+            <div class="admin-stats">
+                <div class="stat-card glass-container">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="totalRecords">0</div>
+                    <div class="stat-label">Ümumi qeyd</div>
+                </div>
+                
+                <div class="stat-card glass-container">
+                    <div class="stat-icon">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <div class="stat-value" id="uniqueCities">0</div>
+                    <div class="stat-label">Fərqli şəhər</div>
+                </div>
+                
+                <div class="stat-card glass-container">
+                    <div class="stat-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="stat-value" id="uniqueOperators">0</div>
+                    <div class="stat-label">Telefon operatoru</div>
+                </div>
+                
+                <div class="stat-card glass-container">
+                    <div class="stat-icon">
+                        <i class="fas fa-birthday-cake"></i>
+                    </div>
+                    <div class="stat-value" id="avgAge">0</div>
+                    <div class="stat-label">Ortalama yaş</div>
+                </div>
+            </div>
+            
+            <!-- Admin chart-lar -->
+            <div class="charts-container">
+                <div class="chart-container glass-container">
+                    <h3 class="modal-section-title">Şəhərlərə görə paylanma</h3>
+                    <canvas id="cityChart"></canvas>
+                </div>
+                
+                <div class="chart-container glass-container">
+                    <h3 class="modal-section-title">Operatorlara görə paylanma</h3>
+                    <canvas id="operatorChart"></canvas>
+                </div>
+                
+                <div class="chart-container glass-container">
+                    <h3 class="modal-section-title">Yaş qruplarına görə paylanma</h3>
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Admin data cədvəli -->
+            <div class="admin-table-container">
+                <h3 class="modal-section-title">Bütün məlumatlar (read-only)</h3>
+                <table class="admin-table glass-container">
+                    <thead>
+                        <tr>
+                            <th>Sıra</th>
+                            <th>Soyad</th>
+                            <th>Ad</th>
+                            <th>Doğum ili</th>
+                            <th>Yaş</th>
+                            <th>Şəhər</th>
+                            <th>Telefon</th>
+                            <th>Operator</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <!-- Məlumatlar buraya əlavə olunacaq -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- İstifadəçi paneli -->
+        <div id="userPanel">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="showIpInfoBtn">
+                        <i class="fas fa-map-marker-alt"></i>
+                        IP məlumatları
+                    </button>
+                    <button class="btn btn-secondary" id="refreshDataBtnUser">
+                        <i class="fas fa-sync-alt"></i>
+                        Yenilə
+                    </button>
+                </div>
+            </div>
+            
+            <!-- IP razılıq hissəsi -->
+            <div class="consent-container glass-container">
+                <h3><i class="fas fa-info-circle"></i> Məlumatlandırma</h3>
+                <p>IP ünvanınızı və təxmini konum məlumatlarınızı görmək üçün aşağıdakı razılığı verməlisiniz. Bu məlumatlar yalnız sizin brauzerinizdə göstərilir, heç bir serverə göndərilmir və saxlanılmır.</p>
+                
+                <div class="consent-checkbox">
+                    <input type="checkbox" id="ipConsentCheckbox" class="checkbox-input">
+                    <label for="ipConsentCheckbox" class="checkbox-label">
+                        IP ünvanımı və təxmini konum məlumatlarımı göstərmək üçün razılıq verirəm. Bu məlumat yalnız cari sessiya üçün istifadə olunur və heç yerdə saxlanılmır.
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary mt-20" id="getIpInfoBtn" disabled>
+                    <i class="fas fa-map-marker-alt"></i>
+                    IP və konumumu göstər
+                </button>
+            </div>
+            
+            <!-- IP məlumatları hissəsi -->
+            <div class="ip-info-container glass-container hidden" id="ipInfoContainer">
+                <h3><i class="fas fa-globe"></i> IP və Konum Məlumatları</h3>
+                <p><small>Bu məlumatlar sizin açıq razılığınız əsasında göstərilir və yalnız cari sessiya üçün keçərlidir.</small></p>
+                
+                <div class="ip-info-grid" id="ipInfoGrid">
+                    <!-- IP məlumatları buraya əlavə olunacaq -->
+                </div>
+            </div>
+            
+            <!-- Axtarış paneli -->
+            <div class="search-container glass-container">
+                <h3 class="mb-10"><i class="fas fa-search"></i> Axtarış</h3>
+                
+                <div class="search-input-group">
+                    <input type="text" id="searchInput" class="form-input search-input" placeholder="Ad, soyad, şəhər və ya telefon nömrəsi ilə axtarış...">
+                    <button class="btn btn-primary" id="searchButton">
+                        <i class="fas fa-search"></i>
+                        Axtar
+                    </button>
+                    <button class="btn btn-secondary" id="clearSearchButton">
+                        <i class="fas fa-times"></i>
+                        Təmizlə
+                    </button>
+                </div>
+                
+                <div class="filter-group">
+                    <div>
+                        <label class="form-label">Doğum ili</label>
+                        <select id="yearFilter" class="filter-select">
+                            <option value="">Bütün illər</option>
+                            <!-- İllər avtomatik əlavə olunacaq -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Şəhər</label>
+                        <select id="cityFilter" class="filter-select">
+                            <option value="">Bütün şəhərlər</option>
+                            <!-- Şəhərlər avtomatik əlavə olunacaq -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Operator</label>
+                        <select id="operatorFilter" class="filter-select">
+                            <option value="">Bütün operatorlar</option>
+                            <option value="Azercell">Azercell</option>
+                            <option value="Bakcell">Bakcell</option>
+                            <option value="Nar">Nar</option>
+                            <option value="Digər">Digər</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Yaş aralığı</label>
+                        <select id="ageFilter" class="filter-select">
+                            <option value="">Bütün yaşlar</option>
+                            <option value="0-18">0-18 yaş</option>
+                            <option value="19-30">19-30 yaş</option>
+                            <option value="31-50">31-50 yaş</option>
+                            <option value="51+">51+ yaş</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nəticələr -->
+            <div class="results-container">
+                <div class="results-header">
+                    <h3><i class="fas fa-list"></i> Nəticələr</h3>
+                    <div id="resultsCount">0 nəticə tapıldı</div>
+                </div>
+                
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Nəticələr buraya əlavə olunacaq -->
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Pagination düymələri buraya əlavə olunacaq -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="logo mb-20">
+                    <i class="fas fa-search"></i>
+                    <span>CesiSorgu</span>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">İstifadəçi Razılığı</a>
+                    <a href="#" class="footer-link">Məxfilik Siyasəti</a>
+                    <a href="#" class="footer-link">Kömək</a>
+                    <a href="#" class="footer-link">Əlaqə</a>
+                </div>
+                
+                <div class="copyright">
+                    <p>© 2023 CesiSorgu. Bütün hüquqlar qorunur.</p>
+                    <p>Bu sistem yalnız təhsil məqsədləri üçün hazırlanmışdır. Bütün məlumatlar istifadəçi razılığı əsasında göstərilir.</p>
+                </div>
+            </div>
+        </footer>
     </div>
-  </div>
 
-  <h3 style="margin-top:20px">Nəticələr</h3>
-  <div id="list" class="grid"></div>
-</section>
-</div>
-
-<div id="modal" class="modal hidden">
-  <div class="card">
-    <h3>Profil</h3>
-    <div id="profile" class="kv"></div>
-    <button class="btn ghost" onclick="closeModal()">Bağla</button>
-  </div>
-</div>
-
-<footer class="footer">© Dashboard</footer>
-
-<script>
-/* ====== THEME ====== */
-const themeBtn=document.getElementById('themeBtn');
-themeBtn.onclick=()=>document.body.classList.toggle('light');
-
-/* ====== AUTH ====== */
-const auth=document.getElementById('auth');
-const app=document.getElementById('app');
-const logoutBtn=document.getElementById('logoutBtn');
-const ADMIN={u:'cesi',p:'cesi123'};
-const hash=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))
-.then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''));
-
-async function register(){
-  const u=r_user.value.trim(),p=r_pass.value;
-  if(!u||!p) return alert('Boş olmaz');
-  const h=await hash(p); localStorage.setItem('u_'+u,h); alert('Hazırdır');
-}
-async function login(){
-  const u=l_user.value.trim(),p=l_pass.value;
-  if(u===ADMIN.u && p===ADMIN.p){session('admin');return}
-  const h=await hash(p),s=localStorage.getItem('u_'+u);
-  if(h===s){session('user')} else alert('Yanlış');
-}
-function session(role){
-  localStorage.setItem('sess',role);
-  auth.classList.add('hidden'); app.classList.remove('hidden'); logoutBtn.classList.remove('hidden');
-  loadTxt();
-}
-logoutBtn.onclick=()=>{localStorage.removeItem('sess');location.reload()}
-
-/* ====== DATA ====== */
-let DATA=[];
-async function loadTxt(){
-  const r=await fetch('cesisorgu.txt',{cache:'no-store'});
-  const t=await r.text();
-  DATA=t.split('\n').map(l=>{
-    const [soyad,ad,il,seher,tel]=l.split('|').map(x=>x?.trim());
-    if(!ad||!tel) return null;
-    return {soyad,ad,il:+il,seher,tel};
-  }).filter(Boolean);
-  document.getElementById('count').textContent=DATA.length+' qeyd';
-  render(DATA); stats();
-}
-function reloadTxt(){loadTxt()}
-
-/* ====== SEARCH & RENDER ====== */
-q.oninput=()=>render(DATA.filter(d=>JSON.stringify(d).toLowerCase().includes(q.value.toLowerCase())));
-function render(arr){
-  list.innerHTML='';
-  arr.forEach(d=>{
-    const c=document.createElement('div'); c.className='card';
-    c.innerHTML=`<h3>${d.ad} ${d.soyad}</h3>
-    <div class="kv">
-      <div>Şəhər: ${d.seher}</div><div>İl: ${d.il}</div>
-      <div>Telefon: ${d.tel}</div><div>${operator(d.tel)}</div>
+    <!-- Profil modalı -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal glass-container">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-user"></i> Profil Məlumatları</h2>
+                <button class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fas fa-id-card"></i> Şəxsi məlumatlar</h3>
+                    <div class="info-grid">
+                        <div class="info-label">Ad:</div>
+                        <div class="info-value" id="modalFirstName">-</div>
+                        
+                        <div class="info-label">Soyad:</div>
+                        <div class="info-value" id="modalLastName">-</div>
+                        
+                        <div class="info-label">Doğum ili:</div>
+                        <div class="info-value" id="modalBirthYear">-</div>
+                        
+                        <div class="info-label">Yaş:</div>
+                        <div class="info-value" id="modalAge">-</div>
+                        
+                        <div class="info-label">Şəhər:</div>
+                        <div class="info-value" id="modalCity">-</div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fas fa-phone"></i> Əlaqə məlumatları</h3>
+                    <div class="info-grid">
+                        <div class="info-label">Telefon:</div>
+                        <div class="info-value" id="modalPhone">-</div>
+                        
+                        <div class="info-label">Operator:</div>
+                        <div class="info-value" id="modalOperator">-</div>
+                        
+                        <div class="info-label">Nömrə formatı:</div>
+                        <div class="info-value" id="modalPhoneValid">-</div>
+                        
+                        <div class="info-label">TXT-də sayı:</div>
+                        <div class="info-value" id="modalOccurrences">-</div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fas fa-info-circle"></i> Əlavə məlumatlar</h3>
+                    <div class="info-grid">
+                        <div class="info-label">TXT sıra nömrəsi:</div>
+                        <div class="info-value" id="modalIndex">-</div>
+                        
+                        <div class="info-label">Nəsil:</div>
+                        <div class="info-value" id="modalGeneration">-</div>
+                        
+                        <div class="info-label">Yaş qrupu:</div>
+                        <div class="info-value" id="modalAgeGroup">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <button class="btn ghost">Profil</button>`;
-    c.querySelector('button').onclick=()=>profile(d);
-    list.appendChild(c);
-  });
-}
 
-/* ====== PROFILE ====== */
-function operator(t){
-  if(/^05[01]/.test(t)) return 'Azercell';
-  if(/^055/.test(t)) return 'Bakcell';
-  if(/^07[07]/.test(t)) return 'Nar';
-  return 'Naməlum';
-}
-function profile(d){
-  const age=new Date().getFullYear()-d.il;
-  profileBox=`<div>Ad: ${d.ad}</div><div>Soyad: ${d.soyad}</div>
-  <div>Şəhər: ${d.seher}</div><div>Yaş: ${age}</div>
-  <div>Telefon: ${d.tel}</div><div>Operator: ${operator(d.tel)}</div>`;
-  profileEl.innerHTML=profileBox; modal.classList.remove('hidden');
-}
-function closeModal(){modal.classList.add('hidden')}
-
-/* ====== IP (CONSENT) ====== */
-async function getIP(){
-  if(!consent.checked) return alert('Razılıq lazımdır');
-  ipBox.innerHTML='<div class="spinner"></div>';
-  const r=await fetch('https://ipapi.co/json/');
-  const j=await r.json();
-  ipBox.innerHTML=`
-  <div>IP: ${j.ip}</div><div>Ölkə: ${j.country_name}</div>
-  <div>Şəhər: ${j.city}</div><div>ISP: ${j.org}</div>`;
-}
-
-/* ====== STATS ====== */
-let chart;
-function stats(){
-  const m={}; DATA.forEach(d=>m[d.seher]=(m[d.seher]||0)+1);
-  const ctx=document.getElementById('chart');
-  chart?.destroy();
-  chart=new Chart(ctx,{type:'bar',data:{labels:Object.keys(m),
-  datasets:[{data:Object.values(m)}]}});
-}
-
-/* ====== INIT ====== */
-if(localStorage.getItem('sess')) session(localStorage.getItem('sess'));
-</script>
+    <script>
+        // Global dəyişənlər
+        let currentUser = null;
+        let isAdmin = false;
+        let data = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 9;
+        let ipInfo = null;
+        let userConsent = false;
+        let charts = {};
+        
+        // Şifrə hash funksiyası (SHA-256)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        // Loading ekranını gizlətmək
+        function hideLoadingScreen() {
+            const loadingScreen = document.querySelector('.loading-screen');
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
+        
+        // Toast bildirişləri
+        function showToast(message, type = 'info', duration = 5000) {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Bağlama funksiyası
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', () => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            });
+            
+            // Müddət bitdikdən sonra avtomatik bağlama
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.style.animation = 'slideInRight 0.3s ease reverse';
+                        setTimeout(() => toast.remove(), 300);
+                    }
+                }, duration);
+            }
+        }
+        
+        // TXT faylını oxumaq
+        async function loadTXTData() {
+            try {
+                // Nümunə məlumatlar (real tətbiqdə cesisorgu.txt faylından oxunacaq)
+                const sampleData = `Mammadov|Zaur|1991|Naxcivan|0997733607
+Ismayilova|Perviz|1986|Gence|0999474663
+Abbasova|Ramil|2001|Seki|0772987974
+Amirov|Sahil|2000|Seki|0777110191
+Mustafayev|Fidan|2004|Lenkeran|0701626954
+Kerimova|Gunel|1965|Gence|0501982456
+Xalilov|Esmira|2006|Naxcivan|0994534273
+Pasayev|Ali|1969|Seki|0558444813
+Cafarov|Metleb|2004|Mingecevir|0776489815
+Veliyev|Arzu|1981|Salyan|0518447250
+Aliyev|Zehra|1962|Salyan|0504000723
+Huseynova|Zaur|1999|Gence|0992486140`;
+                
+                // Real tətbiqdə fetch istifadə etmək
+                // const response = await fetch('cesisorgu.txt');
+                // const text = await response.text();
+                
+                const text = sampleData;
+                const lines = text.split('\n');
+                
+                data = [];
+                let index = 1;
+                
+                lines.forEach(line => {
+                    if (line.trim() === '') return;
+                    
+                    const parts = line.split('|');
+                    if (parts.length !== 5) return;
+                    
+                    const [lastName, firstName, birthYear, city, phone] = parts.map(p => p.trim());
+                    
+                    // Doğum ili səhvidirsə, skip et
+                    const year = parseInt(birthYear);
+                    const currentYear = new Date().getFullYear();
+                    if (isNaN(year) || year < 1900 || year > currentYear) return;
+                    
+                    // Telefon nömrəsini formatla
+                    const formattedPhone = formatPhoneNumber(phone);
+                    const operator = getOperator(phone);
+                    
+                    // Yaşı hesabla
+                    const age = currentYear - year;
+                    
+                    data.push({
+                        id: index++,
+                        lastName,
+                        firstName,
+                        birthYear: year,
+                        city,
+                        phone: formattedPhone,
+                        operator,
+                        age,
+                        originalPhone: phone,
+                        occurrences: countOccurrences(phone, lines)
+                    });
+                });
+                
+                // Filterləri yenilə
+                updateFilters();
+                // Data-nı filterlə
+                filterData();
+                // Admin statistikaları yenilə
+                updateAdminStats();
+                // Chart-ları yenilə
+                updateCharts();
+                
+                showToast('Məlumatlar uğurla yükləndi', 'success');
+            } catch (error) {
+                console.error('TXT faylı yüklənərkən xəta:', error);
+                showToast('Məlumatlar yüklənərkən xəta baş verdi', 'error');
+            }
+        }
+        
+        // Telefon nömrəsini formatla
+        function formatPhoneNumber(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            if (cleaned.length === 10) {
+                return `+994 (${cleaned.substring(1, 3)}) ${cleaned.substring(3, 6)}-${cleaned.substring(6, 8)}-${cleaned.substring(8)}`;
+            }
+            return phone;
+        }
+        
+        // Operatoru müəyyən et
+        function getOperator(phone) {
+            const prefix = phone.substring(0, 3);
+            if (['050', '051', '010'].some(p => phone.startsWith(p))) return 'Azercell';
+            if (['055', '099'].some(p => phone.startsWith(p))) return 'Bakcell';
+            if (['070', '077'].some(p => phone.startsWith(p))) return 'Nar';
+            return 'Digər';
+        }
+        
+        // TXT-də neçə dəfə keçdiyini say
+        function countOccurrences(phone, lines) {
+            return lines.filter(line => line.includes(phone)).length;
+        }
+        
+        // Filterləri yenilə
+        function updateFilters() {
+            const yearFilter = document.getElementById('yearFilter');
+            const cityFilter = document.getElementById('cityFilter');
+            
+            // İlləri əlavə et
+            const years = [...new Set(data.map(item => item.birthYear))].sort((a, b) => b - a);
+            yearFilter.innerHTML = '<option value="">Bütün illər</option>';
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+            
+            // Şəhərləri əlavə et
+            const cities = [...new Set(data.map(item => item.city))].sort();
+            cityFilter.innerHTML = '<option value="">Bütün şəhərlər</option>';
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                cityFilter.appendChild(option);
+            });
+        }
+        
+        // Data filterləmə
+        function filterData() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const yearFilter = document.getElementById('yearFilter').value;
+            const cityFilter = document.getElementById('cityFilter').value;
+            const operatorFilter = document.getElementById('operatorFilter').value;
+            const ageFilter = document.getElementById('ageFilter').value;
+            
+            filteredData = data.filter(item => {
+                // Axtarış filteri
+                if (searchInput && 
+                    !item.firstName.toLowerCase().includes(searchInput) && 
+                    !item.lastName.toLowerCase().includes(searchInput) && 
+                    !item.city.toLowerCase().includes(searchInput) && 
+                    !item.originalPhone.includes(searchInput)) {
+                    return false;
+                }
+                
+                // İl filteri
+                if (yearFilter && item.birthYear !== parseInt(yearFilter)) return false;
+                
+                // Şəhər filteri
+                if (cityFilter && item.city !== cityFilter) return false;
+                
+                // Operator filteri
+                if (operatorFilter && item.operator !== operatorFilter) {
+                    if (operatorFilter === 'Digər' && ['Azercell', 'Bakcell', 'Nar'].includes(item.operator)) return false;
+                    if (operatorFilter !== 'Digər' && item.operator !== operatorFilter) return false;
+                }
+                
+                // Yaş filteri
+                if (ageFilter) {
+                    const [min, max] = ageFilter.split('-').map(Number);
+                    if (ageFilter === '51+' && item.age < 51) return false;
+                    if (ageFilter !== '51+' && (item.age < min || item.age > max)) return false;
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            renderResults();
+            updatePagination();
+        }
+        
+        // Nəticələri göstər
+        function renderResults() {
+            const resultsGrid = document.getElementById('resultsGrid');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            if (filteredData.length === 0) {
+                resultsGrid.innerHTML = `
+                    <div class="empty-state glass-container">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Nəticə tapılmadı</h3>
+                        <p>Axtarış kriteriyalarınıza uyğun nəticə tapılmadı. Filterləri dəyişərək yenidən cəhd edin.</p>
+                    </div>
+                `;
+                resultsCount.textContent = '0 nəticə tapıldı';
+                return;
+            }
+            
+            // Səhifələmə
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            resultsGrid.innerHTML = '';
+            pageData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'result-card glass-container';
+                card.setAttribute('data-id', item.id);
+                
+                // Yaş qrupunu təyin et
+                let ageGroup = 'Yetkin';
+                if (item.age < 19) ageGroup = 'Uşaq';
+                else if (item.age < 31) ageGroup = 'Gənc';
+                else if (item.age > 50) ageGroup = 'Qoca';
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${item.firstName} ${item.lastName}</div>
+                        <div class="card-badge">${item.operator}</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <span class="info-label">Yaş:</span>
+                            <span class="info-value">${item.age} (${item.birthYear})</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Şəhər:</span>
+                            <span class="info-value">${item.city}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Telefon:</span>
+                            <span class="info-value">${item.phone}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-secondary view-profile-btn" data-id="${item.id}">
+                            <i class="fas fa-eye"></i> Profil
+                        </button>
+                        <button class="btn btn-secondary favorite-btn" data-id="${item.id}">
+                            <i class="far fa-star"></i>
+                        </button>
+                    </div>
+                `;
+                
+                resultsGrid.appendChild(card);
+            });
+            
+            resultsCount.textContent = `${filteredData.length} nəticə tapıldı`;
+            
+            // Profilə bax düymələrinə event listener əlavə et
+            document.querySelectorAll('.view-profile-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.closest('.view-profile-btn').getAttribute('data-id'));
+                    openProfileModal(id);
+                });
+            });
+            
+            // Favorit düymələrinə event listener əlavə et
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.closest('.favorite-btn').getAttribute('data-id'));
+                    toggleFavorite(id, e.target.closest('.favorite-btn'));
+                });
+            });
+        }
+        
+        // Pagination yarat
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Əvvəlki düyməsi
+            html += `
+                <button class="pagination-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+            
+            // Səhifə nömrələri
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `
+                    <button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // Növbəti düyməsi
+            html += `
+                <button class="pagination-btn next-btn ${currentPage === totalPages ? 'disabled' : ''}" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            pagination.innerHTML = html;
+            
+            // Pagination düymələrinə event listener əlavə et
+            document.querySelectorAll('.pagination-btn:not(.prev-btn):not(.next-btn)').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPage = parseInt(btn.getAttribute('data-page'));
+                    renderResults();
+                    updatePagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+            
+            document.querySelector('.prev-btn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderResults();
+                    updatePagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+            
+            document.querySelector('.next-btn').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderResults();
+                    updatePagination();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        }
+        
+        // Profil modalını aç
+        function openProfileModal(id) {
+            const item = data.find(d => d.id === id);
+            if (!item) return;
+            
+            // Modal elementləri
+            document.getElementById('modalFirstName').textContent = item.firstName;
+            document.getElementById('modalLastName').textContent = item.lastName;
+            document.getElementById('modalBirthYear').textContent = item.birthYear;
+            document.getElementById('modalAge').textContent = `${item.age} yaş`;
+            document.getElementById('modalCity').textContent = item.city;
+            document.getElementById('modalPhone').textContent = item.phone;
+            document.getElementById('modalOperator').textContent = item.operator;
+            
+            // Telefon nömrəsinin formatını yoxla
+            const phoneValid = item.originalPhone.length === 10 && /^\d+$/.test(item.originalPhone);
+            document.getElementById('modalPhoneValid').textContent = phoneValid ? 'Düzgün format' : 'Səhv format';
+            document.getElementById('modalPhoneValid').style.color = phoneValid ? 'var(--success-color)' : 'var(--danger-color)';
+            
+            document.getElementById('modalOccurrences').textContent = `${item.occurrences} dəfə`;
+            document.getElementById('modalIndex').textContent = item.id;
+            
+            // Nəsili təyin et
+            let generation = 'Y (Millennial)';
+            if (item.birthYear >= 1997) generation = 'Z';
+            else if (item.birthYear >= 1981) generation = 'Y (Millennial)';
+            else if (item.birthYear >= 1965) generation = 'X';
+            else generation = 'Baby Boomer';
+            document.getElementById('modalGeneration').textContent = generation;
+            
+            // Yaş qrupu
+            let ageGroup = 'Yetkin';
+            if (item.age < 19) ageGroup = 'Uşaq';
+            else if (item.age < 31) ageGroup = 'Gənc';
+            else if (item.age > 50) ageGroup = 'Qoca';
+            document.getElementById('modalAgeGroup').textContent = ageGroup;
+            
+            // Modalı aç
+            document.getElementById('profileModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Profil modalını bağla
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Favoritə əlavə et/çıxar
+        function toggleFavorite(id, button) {
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+            const icon = button.querySelector('i');
+            
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                icon.className = 'far fa-star';
+                showToast('Favoritlərdən çıxarıldı', 'info');
+            } else {
+                favorites.push(id);
+                icon.className = 'fas fa-star';
+                showToast('Favoritlərə əlavə edildi', 'success');
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+        
+        // Admin statistikalarını yenilə
+        function updateAdminStats() {
+            if (!isAdmin) return;
+            
+            document.getElementById('totalRecords').textContent = data.length;
+            
+            const uniqueCities = [...new Set(data.map(item => item.city))].length;
+            document.getElementById('uniqueCities').textContent = uniqueCities;
+            
+            const uniqueOperators = [...new Set(data.map(item => item.operator))].length;
+            document.getElementById('uniqueOperators').textContent = uniqueOperators;
+            
+            const avgAge = data.length > 0 ? 
+                Math.round(data.reduce((sum, item) => sum + item.age, 0) / data.length) : 0;
+            document.getElementById('avgAge').textContent = avgAge;
+            
+            // Admin cədvəlini yenilə
+            const adminTableBody = document.getElementById('adminTableBody');
+            adminTableBody.innerHTML = '';
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.lastName}</td>
+                    <td>${item.firstName}</td>
+                    <td>${item.birthYear}</td>
+                    <td>${item.age}</td>
+                    <td>${item.city}</td>
+                    <td>${item.phone}</td>
+                    <td><span class="card-badge">${item.operator}</span></td>
+                `;
+                adminTableBody.appendChild(row);
+            });
+        }
+        
+        // Chart-ları yenilə
+        function updateCharts() {
+            if (!isAdmin) return;
+            
+            // Şəhərlərə görə chart
+            const cityCounts = {};
+            data.forEach(item => {
+                cityCounts[item.city] = (cityCounts[item.city] || 0) + 1;
+            });
+            
+            const cityChartCtx = document.getElementById('cityChart').getContext('2d');
+            if (charts.cityChart) charts.cityChart.destroy();
+            
+            charts.cityChart = new Chart(cityChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(cityCounts),
+                    datasets: [{
+                        label: 'Say',
+                        data: Object.values(cityCounts),
+                        backgroundColor: 'rgba(0, 212, 255, 0.7)',
+                        borderColor: 'rgba(0, 212, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'var(--text-secondary)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'var(--text-secondary)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Operatorlara görə chart
+            const operatorCounts = {};
+            data.forEach(item => {
+                operatorCounts[item.operator] = (operatorCounts[item.operator] || 0) + 1;
+            });
+            
+            const operatorChartCtx = document.getElementById('operatorChart').getContext('2d');
+            if (charts.operatorChart) charts.operatorChart.destroy();
+            
+            charts.operatorChart = new Chart(operatorChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(operatorCounts),
+                    datasets: [{
+                        data: Object.values(operatorCounts),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.7)',
+                            'rgba(240, 147, 251, 0.7)',
+                            'rgba(245, 87, 108, 0.7)',
+                            'rgba(46, 213, 115, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(240, 147, 251, 1)',
+                            'rgba(245, 87, 108, 1)',
+                            'rgba(46, 213, 115, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Yaş qruplarına görə chart
+            const ageGroups = {
+                '0-18': 0,
+                '19-30': 0,
+                '31-50': 0,
+                '51+': 0
+            };
+            
+            data.forEach(item => {
+                if (item.age <= 18) ageGroups['0-18']++;
+                else if (item.age <= 30) ageGroups['19-30']++;
+                else if (item.age <= 50) ageGroups['31-50']++;
+                else ageGroups['51+']++;
+            });
+            
+            const ageChartCtx = document.getElementById('ageChart').getContext('2d');
+            if (charts.ageChart) charts.ageChart.destroy();
+            
+            charts.ageChart = new Chart(ageChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(ageGroups),
+                    datasets: [{
+                        data: Object.values(ageGroups),
+                        backgroundColor: [
+                            'rgba(255, 165, 2, 0.7)',
+                            'rgba(46, 213, 115, 0.7)',
+                            'rgba(0, 212, 255, 0.7)',
+                            'rgba(102, 126, 234, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 165, 2, 1)',
+                            'rgba(46, 213, 115, 1)',
+                            'rgba(0, 212, 255, 1)',
+                            'rgba(102, 126, 234, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'var(--text-primary)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // IP məlumatlarını əldə et
+        async function getIPInfo() {
+            if (!userConsent) {
+                showToast('IP məlumatlarını görmək üçün razılıq verməlisiniz', 'warning');
+                return;
+            }
+            
+            try {
+                const ipInfoContainer = document.getElementById('ipInfoContainer');
+                const ipInfoGrid = document.getElementById('ipInfoGrid');
+                
+                ipInfoGrid.innerHTML = `
+                    <div class="text-center">
+                        <div class="loading-spinner" style="width: 30px; height: 30px; margin: 20px auto;"></div>
+                        <p>IP məlumatları yüklənir...</p>
+                    </div>
+                `;
+                
+                ipInfoContainer.classList.remove('hidden');
+                
+                // ipinfo.io API (free tier)
+                const response = await fetch('https://ipinfo.io/json?token=demo');
+                ipInfo = await response.json();
+                
+                // Browser məlumatları
+                const userAgent = navigator.userAgent;
+                let browser = "Naməlum";
+                let os = "Naməlum";
+                let device = "Naməlum";
+                
+                // Brauzeri təyin et
+                if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) browser = "Chrome";
+                else if (userAgent.includes("Firefox")) browser = "Firefox";
+                else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) browser = "Safari";
+                else if (userAgent.includes("Edg")) browser = "Edge";
+                
+                // Əməliyyat sistemini təyin et
+                if (userAgent.includes("Windows")) os = "Windows";
+                else if (userAgent.includes("Mac")) os = "macOS";
+                else if (userAgent.includes("Linux")) os = "Linux";
+                else if (userAgent.includes("Android")) os = "Android";
+                else if (userAgent.includes("iOS")) os = "iOS";
+                
+                // Cihaz tipini təyin et
+                if (userAgent.includes("Mobile")) device = "Mobil";
+                else if (userAgent.includes("Tablet")) device = "Tablet";
+                else device = "Desktop";
+                
+                // IP məlumatlarını göstər
+                ipInfoGrid.innerHTML = `
+                    <div>
+                        <div class="info-label">IP Ünvanı:</div>
+                        <div class="info-value">${ipInfo.ip || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Ölkə:</div>
+                        <div class="info-value">${ipInfo.country || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Şəhər:</div>
+                        <div class="info-value">${ipInfo.city || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Region:</div>
+                        <div class="info-value">${ipInfo.region || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">ISP:</div>
+                        <div class="info-value">${ipInfo.org || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Timezone:</div>
+                        <div class="info-value">${ipInfo.timezone || 'Məlumat yoxdur'}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Brauzer:</div>
+                        <div class="info-value">${browser}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Əməliyyat Sistemi:</div>
+                        <div class="info-value">${os}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Cihaz Tipi:</div>
+                        <div class="info-value">${device}</div>
+                    </div>
+                `;
+                
+                showToast('IP məlumatları uğurla yükləndi', 'success');
+            } catch (error) {
+                console.error('IP məlumatları alınarkən xəta:', error);
+                showToast('IP məlumatları alınarkən xəta baş verdi', 'error');
+                
+                const ipInfoGrid = document.getElementById('ipInfoGrid');
+                ipInfoGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3>Məlumatlar alına bilmədi</h3>
+                        <p>IP məlumatları API-sindən cavab alınmadı. İnternet bağlantınızı yoxlayın və yenidən cəhd edin.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // İstifadəçi girişi
+        async function login(username, password) {
+            // Admin girişi (sabit)
+            if (username === 'cesi' && password === 'cesi123') {
+                currentUser = { username: 'cesi', role: 'admin' };
+                isAdmin = true;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showToast('Admin olaraq daxil oldunuz', 'success');
+                initializeDashboard();
+                return;
+            }
+            
+            // Normal istifadəçi girişi
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const hashedPassword = await hashPassword(password);
+            
+            if (users[username] && users[username].password === hashedPassword) {
+                currentUser = { username, role: 'user' };
+                isAdmin = false;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showToast('Uğurla daxil oldunuz', 'success');
+                initializeDashboard();
+            } else {
+                throw new Error('İstifadəçi adı və ya şifrə yanlışdır');
+            }
+        }
+        
+        // İstifadəçi qeydiyyatı
+        async function register(username, password, confirmPassword) {
+            // Validasiya
+            if (password !== confirmPassword) {
+                throw new Error('Şifrələr uyğun gəlmir');
+            }
+            
+            if (password.length < 8) {
+                throw new Error('Şifrə minimum 8 simvol olmalıdır');
+            }
+            
+            if (username.length < 3) {
+                throw new Error('İstifadəçi adı minimum 3 simvol olmalıdır');
+            }
+            
+            // İstifadəçi adının artıq mövcud olub-olmadığını yoxla
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            if (users[username]) {
+                throw new Error('Bu istifadəçi adı artıq mövcuddur');
+            }
+            
+            // Admin adından istifadə oluna bilməz
+            if (username === 'cesi') {
+                throw new Error('Bu istifadəçi adı istifadə edilə bilməz');
+            }
+            
+            // Şifrəni hash et və saxla
+            const hashedPassword = await hashPassword(password);
+            users[username] = { password: hashedPassword, createdAt: new Date().toISOString() };
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Avtomatik giriş et
+            currentUser = { username, role: 'user' };
+            isAdmin = false;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showToast('Qeydiyyat uğurla tamamlandı', 'success');
+            initializeDashboard();
+        }
+        
+        // Dashboard-u başlat
+        function initializeDashboard() {
+            // Auth ekranını gizlə
+            document.querySelector('.auth-screen').style.display = 'none';
+            
+            // Dashboard-u göstər
+            document.querySelector('.dashboard').classList.add('active');
+            
+            // User role badge-i güncəllə
+            const userRoleBadge = document.getElementById('userRoleBadge');
+            userRoleBadge.textContent = isAdmin ? 'Admin' : 'İstifadəçi';
+            userRoleBadge.style.background = isAdmin ? 'var(--secondary-gradient)' : 'var(--primary-gradient)';
+            
+            // Admin panelini göstər/gizlət
+            const adminPanel = document.getElementById('adminPanel');
+            const userPanel = document.getElementById('userPanel');
+            
+            if (isAdmin) {
+                adminPanel.classList.add('active');
+                userPanel.style.display = 'none';
+            } else {
+                adminPanel.classList.remove('active');
+                userPanel.style.display = 'block';
+            }
+            
+            // Data yüklə
+            loadTXTData();
+        }
+        
+        // Çıxış et
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            localStorage.removeItem('currentUser');
+            
+            // Dashboard-u gizlə
+            document.querySelector('.dashboard').classList.remove('active');
+            
+            // Auth ekranını göstər
+            document.querySelector('.auth-screen').style.display = 'flex';
+            
+            // Auth tab-ları sıfırla
+            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector('[data-tab="login"]').classList.add('active');
+            
+            document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+            document.getElementById('loginForm').classList.add('active');
+            
+            // Formları təmizlə
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            showToast('Uğurla çıxış etdiniz', 'info');
+        }
+        
+        // Tema dəyiş
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggleIcon = document.getElementById('themeToggle').querySelector('i');
+            
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                themeToggleIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'dark');
+                showToast('Qara tema aktiv edildi', 'info');
+            } else {
+                body.classList.add('light-mode');
+                themeToggleIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'light');
+                showToast('Açıq tema aktiv edildi', 'info');
+            }
+        }
+        
+        // Event listener-lar
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Loading ekranını gizlə
+            setTimeout(hideLoadingScreen, 1500);
+            
+            // Auth tab-ları üçün event listener
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Aktiv tab-ı dəyiş
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Formları dəyiş
+                    document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+                    document.getElementById(`${tabId}Form`).classList.add('active');
+                });
+            });
+            
+            // Giriş formu
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                
+                try {
+                    await login(username, password);
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            });
+            
+            // Qeydiyyat formu
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('registerUsername').value.trim();
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+                
+                try {
+                    await register(username, password, confirmPassword);
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            });
+            
+            // Axtarış
+            document.getElementById('searchButton').addEventListener('click', filterData);
+            document.getElementById('searchInput').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterData();
+            });
+            
+            // Axtarışı təmizlə
+            document.getElementById('clearSearchButton').addEventListener('click', () => {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('yearFilter').value = '';
+                document.getElementById('cityFilter').value = '';
+                document.getElementById('operatorFilter').value = '';
+                document.getElementById('ageFilter').value = '';
+                filterData();
+            });
+            
+            // Filter dəyişiklikləri
+            document.getElementById('yearFilter').addEventListener('change', filterData);
+            document.getElementById('cityFilter').addEventListener('change', filterData);
+            document.getElementById('operatorFilter').addEventListener('change', filterData);
+            document.getElementById('ageFilter').addEventListener('change', filterData);
+            
+            // Modalı bağla
+            document.getElementById('closeModalBtn').addEventListener('click', closeProfileModal);
+            document.getElementById('profileModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('profileModal')) {
+                    closeProfileModal();
+                }
+            });
+            
+            // ESC ilə modalı bağla
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeProfileModal();
+                }
+            });
+            
+            // Çıxış düyməsi
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Tema dəyiş düyməsi
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // IP razılıq checkbox
+            document.getElementById('ipConsentCheckbox').addEventListener('change', (e) => {
+                userConsent = e.target.checked;
+                document.getElementById('getIpInfoBtn').disabled = !userConsent;
+                
+                if (userConsent) {
+                    showToast('IP məlumatları üçün razılıq verdiniz', 'info');
+                } else {
+                    document.getElementById('ipInfoContainer').classList.add('hidden');
+                }
+            });
+            
+            // IP məlumatlarını göstər düyməsi
+            document.getElementById('getIpInfoBtn').addEventListener('click', getIPInfo);
+            
+            // IP məlumatlarını göstər (admin üçün)
+            document.getElementById('showIpInfoBtn')?.addEventListener('click', () => {
+                document.getElementById('ipConsentCheckbox').checked = true;
+                userConsent = true;
+                document.getElementById('getIpInfoBtn').disabled = false;
+                getIPInfo();
+            });
+            
+            // Data yenilə düymələri
+            document.getElementById('refreshDataBtn')?.addEventListener('click', loadTXTData);
+            document.getElementById('refreshDataBtnUser')?.addEventListener('click', loadTXTData);
+            
+            // Əvvəlcədən saxlanmış session-u yoxla
+            const savedUser = JSON.parse(localStorage.getItem('currentUser'));
+            const savedTheme = localStorage.getItem('theme');
+            
+            // Tema tətbiq et
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('themeToggle').querySelector('i').className = 'fas fa-sun';
+            }
+            
+            // Əgər istifadəçi login olubsa, dashboard-u başlat
+            if (savedUser) {
+                currentUser = savedUser;
+                isAdmin = savedUser.role === 'admin';
+                initializeDashboard();
+            }
+        });
+    </script>
 </body>
 </html>
