@@ -1,299 +1,403 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ExamPro: İmtahan Platforması</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
-        --secondary: #ec4899;
-        --bg-light: #f3f4f6;
-        --bg-dark: #0f172a;
-        --glass-light: rgba(255, 255, 255, 0.7);
-        --glass-dark: rgba(30, 41, 59, 0.7);
-        --text-light: #1f2937;
-        --text-dark: #f8fafc;
-        --success: #10b981;
-        --error: #ef4444;
-        --warning: #f59e0b;
-        --radius: 16px;
-        --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ExamMaster Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #06b6d4;
+            --accent: #f43f5e;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
 
-    /* Reset & Base */
-    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-light); color: var(--text-light); transition: 0.3s; min-height: 100vh; display: flex; flex-direction: column; }
-    body.dark-mode { background: var(--bg-dark); color: var(--text-dark); }
-    
-    /* Layout */
-    .app-container { max-width: 900px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; position: relative; }
-    
-    /* Glassmorphism Cards */
-    .glass-card {
-        background: var(--glass-light);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: var(--radius);
-        padding: 24px;
-        box-shadow: var(--shadow);
-        margin-bottom: 20px;
-        transition: 0.3s;
-    }
-    body.dark-mode .glass-card {
-        background: var(--glass-dark);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    /* Screen Management */
-    .screen { display: none; opacity: 0; animation: fadeIn 0.4s forwards; }
-    .screen.active { display: block; opacity: 1; }
-    @keyframes fadeIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
+        }
 
-    /* UI Components */
-    .btn {
-        background: var(--primary);
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: var(--radius);
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.3s;
-        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.5); }
-    .btn.outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-    body.dark-mode .btn.outline { color: var(--primary-dark); }
-    
-    .question-card { margin-top: 20px; }
-    .question-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 24px; line-height: 1.5; }
-    
-    .option-btn {
-        display: block; width: 100%; text-align: left; background: var(--glass-light); border: 2px solid transparent; padding: 16px; margin-bottom: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1rem; position: relative;
-    }
-    body.dark-mode .option-btn { background: rgba(255, 255, 255, 0.05); color: #fff; }
-    
-    .option-btn:hover { background: rgba(99, 102, 241, 0.1); border-color: var(--primary); }
-    .option-btn.selected { background: rgba(99, 102, 241, 0.15); border-color: var(--primary); font-weight: 700; }
-    .option-btn.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
-    .option-btn.wrong { background: rgba(239, 68, 68, 0.1); border-color: var(--error); color: var(--error); }
-    
-    /* Navigation Palette */
-    .question-palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 8px; margin-top: 20px; }
-    .palette-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #ddd; border-radius: 50%; font-size: 0.8rem; cursor: pointer; border: none; }
-    .palette-btn.active { background: var(--primary); color: white; transform: scale(1.1); box-shadow: 0 0 10px var(--primary); }
-    .palette-btn.answered { background: var(--primary-dark); color: white; opacity: 0.7; }
-    .palette-btn.skipped { background: var(--warning); color: white; }
-    
-    /* Progress Bar */
-    .progress-track { width: 100%; height: 6px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 20px; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: 0.5s ease-out; }
-    
-    /* Timer */
-    .timer { font-size: 1.5rem; font-weight: 800; color: var(--secondary); text-align: center; margin-bottom: 20px; }
-    
-    /* Confetti */
-    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
-    
-    /* Admin Panel */
-    textarea { width: 100%; height: 200px; background: rgba(0,0,0,0.05); border: 1px solid #ccc; padding: 10px; border-radius: 8px; font-family: monospace; resize: vertical; }
-    body.dark-mode textarea { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; }
-    
-    /* Responsive */
-    @media(max-width: 600px) {
-        .glass-card { padding: 16px; margin-bottom: 10px; }
-        h1 { font-size: 1.5rem; }
-        .question-palette { display: none; } /* Hide palette on mobile */
-    }
-</style>
+        /* --- Framework & Layout --- */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .screen {
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .screen.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- Components --- */
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        h1 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--text-main); }
+        p { color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
+
+        /* Inputs */
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; font-weight: 600; }
+        input, textarea {
+            width: 100%; padding: 16px; border-radius: 12px;
+            background: var(--surface-light); border: 2px solid transparent;
+            color: white; font-size: 1rem; transition: 0.3s;
+        }
+        input:focus, textarea:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2); }
+        textarea { font-family: 'Courier New', monospace; min-height: 250px; line-height: 1.4; }
+
+        /* Buttons */
+        .btn {
+            width: 100%; padding: 16px; border-radius: 12px; border: none;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        
+        .btn-secondary { background: var(--surface-light); color: var(--text-main); margin-top: 10px; }
+        .btn-secondary:hover { background: #475569; }
+
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.5); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+        /* Quiz UI */
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .timer-badge { background: rgba(6, 182, 212, 0.2); color: var(--secondary); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-feature-settings: "tnum"; }
+        
+        .option {
+            background: var(--surface-light); padding: 18px; margin-bottom: 12px; border-radius: 12px;
+            cursor: pointer; transition: 0.2s; border: 2px solid transparent; display: flex; align-items: center;
+        }
+        .option:hover { background: #475569; transform: translateX(5px); }
+        .option.selected { border-color: var(--primary); background: rgba(79, 70, 229, 0.1); }
+        
+        .option.correct { border-color: var(--success); background: rgba(16, 185, 129, 0.2); }
+        .option.wrong { border-color: var(--danger); background: rgba(239, 68, 68, 0.2); opacity: 0.7; }
+
+        /* Progress Bar */
+        .progress-container { width: 100%; height: 6px; background: var(--surface-light); border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.5s; }
+
+        /* Tabs */
+        .tab-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 12px; background: transparent; border: 2px solid var(--surface-light); color: var(--text-muted); border-radius: 10px; cursor: pointer; }
+        .tab.active { border-color: var(--primary); color: white; background: rgba(79, 70, 229, 0.1); }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed; top: 20px; right: 20px; background: var(--surface); border-left: 5px solid var(--primary);
+            padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(200%); transition: 0.5s; z-index: 9999; display: flex; align-items: center; gap: 10px;
+        }
+        #toast.show { transform: translateX(0); }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: var(--surface-light); padding: 15px; border-radius: 12px; text-align: center; }
+        .stat-val { font-size: 1.5rem; font-weight: 800; color: white; }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+    </style>
 </head>
-<body class="light-mode">
+<body>
 
-<canvas id="confetti-canvas"></canvas>
+    <div id="toast"><span>Mesaj</span></div>
 
-<div class="app-container">
-    
-    <div id="screen-start" class="screen active">
-        <div class="glass-card" style="text-align: center;">
-            <h1 style="margin-bottom: 10px;">🎓 İmtahan PRO</h1>
-            <p>9-cu sinif buraxılış imtahanına hazırlıq platforması.</p>
-            <div style="margin: 20px 0;">
-                <label>Müddət (dəqiqə): <input type="number" id="exam-duration" value="60" style="width: 60px; padding: 5px; border-radius: 4px; border:1px solid #ccc;"></label>
-            </div>
-            <button class="btn" onclick="startExam()">🚀 İmtahana Başla</button>
-            <button class="btn outline" onclick="showScreen('screen-admin')">⚙️ Admin Panel</button>
-            <button class="btn outline" onclick="toggleTheme()" style="margin-top: 10px;">🌙 Theme</button>
-        </div>
-    </div>
-
-    <div id="screen-exam" class="screen">
-        <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="timer" id="timer-display">00:00</div>
-            <div><span id="q-counter">1 / 30</span></div>
-            <button class="btn" style="background: var(--error); padding: 5px 10px; font-size: 0.8rem;" onclick="finishExam()">Bitir</button>
-        </div>
+    <div class="app-container">
         
-        <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
-        
-        <div id="question-container" class="question-card glass-card">
-            </div>
-        
-        <div class="glass-card" style="display: flex; justify-content: space-between;">
-            <button class="btn outline" onclick="prevQuestion()">⬅ Geri</button>
-            <button class="btn" onclick="nextQuestion()">İrəli ➡</button>
-        </div>
-        
-        <div class="question-palette glass-card" id="palette-container">
-            </div>
-    </div>
+        <div id="screen-entry" class="screen active">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🎓</div>
+                <h1>ExamMaster Pro</h1>
+                <p>İmtahan platformasına xoş gəlmisiniz. Zəhmət olmasa giriş növünü seçin.</p>
+                
+                <div class="tab-group">
+                    <button class="tab active" onclick="switchTab('user')">👤 Tələbə</button>
+                    <button class="tab" onclick="switchTab('admin')">🛡️ Admin</button>
+                </div>
 
-    <div id="screen-result" class="screen">
-        <div class="glass-card" style="text-align: center;">
-            <h1 id="score-percentage" style="font-size: 3rem; color: var(--primary);">0%</h1>
-            <p id="score-details" style="font-size: 1.2rem; margin-bottom: 20px;">0 Düz | 0 Səhv</p>
-            <div id="chart-container" style="height: 20px; display: flex; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
-                <div id="bar-correct" style="background: var(--success); width: 0%;"></div>
-                <div id="bar-wrong" style="background: var(--error); width: 0%;"></div>
-                <div id="bar-empty" style="background: #ccc; width: 0%;"></div>
-            </div>
-            <button class="btn" onclick="location.reload()">🔄 Yenidən Başla</button>
-            <button class="btn outline" onclick="shareResult()">📤 Nəticəni Paylaş</button>
-            <button class="btn outline" onclick="reviewExam()">👁️ Səhvlərə Bax</button>
-        </div>
-    </div>
+                <div id="form-admin" style="display: none;">
+                    <div class="input-group">
+                        <label>İstifadəçi adı</label>
+                        <input type="text" id="admin-user" placeholder="cesi">
+                    </div>
+                    <div class="input-group">
+                        <label>Şifrə</label>
+                        <input type="password" id="admin-pass" placeholder="••••••">
+                    </div>
+                    <button class="btn btn-primary" onclick="adminLogin()">Admin Girişi</button>
+                </div>
 
-    <div id="screen-review" class="screen">
-        <div class="glass-card">
-            <button class="btn outline" onclick="showScreen('screen-result')">⬅ Nəticələrə Qayıt</button>
-            <h2>Cavabların Analizi</h2>
-        </div>
-        <div id="review-container">
-            </div>
-    </div>
-
-    <div id="screen-admin" class="screen">
-        <div class="glass-card">
-            <button class="btn outline" onclick="showScreen('screen-start')">⬅ Geri</button>
-            <h2>⚙️ İmtahan Parametrləri</h2>
-            
-            <div style="margin-top: 20px;">
-                <h3>📥 JSON Import / Export</h3>
-                <textarea id="json-io" placeholder='[{"q":"Sual?","o":["A","B"],"a":0}]'></textarea>
-                <div style="margin-top: 10px;">
-                    <button class="btn" onclick="loadJSON()">Yüklə (JSON)</button>
-                    <button class="btn outline" onclick="copyJSON()">Kopyala</button>
+                <div id="form-user">
+                    <div class="input-group">
+                        <label>Ad və Soyad</label>
+                        <input type="text" id="user-name" placeholder="Məs: Əli Əliyev">
+                    </div>
+                    <button class="btn btn-primary" onclick="startExamCheck()">İmtahana Başla</button>
                 </div>
             </div>
+        </div>
 
-            <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
-                <h3>📝 Google Forms / Text Parser</h3>
-                <p style="font-size: 0.9rem; color: #666;">Format: Sual mətni? [Enter] A) Variant [Enter] B) Variant...</p>
-                <textarea id="text-parser-input" placeholder="Azərbaycanın paytaxtı haradır?
-A) Gəncə
-B) Bakı
-C) Sumqayıt
-*Cavab B (və ya sadəcə 2-ci variant düzdür)"></textarea>
-                <button class="btn" style="background: var(--secondary);" onclick="parseTextToJSON()">Çevir və Yüklə</button>
+        <div id="screen-admin" class="screen">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>⚙️ Admin Paneli</h2>
+                    <button class="btn btn-danger" style="width: auto; padding: 8px 15px;" onclick="logout()">Çıxış</button>
+                </div>
+                
+                <p>Aşağıdakı qutuya JSON formatında sualları yapışdırın. Bu suallar yaddaşda saxlanılacaq və User girişində görünəcək.</p>
+                
+                <div class="input-group">
+                    <label>Suallar (JSON Formatı)</label>
+                    <textarea id="json-editor" spellcheck="false"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="formatJSON()">🧹 Formatla (Gözəlləşdir)</button>
+                    <button class="btn btn-primary" onclick="saveQuestions()">💾 Yadda Saxla və Yayımla</button>
+                </div>
+
+                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <p style="font-size: 0.8rem;">Hazırda sistemdə: <strong id="question-count-badge" style="color: var(--success);">0 sual</strong> var.</p>
+                </div>
             </div>
         </div>
+
+        <div id="screen-quiz" class="screen">
+            <div class="card">
+                <div class="quiz-header">
+                    <div>
+                        <span style="font-size: 0.9rem; color: var(--text-muted);" id="student-name-display">Tələbə</span>
+                        <h3 id="question-index">Sual 1 / 10</h3>
+                    </div>
+                    <div class="timer-badge" id="timer">00:00</div>
+                </div>
+
+                <div id="question-text" style="font-size: 1.2rem; font-weight: 600; margin-bottom: 20px;">
+                    Sual mətni bura gələcək...
+                </div>
+
+                <div id="options-container">
+                    </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 25px;">
+                    <button class="btn btn-secondary" style="width: 48%;" onclick="prevQuestion()">⬅ Geri</button>
+                    <button class="btn btn-primary" style="width: 48%;" onclick="nextQuestion()" id="next-btn">Növbəti ➡</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-result" class="screen">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+                <h2>İmtahan Bitdi!</h2>
+                <h1 id="final-score" style="font-size: 3.5rem; color: var(--success);">85%</h1>
+                <p id="result-msg">Təbriklər, yaxşı nəticədir.</p>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-val" id="stat-correct" style="color: var(--success);">0</div>
+                        <div class="stat-label">Düzgün</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="stat-wrong" style="color: var(--danger);">0</div>
+                        <div class="stat-label">Səhv</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="location.reload()">🔄 Yenidən Başla</button>
+            </div>
+        </div>
+
     </div>
 
-</div>
-
 <script>
-    // --- CONFETTI EFFECT (Minimal) ---
-    const confettiCanvas = document.getElementById('confetti-canvas');
-    const ctx = confettiCanvas.getContext('2d');
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
-    let particles = [];
+    // --- KONFİQURASİYA VƏ STATE ---
+    const AUTH = { user: "cesi", pass: "cesi123" };
     
-    function fireConfetti() {
-        for(let i=0; i<100; i++) {
-            particles.push({
-                x: window.innerWidth / 2, y: window.innerHeight / 2,
-                vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                c: `hsl(${Math.random()*360}, 100%, 50%)`, s: Math.random() * 5 + 2
-            });
+    // Default Suallar (Əgər heç nə yoxdursa)
+    const DEFAULT_QUESTIONS = [
+        {
+            "q": "Azərbaycan Respublikasının Dövlət Bayrağı neçə rəngdən ibarətdir?",
+            "o": ["2", "3", "4", "5"],
+            "a": 1
+        },
+        {
+            "q": "Kompüterin 'beyni' hansı hissədir?",
+            "o": ["RAM", "HDD", "CPU", "GPU"],
+            "a": 2
         }
-        animateConfetti();
-    }
-    function animateConfetti() {
-        ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-        particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.vy += 0.1; 
-            ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.s, p.s);
-            if(p.y > window.innerHeight) particles.splice(i, 1);
-        });
-        if(particles.length > 0) requestAnimationFrame(animateConfetti);
-    }
-
-    // --- APP CORE LOGIC ---
-    
-    // Default Data
-    let defaultQuestions = [
-        { q: "Azərbaycan Respublikasının Dövlət Bayrağı neçə rəngdən ibarətdir?", o: ["2", "3", "4", "5"], a: 1 },
-        { q: "Kompüterin 'beyni' hansı hissədir?", o: ["RAM", "HDD", "CPU", "GPU"], a: 2 },
-        { q: "HTML nədir?", o: ["Proqramlaşdırma dili", "Hiper mətn nişanlama dili", "Əməliyyat sistemi", "Brauzer"], a: 1 },
-        { q: "Nyutonun neçə qanunu var?", o: ["1", "2", "3", "4"], a: 2 }
     ];
 
-    // State
-    const state = {
+    let state = {
         questions: [],
-        currentQuestionIndex: 0,
-        answers: {}, // { questionIndex: optionIndex }
+        currentIdx: 0,
+        answers: {}, // {0: 1, 1: 3} kimi saxlayacaq
         timer: null,
-        timeLeft: 0,
-        isExamActive: false,
-        flagged: new Set()
+        timeElapsed: 0,
+        userName: ''
     };
 
-    // DOM Elements
-    const els = {
-        screens: document.querySelectorAll('.screen'),
-        qContainer: document.getElementById('question-container'),
-        palette: document.getElementById('palette-container'),
-        timer: document.getElementById('timer-display'),
-        counter: document.getElementById('q-counter'),
-        progress: document.getElementById('progress-bar'),
-        jsonIO: document.getElementById('json-io')
+    // --- SİSTEM BAŞLAYANDA ---
+    window.onload = () => {
+        // LocalStorage-dan sualları yoxla
+        const savedData = localStorage.getItem('exam_data');
+        if(savedData) {
+            state.questions = JSON.parse(savedData);
+        } else {
+            state.questions = DEFAULT_QUESTIONS;
+            localStorage.setItem('exam_data', JSON.stringify(DEFAULT_QUESTIONS));
+        }
+        
+        // Admin panelində göstər
+        document.getElementById('json-editor').value = JSON.stringify(state.questions, null, 4);
+        updateBadge();
     };
 
-    // --- Initialization ---
-    function init() {
-        // Load from local storage or default
-        const saved = localStorage.getItem('examProData');
-        state.questions = saved ? JSON.parse(saved) : defaultQuestions;
-        els.jsonIO.value = JSON.stringify(state.questions, null, 2);
+    // --- NAVİQASİYA ---
+    function switchTab(type) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if(type === 'admin') {
+            document.getElementById('form-user').style.display = 'none';
+            document.getElementById('form-admin').style.display = 'block';
+        } else {
+            document.getElementById('form-user').style.display = 'block';
+            document.getElementById('form-admin').style.display = 'none';
+        }
     }
-    
-    // --- Navigation & UI ---
+
     function showScreen(id) {
-        els.screens.forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        // Save preference logic could go here
+    function showToast(msg, type='success') {
+        const t = document.getElementById('toast');
+        t.innerHTML = `<span>${type === 'error' ? '❌' : '✅'} ${msg}</span>`;
+        t.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    // --- Exam Logic ---
-    function startExam() {
-        const duration = parseInt(document.getElementById('exam-duration').value) || 60;
-        state.timeLeft = duration * 60;
-        state.currentQuestionIndex = 0;
-        state.answers = {};
-        state.isExamActive = true;
-        state.questions = shuffleArray([...state.questions]); // Shuffle questions
+    // --- ADMIN MƏNTİQİ ---
+    function adminLogin() {
+        const u = document.getElementById('admin-user').value;
+        const p = document.getElementById('admin-pass').value;
+
+        if (u === AUTH.user && p === AUTH.pass) {
+            showToast('Giriş uğurludur!');
+            showScreen('screen-admin');
+        } else {
+            showToast('İstifadəçi adı və ya şifrə səhvdir!', 'error');
+            document.getElementById('admin-pass').value = '';
+        }
+    }
+
+    function logout() {
+        location.reload();
+    }
+
+    function formatJSON() {
+        try {
+            const raw = document.getElementById('json-editor').value;
+            const parsed = JSON.parse(raw);
+            document.getElementById('json-editor').value = JSON.stringify(parsed, null, 4);
+            showToast('JSON formatlandı.');
+        } catch (e) {
+            showToast('JSON xətası: ' + e.message, 'error');
+        }
+    }
+
+    function saveQuestions() {
+        try {
+            const raw = document.getElementById('json-editor').value;
+            const parsed = JSON.parse(raw);
+            
+            if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("Format siyahı [] olmalıdır.");
+            if (!parsed[0].hasOwnProperty('q') || !parsed[0].hasOwnProperty('o')) throw new Error("Sual obyekti səhvdir (q, o, a sahələri lazımdır).");
+
+            localStorage.setItem('exam_data', JSON.stringify(parsed));
+            state.questions = parsed;
+            updateBadge();
+            showToast('Suallar yadda saxlanıldı və yayımlandı!');
+        } catch (e) {
+            showToast('Xəta: ' + e.message, 'error');
+        }
+    }
+
+    function updateBadge() {
+        document.getElementById('question-count-badge').innerText = state.questions.length + " sual";
+    }
+
+    // --- USER / IMTAHAN MƏNTİQİ ---
+    function startExamCheck() {
+        const name = document.getElementById('user-name').value.trim();
+        if (name.length < 3) {
+            showToast('Zəhmət olmasa adınızı tam yazın.', 'error');
+            return;
+        }
         
-        showScreen('screen-exam');
-        renderPalette();
+        // Yenilənmiş datanı çək
+        const savedData = localStorage.getItem('exam_data');
+        if(savedData) state.questions = JSON.parse(savedData);
+
+        state.userName = name;
+        state.currentIdx = 0;
+        state.answers = {};
+        state.timeElapsed = 0;
+
+        document.getElementById('student-name-display').innerText = name;
+        showScreen('screen-quiz');
         renderQuestion();
         startTimer();
     }
@@ -301,217 +405,91 @@ C) Sumqayıt
     function startTimer() {
         if(state.timer) clearInterval(state.timer);
         state.timer = setInterval(() => {
-            state.timeLeft--;
-            const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
-            const s = (state.timeLeft % 60).toString().padStart(2, '0');
-            els.timer.innerText = `${m}:${s}`;
-            
-            if(state.timeLeft <= 0) finishExam();
+            state.timeElapsed++;
+            const m = Math.floor(state.timeElapsed / 60).toString().padStart(2, '0');
+            const s = (state.timeElapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${m}:${s}`;
         }, 1000);
     }
 
     function renderQuestion() {
-        const q = state.questions[state.currentQuestionIndex];
-        const selected = state.answers[state.currentQuestionIndex];
-        
-        els.counter.innerText = `${state.currentQuestionIndex + 1} / ${state.questions.length}`;
-        els.progress.style.width = `${((state.currentQuestionIndex + 1) / state.questions.length) * 100}%`;
+        const qData = state.questions[state.currentIdx];
+        const total = state.questions.length;
 
-        let html = `<h3>${state.currentQuestionIndex + 1}. ${q.q}</h3>`;
-        
-        // Shuffle Options mapping logic (optional) - here keeping simple index
-        q.o.forEach((opt, idx) => {
-            const isSelected = selected === idx ? 'selected' : '';
-            html += `<button class="option-btn ${isSelected}" onclick="selectAnswer(${idx})">
-                <span style="font-weight:bold; margin-right:10px;">${String.fromCharCode(65+idx)})</span> ${opt}
-            </button>`;
+        // UI Update
+        document.getElementById('question-index').innerText = `Sual ${state.currentIdx + 1} / ${total}`;
+        document.getElementById('question-text').innerText = qData.q;
+        document.getElementById('progress-bar').style.width = `${((state.currentIdx + 1) / total) * 100}%`;
+
+        // Düymə mətni
+        document.getElementById('next-btn').innerText = (state.currentIdx === total - 1) ? "Bitir və Yoxla" : "Növbəti ➡";
+
+        // Variantlar
+        let html = '';
+        qData.o.forEach((opt, index) => {
+            const isSelected = state.answers[state.currentIdx] === index ? 'selected' : '';
+            html += `
+                <div class="option ${isSelected}" onclick="selectOption(${index})">
+                    <div style="width: 30px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold;">
+                        ${String.fromCharCode(65 + index)}
+                    </div>
+                    ${opt}
+                </div>
+            `;
         });
-
-        els.qContainer.innerHTML = html;
-        updatePalette();
+        document.getElementById('options-container').innerHTML = html;
     }
 
-    function selectAnswer(optIndex) {
-        if(!state.isExamActive) return;
-        state.answers[state.currentQuestionIndex] = optIndex;
-        renderQuestion(); // Re-render to show selection
+    function selectOption(index) {
+        state.answers[state.currentIdx] = index;
+        renderQuestion(); // Seçimi göstərmək üçün yenilə
     }
 
     function nextQuestion() {
-        if(state.currentQuestionIndex < state.questions.length - 1) {
-            state.currentQuestionIndex++;
+        if (state.currentIdx < state.questions.length - 1) {
+            state.currentIdx++;
             renderQuestion();
+        } else {
+            finishExam();
         }
     }
 
     function prevQuestion() {
-        if(state.currentQuestionIndex > 0) {
-            state.currentQuestionIndex--;
+        if (state.currentIdx > 0) {
+            state.currentIdx--;
             renderQuestion();
         }
     }
 
-    function goToQuestion(index) {
-        state.currentQuestionIndex = index;
-        renderQuestion();
-    }
-
-    // --- Palette ---
-    function renderPalette() {
-        els.palette.innerHTML = state.questions.map((_, i) => 
-            `<button id="p-btn-${i}" class="palette-btn" onclick="goToQuestion(${i})">${i+1}</button>`
-        ).join('');
-    }
-
-    function updatePalette() {
-        document.querySelectorAll('.palette-btn').forEach((btn, i) => {
-            btn.classList.remove('active', 'answered');
-            if(i === state.currentQuestionIndex) btn.classList.add('active');
-            if(state.answers[i] !== undefined) btn.classList.add('answered');
-        });
-    }
-
-    // --- Results ---
     function finishExam() {
         clearInterval(state.timer);
-        state.isExamActive = false;
-        
-        let correct = 0, wrong = 0, empty = 0;
-        
-        state.questions.forEach((q, i) => {
-            const ans = state.answers[i];
-            if(ans === undefined) empty++;
-            else if(ans === q.a) correct++;
-            else wrong++;
+        let correct = 0;
+        let wrong = 0;
+
+        state.questions.forEach((q, idx) => {
+            if (state.answers[idx] === q.a) {
+                correct++;
+            } else {
+                wrong++;
+            }
         });
 
-        const total = state.questions.length;
-        const percentage = Math.round((correct / total) * 100);
-
-        // UI Updates
-        document.getElementById('score-percentage').innerText = `${percentage}%`;
-        document.getElementById('score-details').innerText = `✅ ${correct} | ❌ ${wrong} | ⭕ ${empty}`;
+        const score = Math.round((correct / state.questions.length) * 100);
         
-        document.getElementById('bar-correct').style.width = `${(correct/total)*100}%`;
-        document.getElementById('bar-wrong').style.width = `${(wrong/total)*100}%`;
-        document.getElementById('bar-empty').style.width = `${(empty/total)*100}%`;
+        document.getElementById('final-score').innerText = `${score}%`;
+        document.getElementById('stat-correct').innerText = correct;
+        document.getElementById('stat-wrong').innerText = wrong;
 
-        if(percentage > 70) fireConfetti();
+        let msg = "";
+        if(score === 100) msg = "Möhtəşəm! Dahisən! 🔥";
+        else if(score >= 80) msg = "Əla nəticə! 🚀";
+        else if(score >= 50) msg = "Pis deyil, amma işləməlisən. 📚";
+        else msg = "Daha çox çalışmalısan. ⚠️";
         
+        document.getElementById('result-msg').innerText = msg;
+
         showScreen('screen-result');
     }
-
-    function reviewExam() {
-        showScreen('screen-review');
-        const container = document.getElementById('review-container');
-        container.innerHTML = '';
-        
-        state.questions.forEach((q, i) => {
-            const userAns = state.answers[i];
-            const isCorrect = userAns === q.a;
-            const statusClass = userAns === undefined ? '' : (isCorrect ? 'correct-border' : 'wrong-border');
-            
-            let html = `<div class="glass-card ${statusClass}">
-                <p><strong>${i+1}. ${q.q}</strong></p>`;
-            
-            q.o.forEach((opt, oIdx) => {
-                let cls = '';
-                if(q.a === oIdx) cls = 'correct'; // Always show correct answer
-                if(userAns === oIdx && userAns !== q.a) cls = 'wrong'; // Show user's wrong answer
-                
-                html += `<div class="option-btn ${cls}" style="cursor:default;">
-                    ${String.fromCharCode(65+oIdx)}) ${opt}
-                    ${oIdx === userAns ? ' (Sənin cavabın)' : ''}
-                </div>`;
-            });
-            
-            html += `</div>`;
-            container.innerHTML += html;
-        });
-    }
-
-    function shareResult() {
-        const text = `ExamPro Nəticəm: ${document.getElementById('score-percentage').innerText}`;
-        if(navigator.share) {
-            navigator.share({ title: 'İmtahan Nəticəsi', text: text });
-        } else {
-            alert("Nəticə kopyalandı: " + text);
-        }
-    }
-
-    // --- Admin & Utilities ---
-    function loadJSON() {
-        try {
-            const data = JSON.parse(els.jsonIO.value);
-            if(Array.isArray(data)) {
-                state.questions = data;
-                localStorage.setItem('examProData', JSON.stringify(data));
-                alert("Suallar yükləndi!");
-            }
-        } catch(e) { alert("JSON formatı səhvdir!"); }
-    }
-
-    function copyJSON() {
-        els.jsonIO.select();
-        document.execCommand('copy');
-        alert("JSON kopyalandı!");
-    }
-
-    function parseTextToJSON() {
-        const text = document.getElementById('text-parser-input').value;
-        const blocks = text.split(/\n\s*\n/); // Split by empty lines
-        const newQuestions = [];
-
-        blocks.forEach(block => {
-            const lines = block.trim().split('\n');
-            if(lines.length < 2) return;
-
-            const qText = lines[0].replace(/^\d+[\.)]\s*/, '').trim(); // Remove "1." or "1)"
-            const options = [];
-            let correctIndex = 0; // Default A
-
-            // Simple parser logic
-            for(let i=1; i<lines.length; i++) {
-                let line = lines[i].trim();
-                // Check if line indicates answer (e.g. "*Cavab: A" or line starts with *)
-                if(line.startsWith('*') || line.toLowerCase().includes('cavab')) {
-                    // Try to detect letter
-                    if(line.toLowerCase().includes('a')) correctIndex = 0;
-                    else if(line.toLowerCase().includes('b')) correctIndex = 1;
-                    else if(line.toLowerCase().includes('c')) correctIndex = 2;
-                    else if(line.toLowerCase().includes('d')) correctIndex = 3;
-                    else if(line.toLowerCase().includes('e')) correctIndex = 4;
-                    continue; 
-                }
-                
-                // Remove "A)" etc
-                line = line.replace(/^[A-Ea-e][\)\.]\s*/, '');
-                options.push(line);
-            }
-
-            if(options.length > 0) {
-                newQuestions.push({ q: qText, o: options, a: correctIndex });
-            }
-        });
-
-        if(newQuestions.length > 0) {
-            els.jsonIO.value = JSON.stringify(newQuestions, null, 2);
-            loadJSON();
-        } else {
-            alert("Sualları oxumaq mümkün olmadı. Formatı yoxlayın.");
-        }
-    }
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    // Run
-    init();
 
 </script>
 </body>
