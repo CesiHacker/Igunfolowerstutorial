@@ -1,300 +1,518 @@
 <!DOCTYPE html>
-<html lang="bn">
-
-<!-- Göndərilən  198.135.52.238/ by CesiCoder sayt kopy/3.x [XR&CO'2017], Thu, 05 Feb 2026 18:39:47 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Panel - OTP & Number Management</title>
-    <link href="../cdn.jsdelivr.net/npm/tailwindcss%402.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="../cdn.socket.io/4.6.0/socket.io.min.js"></script>
-    <style>
-        @import url('../external.html?link=https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap');
-        
-        * { box-sizing: border-box; }
-        
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #050914 0%, #0a1628 50%, #0f172a 100%);
-            min-height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* Premium Background Effects */
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(74, 58, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(44, 212, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(244, 201, 93, 0.05) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        /* Premium Glass Card */
-        
-        .glass-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Premium SMS Card - Dark Theme */
-        
-        .sms-card {
-            background: #1a2332;
-            border-left: 3px solid #22c55e;
-            border-radius: 8px;
-            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .sms-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        /* Premium OTP Badge - Green */
-        
-        .otp-badge {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
-            position: relative;
-            overflow: hidden;
-            color: white;
-        }
-        
-        .otp-badge::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-        }
-        
-        .otp-badge:hover::before {
-            left: 100%;
-        }
-        
-        .otp-badge:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
-        }
-        
-        /* Dark Navy Sidebar */
-        
-        .sidebar {
-            background: #0d1b2a !important;
-            backdrop-filter: blur(30px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        /* Premium Nav Items */
-        
-        .nav-item {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 100%;
-            background: linear-gradient(90deg, rgba(244, 201, 93, 0.15) 0%, transparent 100%);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-item:hover::before {
-            width: 100%;
-        }
-        
-        .nav-item:hover {
-            transform: translateX(4px);
-        }
-        
-        /* Premium Stat Cards */
-        
-        .stat-card {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        /* Premium Pulse Animation */
-        
-        .pulse-dot {
-            animation: premiumPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
-        }
-        
-        @keyframes premiumPulse {
-            0%, 100% { 
-                opacity: 1; 
-                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
-            }
-            50% { 
-                opacity: 0.8; 
-                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
-            }
-        }
-        
-        /* Premium Glow Animation */
-        
-        @keyframes glow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.2); }
-        }
-        
-        /* Number Counter Animation */
-        
-        @keyframes countUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .stat-number {
-            animation: countUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        /* Premium Scrollbar */
-        
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-        
-        .scrollbar-thin::-webkit-scrollbar-track { 
-            background: rgba(0,0,0,0.2); 
-            border-radius: 3px;
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-thumb { 
-            background: linear-gradient(180deg, #4A3AFF, #00d4ff);
-            border-radius: 3px;
-        }
-        
-        /* Premium Inputs */
-        
-        input, select, textarea {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
-            color: white !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            border-color: rgba(74, 58, 255, 0.5) !important;
-            box-shadow: 0 0 20px rgba(74, 58, 255, 0.2) !important;
-        }
-        
-        input::placeholder { color: rgba(255,255,255,0.4) !important; }
-        
-        /* Premium Modal */
-        
-        .modal-overlay {
-            background: rgba(5, 9, 20, 0.85);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Floating Animation for Icons */
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        .float-icon {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        /* Shimmer Effect */
-        
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-        
-        /* Premium Button Glow */
-        
-        .btn-glow {
-            position: relative;
-        }
-        
-        .btn-glow::after {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, #4A3AFF, #00d4ff, #F4C95D, #FF6B6B);
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0;
-            filter: blur(15px);
-            transition: opacity 0.3s ease;
-        }
-        
-        .btn-glow:hover::after {
-            opacity: 0.6;
-        }
-    </style>
-  <script type="module" crossorigin src="assets/index-CPcuA7Te.js"></script>
-</head>
-<body class="text-white">
-    <div id="app"></div>
-</body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ExamPro: İmtahan Platforması</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #ec4899;
+        --bg-light: #f3f4f6;
+        --bg-dark: #0f172a;
+        --glass-light: rgba(255, 255, 255, 0.7);
+        --glass-dark: rgba(30, 41, 59, 0.7);
+        --text-light: #1f2937;
+        --text-dark: #f8fafc;
+        --success: #10b981;
+        --error: #ef4444;
+        --warning: #f59e0b;
+        --radius: 16px;
+        --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    }
 
-<!-- Göndərilən  198.135.52.238/ by CesiCoder sayt kopy/3.x [XR&CO'2017], Thu, 05 Feb 2026 18:39:50 GMT -->
+    /* Reset & Base */
+    * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-light); color: var(--text-light); transition: 0.3s; min-height: 100vh; display: flex; flex-direction: column; }
+    body.dark-mode { background: var(--bg-dark); color: var(--text-dark); }
+    
+    /* Layout */
+    .app-container { max-width: 900px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; position: relative; }
+    
+    /* Glassmorphism Cards */
+    .glass-card {
+        background: var(--glass-light);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+        transition: 0.3s;
+    }
+    body.dark-mode .glass-card {
+        background: var(--glass-dark);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Screen Management */
+    .screen { display: none; opacity: 0; animation: fadeIn 0.4s forwards; }
+    .screen.active { display: block; opacity: 1; }
+    @keyframes fadeIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    /* UI Components */
+    .btn {
+        background: var(--primary);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.5); }
+    .btn.outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    body.dark-mode .btn.outline { color: var(--primary-dark); }
+    
+    .question-card { margin-top: 20px; }
+    .question-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 24px; line-height: 1.5; }
+    
+    .option-btn {
+        display: block; width: 100%; text-align: left; background: var(--glass-light); border: 2px solid transparent; padding: 16px; margin-bottom: 12px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1rem; position: relative;
+    }
+    body.dark-mode .option-btn { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    
+    .option-btn:hover { background: rgba(99, 102, 241, 0.1); border-color: var(--primary); }
+    .option-btn.selected { background: rgba(99, 102, 241, 0.15); border-color: var(--primary); font-weight: 700; }
+    .option-btn.correct { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
+    .option-btn.wrong { background: rgba(239, 68, 68, 0.1); border-color: var(--error); color: var(--error); }
+    
+    /* Navigation Palette */
+    .question-palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)); gap: 8px; margin-top: 20px; }
+    .palette-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #ddd; border-radius: 50%; font-size: 0.8rem; cursor: pointer; border: none; }
+    .palette-btn.active { background: var(--primary); color: white; transform: scale(1.1); box-shadow: 0 0 10px var(--primary); }
+    .palette-btn.answered { background: var(--primary-dark); color: white; opacity: 0.7; }
+    .palette-btn.skipped { background: var(--warning); color: white; }
+    
+    /* Progress Bar */
+    .progress-track { width: 100%; height: 6px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 20px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: 0.5s ease-out; }
+    
+    /* Timer */
+    .timer { font-size: 1.5rem; font-weight: 800; color: var(--secondary); text-align: center; margin-bottom: 20px; }
+    
+    /* Confetti */
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+    
+    /* Admin Panel */
+    textarea { width: 100%; height: 200px; background: rgba(0,0,0,0.05); border: 1px solid #ccc; padding: 10px; border-radius: 8px; font-family: monospace; resize: vertical; }
+    body.dark-mode textarea { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; }
+    
+    /* Responsive */
+    @media(max-width: 600px) {
+        .glass-card { padding: 16px; margin-bottom: 10px; }
+        h1 { font-size: 1.5rem; }
+        .question-palette { display: none; } /* Hide palette on mobile */
+    }
+</style>
+</head>
+<body class="light-mode">
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="app-container">
+    
+    <div id="screen-start" class="screen active">
+        <div class="glass-card" style="text-align: center;">
+            <h1 style="margin-bottom: 10px;">🎓 İmtahan PRO</h1>
+            <p>9-cu sinif buraxılış imtahanına hazırlıq platforması.</p>
+            <div style="margin: 20px 0;">
+                <label>Müddət (dəqiqə): <input type="number" id="exam-duration" value="60" style="width: 60px; padding: 5px; border-radius: 4px; border:1px solid #ccc;"></label>
+            </div>
+            <button class="btn" onclick="startExam()">🚀 İmtahana Başla</button>
+            <button class="btn outline" onclick="showScreen('screen-admin')">⚙️ Admin Panel</button>
+            <button class="btn outline" onclick="toggleTheme()" style="margin-top: 10px;">🌙 Theme</button>
+        </div>
+    </div>
+
+    <div id="screen-exam" class="screen">
+        <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="timer" id="timer-display">00:00</div>
+            <div><span id="q-counter">1 / 30</span></div>
+            <button class="btn" style="background: var(--error); padding: 5px 10px; font-size: 0.8rem;" onclick="finishExam()">Bitir</button>
+        </div>
+        
+        <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+        
+        <div id="question-container" class="question-card glass-card">
+            </div>
+        
+        <div class="glass-card" style="display: flex; justify-content: space-between;">
+            <button class="btn outline" onclick="prevQuestion()">⬅ Geri</button>
+            <button class="btn" onclick="nextQuestion()">İrəli ➡</button>
+        </div>
+        
+        <div class="question-palette glass-card" id="palette-container">
+            </div>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <div class="glass-card" style="text-align: center;">
+            <h1 id="score-percentage" style="font-size: 3rem; color: var(--primary);">0%</h1>
+            <p id="score-details" style="font-size: 1.2rem; margin-bottom: 20px;">0 Düz | 0 Səhv</p>
+            <div id="chart-container" style="height: 20px; display: flex; border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+                <div id="bar-correct" style="background: var(--success); width: 0%;"></div>
+                <div id="bar-wrong" style="background: var(--error); width: 0%;"></div>
+                <div id="bar-empty" style="background: #ccc; width: 0%;"></div>
+            </div>
+            <button class="btn" onclick="location.reload()">🔄 Yenidən Başla</button>
+            <button class="btn outline" onclick="shareResult()">📤 Nəticəni Paylaş</button>
+            <button class="btn outline" onclick="reviewExam()">👁️ Səhvlərə Bax</button>
+        </div>
+    </div>
+
+    <div id="screen-review" class="screen">
+        <div class="glass-card">
+            <button class="btn outline" onclick="showScreen('screen-result')">⬅ Nəticələrə Qayıt</button>
+            <h2>Cavabların Analizi</h2>
+        </div>
+        <div id="review-container">
+            </div>
+    </div>
+
+    <div id="screen-admin" class="screen">
+        <div class="glass-card">
+            <button class="btn outline" onclick="showScreen('screen-start')">⬅ Geri</button>
+            <h2>⚙️ İmtahan Parametrləri</h2>
+            
+            <div style="margin-top: 20px;">
+                <h3>📥 JSON Import / Export</h3>
+                <textarea id="json-io" placeholder='[{"q":"Sual?","o":["A","B"],"a":0}]'></textarea>
+                <div style="margin-top: 10px;">
+                    <button class="btn" onclick="loadJSON()">Yüklə (JSON)</button>
+                    <button class="btn outline" onclick="copyJSON()">Kopyala</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+                <h3>📝 Google Forms / Text Parser</h3>
+                <p style="font-size: 0.9rem; color: #666;">Format: Sual mətni? [Enter] A) Variant [Enter] B) Variant...</p>
+                <textarea id="text-parser-input" placeholder="Azərbaycanın paytaxtı haradır?
+A) Gəncə
+B) Bakı
+C) Sumqayıt
+*Cavab B (və ya sadəcə 2-ci variant düzdür)"></textarea>
+                <button class="btn" style="background: var(--secondary);" onclick="parseTextToJSON()">Çevir və Yüklə</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- CONFETTI EFFECT (Minimal) ---
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const ctx = confettiCanvas.getContext('2d');
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+    let particles = [];
+    
+    function fireConfetti() {
+        for(let i=0; i<100; i++) {
+            particles.push({
+                x: window.innerWidth / 2, y: window.innerHeight / 2,
+                vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
+                c: `hsl(${Math.random()*360}, 100%, 50%)`, s: Math.random() * 5 + 2
+            });
+        }
+        animateConfetti();
+    }
+    function animateConfetti() {
+        ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+        particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.vy += 0.1; 
+            ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.s, p.s);
+            if(p.y > window.innerHeight) particles.splice(i, 1);
+        });
+        if(particles.length > 0) requestAnimationFrame(animateConfetti);
+    }
+
+    // --- APP CORE LOGIC ---
+    
+    // Default Data
+    let defaultQuestions = [
+        { q: "Azərbaycan Respublikasının Dövlət Bayrağı neçə rəngdən ibarətdir?", o: ["2", "3", "4", "5"], a: 1 },
+        { q: "Kompüterin 'beyni' hansı hissədir?", o: ["RAM", "HDD", "CPU", "GPU"], a: 2 },
+        { q: "HTML nədir?", o: ["Proqramlaşdırma dili", "Hiper mətn nişanlama dili", "Əməliyyat sistemi", "Brauzer"], a: 1 },
+        { q: "Nyutonun neçə qanunu var?", o: ["1", "2", "3", "4"], a: 2 }
+    ];
+
+    // State
+    const state = {
+        questions: [],
+        currentQuestionIndex: 0,
+        answers: {}, // { questionIndex: optionIndex }
+        timer: null,
+        timeLeft: 0,
+        isExamActive: false,
+        flagged: new Set()
+    };
+
+    // DOM Elements
+    const els = {
+        screens: document.querySelectorAll('.screen'),
+        qContainer: document.getElementById('question-container'),
+        palette: document.getElementById('palette-container'),
+        timer: document.getElementById('timer-display'),
+        counter: document.getElementById('q-counter'),
+        progress: document.getElementById('progress-bar'),
+        jsonIO: document.getElementById('json-io')
+    };
+
+    // --- Initialization ---
+    function init() {
+        // Load from local storage or default
+        const saved = localStorage.getItem('examProData');
+        state.questions = saved ? JSON.parse(saved) : defaultQuestions;
+        els.jsonIO.value = JSON.stringify(state.questions, null, 2);
+    }
+    
+    // --- Navigation & UI ---
+    function showScreen(id) {
+        els.screens.forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        // Save preference logic could go here
+    }
+
+    // --- Exam Logic ---
+    function startExam() {
+        const duration = parseInt(document.getElementById('exam-duration').value) || 60;
+        state.timeLeft = duration * 60;
+        state.currentQuestionIndex = 0;
+        state.answers = {};
+        state.isExamActive = true;
+        state.questions = shuffleArray([...state.questions]); // Shuffle questions
+        
+        showScreen('screen-exam');
+        renderPalette();
+        renderQuestion();
+        startTimer();
+    }
+
+    function startTimer() {
+        if(state.timer) clearInterval(state.timer);
+        state.timer = setInterval(() => {
+            state.timeLeft--;
+            const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
+            const s = (state.timeLeft % 60).toString().padStart(2, '0');
+            els.timer.innerText = `${m}:${s}`;
+            
+            if(state.timeLeft <= 0) finishExam();
+        }, 1000);
+    }
+
+    function renderQuestion() {
+        const q = state.questions[state.currentQuestionIndex];
+        const selected = state.answers[state.currentQuestionIndex];
+        
+        els.counter.innerText = `${state.currentQuestionIndex + 1} / ${state.questions.length}`;
+        els.progress.style.width = `${((state.currentQuestionIndex + 1) / state.questions.length) * 100}%`;
+
+        let html = `<h3>${state.currentQuestionIndex + 1}. ${q.q}</h3>`;
+        
+        // Shuffle Options mapping logic (optional) - here keeping simple index
+        q.o.forEach((opt, idx) => {
+            const isSelected = selected === idx ? 'selected' : '';
+            html += `<button class="option-btn ${isSelected}" onclick="selectAnswer(${idx})">
+                <span style="font-weight:bold; margin-right:10px;">${String.fromCharCode(65+idx)})</span> ${opt}
+            </button>`;
+        });
+
+        els.qContainer.innerHTML = html;
+        updatePalette();
+    }
+
+    function selectAnswer(optIndex) {
+        if(!state.isExamActive) return;
+        state.answers[state.currentQuestionIndex] = optIndex;
+        renderQuestion(); // Re-render to show selection
+    }
+
+    function nextQuestion() {
+        if(state.currentQuestionIndex < state.questions.length - 1) {
+            state.currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if(state.currentQuestionIndex > 0) {
+            state.currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function goToQuestion(index) {
+        state.currentQuestionIndex = index;
+        renderQuestion();
+    }
+
+    // --- Palette ---
+    function renderPalette() {
+        els.palette.innerHTML = state.questions.map((_, i) => 
+            `<button id="p-btn-${i}" class="palette-btn" onclick="goToQuestion(${i})">${i+1}</button>`
+        ).join('');
+    }
+
+    function updatePalette() {
+        document.querySelectorAll('.palette-btn').forEach((btn, i) => {
+            btn.classList.remove('active', 'answered');
+            if(i === state.currentQuestionIndex) btn.classList.add('active');
+            if(state.answers[i] !== undefined) btn.classList.add('answered');
+        });
+    }
+
+    // --- Results ---
+    function finishExam() {
+        clearInterval(state.timer);
+        state.isExamActive = false;
+        
+        let correct = 0, wrong = 0, empty = 0;
+        
+        state.questions.forEach((q, i) => {
+            const ans = state.answers[i];
+            if(ans === undefined) empty++;
+            else if(ans === q.a) correct++;
+            else wrong++;
+        });
+
+        const total = state.questions.length;
+        const percentage = Math.round((correct / total) * 100);
+
+        // UI Updates
+        document.getElementById('score-percentage').innerText = `${percentage}%`;
+        document.getElementById('score-details').innerText = `✅ ${correct} | ❌ ${wrong} | ⭕ ${empty}`;
+        
+        document.getElementById('bar-correct').style.width = `${(correct/total)*100}%`;
+        document.getElementById('bar-wrong').style.width = `${(wrong/total)*100}%`;
+        document.getElementById('bar-empty').style.width = `${(empty/total)*100}%`;
+
+        if(percentage > 70) fireConfetti();
+        
+        showScreen('screen-result');
+    }
+
+    function reviewExam() {
+        showScreen('screen-review');
+        const container = document.getElementById('review-container');
+        container.innerHTML = '';
+        
+        state.questions.forEach((q, i) => {
+            const userAns = state.answers[i];
+            const isCorrect = userAns === q.a;
+            const statusClass = userAns === undefined ? '' : (isCorrect ? 'correct-border' : 'wrong-border');
+            
+            let html = `<div class="glass-card ${statusClass}">
+                <p><strong>${i+1}. ${q.q}</strong></p>`;
+            
+            q.o.forEach((opt, oIdx) => {
+                let cls = '';
+                if(q.a === oIdx) cls = 'correct'; // Always show correct answer
+                if(userAns === oIdx && userAns !== q.a) cls = 'wrong'; // Show user's wrong answer
+                
+                html += `<div class="option-btn ${cls}" style="cursor:default;">
+                    ${String.fromCharCode(65+oIdx)}) ${opt}
+                    ${oIdx === userAns ? ' (Sənin cavabın)' : ''}
+                </div>`;
+            });
+            
+            html += `</div>`;
+            container.innerHTML += html;
+        });
+    }
+
+    function shareResult() {
+        const text = `ExamPro Nəticəm: ${document.getElementById('score-percentage').innerText}`;
+        if(navigator.share) {
+            navigator.share({ title: 'İmtahan Nəticəsi', text: text });
+        } else {
+            alert("Nəticə kopyalandı: " + text);
+        }
+    }
+
+    // --- Admin & Utilities ---
+    function loadJSON() {
+        try {
+            const data = JSON.parse(els.jsonIO.value);
+            if(Array.isArray(data)) {
+                state.questions = data;
+                localStorage.setItem('examProData', JSON.stringify(data));
+                alert("Suallar yükləndi!");
+            }
+        } catch(e) { alert("JSON formatı səhvdir!"); }
+    }
+
+    function copyJSON() {
+        els.jsonIO.select();
+        document.execCommand('copy');
+        alert("JSON kopyalandı!");
+    }
+
+    function parseTextToJSON() {
+        const text = document.getElementById('text-parser-input').value;
+        const blocks = text.split(/\n\s*\n/); // Split by empty lines
+        const newQuestions = [];
+
+        blocks.forEach(block => {
+            const lines = block.trim().split('\n');
+            if(lines.length < 2) return;
+
+            const qText = lines[0].replace(/^\d+[\.)]\s*/, '').trim(); // Remove "1." or "1)"
+            const options = [];
+            let correctIndex = 0; // Default A
+
+            // Simple parser logic
+            for(let i=1; i<lines.length; i++) {
+                let line = lines[i].trim();
+                // Check if line indicates answer (e.g. "*Cavab: A" or line starts with *)
+                if(line.startsWith('*') || line.toLowerCase().includes('cavab')) {
+                    // Try to detect letter
+                    if(line.toLowerCase().includes('a')) correctIndex = 0;
+                    else if(line.toLowerCase().includes('b')) correctIndex = 1;
+                    else if(line.toLowerCase().includes('c')) correctIndex = 2;
+                    else if(line.toLowerCase().includes('d')) correctIndex = 3;
+                    else if(line.toLowerCase().includes('e')) correctIndex = 4;
+                    continue; 
+                }
+                
+                // Remove "A)" etc
+                line = line.replace(/^[A-Ea-e][\)\.]\s*/, '');
+                options.push(line);
+            }
+
+            if(options.length > 0) {
+                newQuestions.push({ q: qText, o: options, a: correctIndex });
+            }
+        });
+
+        if(newQuestions.length > 0) {
+            els.jsonIO.value = JSON.stringify(newQuestions, null, 2);
+            loadJSON();
+        } else {
+            alert("Sualları oxumaq mümkün olmadı. Formatı yoxlayın.");
+        }
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Run
+    init();
+
+</script>
+</body>
 </html>
