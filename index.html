@@ -1,776 +1,574 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ExamMaster · online test platformu</title>
-    <!-- external libraries (single file still, only CDN calls) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        :root {
-            --bg: #0b1120;
-            --surface: #1e293bcc;
-            --surface-solid: #1e293b;
-            --border: #334155;
-            --primary: #4f46e5;
-            --primary-light: #6366f1;
-            --secondary: #06b6d4;
-            --accent: #f43f5e;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --glass: rgba(30, 41, 59, 0.6);
-            --shadow: 0 25px 50px -12px #00000080;
-        }
-
-        body.light {
-            --bg: #f8fafc;
-            --surface: #ffffffcc;
-            --surface-solid: #ffffff;
-            --border: #e2e8f0;
-            --text: #0f172a;
-            --text-muted: #475569;
-            --glass: #ffffffb3;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
-            backdrop-filter: blur(2px);
-            background-image: radial-gradient(circle at 30% 10%, #4f46e515 0%, transparent 30%),
-                              radial-gradient(circle at 80% 70%, #06b6d415 0%, transparent 30%);
-        }
-
-        .app { max-width: 1200px; margin: 0 auto; padding: 1rem; }
-
-        /* glass card */
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 2rem;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        /* screens */
-        .screen { display: none; }
-        .screen.active { display: block; }
-
-        /* buttons */
-        .btn {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 3rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: 1px solid transparent;
-        }
-        .btn-outline {
-            background: transparent;
-            border-color: var(--border);
-            color: var(--text);
-        }
-        .btn-outline:hover { background: var(--surface-solid); }
-        .btn-danger { background: var(--danger); }
-        .btn-success { background: var(--success); }
-
-        /* forms */
-        .input-group { margin-bottom: 1.2rem; }
-        input, textarea, select {
-            width: 100%;
-            padding: 1rem;
-            background: var(--surface-solid);
-            border: 2px solid var(--border);
-            border-radius: 1.5rem;
-            color: var(--text);
-            font-size: 1rem;
-        }
-        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
-
-        /* grid */
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-
-        /* quiz options */
-        .option {
-            background: var(--surface-solid);
-            padding: 1rem 1.5rem;
-            margin: 0.5rem 0;
-            border-radius: 1rem;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .option:hover { background: #334155; }
-        .option.selected { border-color: var(--primary); background: #4f46e520; }
-        .option.correct { border-color: var(--success); background: #10b98120; }
-        .option.wrong { border-color: var(--danger); background: #ef444420; }
-
-        .badge {
-            background: var(--primary);
-            padding: 0.3rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-        }
-
-        /* progress */
-        .progress { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-        .progress-bar { height: 100%; background: var(--primary); width: 0%; }
-
-        .toast {
-            position: fixed; bottom: 20px; right: 20px;
-            background: var(--surface-solid); border-left: 5px solid var(--primary);
-            padding: 1rem 1.5rem; border-radius: 1rem; box-shadow: var(--shadow);
-            transform: translateX(200%); transition: 0.3s; z-index: 9999;
-        }
-        .toast.show { transform: translateX(0); }
-
-        /* mobile */
-        @media (max-width: 600px) {
-            .card { padding: 1rem; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ExamMaster · pro test · zero backend</title>
+  <!-- Tailwind + glass ui -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <!-- lucide icons (alternative) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- chart.js, qrcode, confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <style>
+    /* custom smooth scroll + glass morphism */
+    * { scroll-behavior: smooth; }
+    .glass { backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(17, 25, 40, 0.6); border: 1px solid rgba(255,255,255,0.125); }
+    .glass-light { backdrop-filter: blur(20px); background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6); }
+    body.dark .glass { background: rgba(15, 23, 42, 0.7); border-color: #334155; }
+    .slide-enter { animation: slideIn 0.2s ease; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
+    .toast { transition: all 0.3s; }
+    .focus-outline{outline:2px solid #4f46e5;}
+    .cheat-flash{animation: warn 0.5s infinite;}
+    @keyframes warn{0%{background:rgba(239,68,68,0.2)}50%{background:rgba(239,68,68,0.5)}}
+  </style>
 </head>
-<body>
-    <div class="app" id="app">
+<body class="bg-slate-950 text-slate-200 font-sans antialiased dark transition-colors duration-300">
 
-        <!-- TOAST -->
-        <div id="toast" class="toast"><i class="fas fa-info-circle"></i> <span>Mesaj</span></div>
+  <!-- APP ROOT -->
+  <main id="app" class="max-w-7xl mx-auto p-3 md:p-5 relative z-10">
 
-        <!-- ENTRY SCREEN (login/register/guest) + admin shortcut -->
-        <div id="screen-entry" class="screen active">
-            <div class="card" style="max-width: 500px; margin: 2rem auto;">
-                <h1 style="font-size: 2.5rem; background: linear-gradient(135deg, #4f46e5, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📋 ExamMaster</h1>
-                <p style="margin-bottom: 2rem;">Test yarat, paylaş, nəticələri analiz et.</p>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn" onclick="showScreen('user-login')"><i class="fas fa-sign-in-alt"></i> İstifadəçi girişi</button>
-                    <button class="btn btn-outline" onclick="showScreen('user-register')"><i class="fas fa-user-plus"></i> Qeydiyyat</button>
-                </div>
-                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-                    <button class="btn btn-outline" onclick="guestTakeTest()"><i class="fas fa-link"></i> Link ilə test (qonaq)</button>
-                    <button class="btn btn-outline" onclick="showScreen('admin-login')"><i class="fas fa-crown"></i> Admin</button>
-                </div>
-                <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem; display: flex; gap: 1rem;">
-                    <button class="btn-outline" style="border:none;" onclick="toggleTheme()"><i class="fas fa-moon"></i> Tema</button>
-                </div>
-            </div>
+    <!-- TOAST PORTAL -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 glass text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 translate-x-[200%] toast"></div>
+
+    <!-- SCREENS (dynamic) -->
+    <!-- ENTRY -->
+    <div id="screen-entry" class="screen active">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl shadow-2xl">
+        <h1 class="text-5xl font-black bg-gradient-to-r from-indigo-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent mb-2">📋 ExamMaster</h1>
+        <p class="text-slate-300 mb-8">test yarat · paylaş · analiz et</p>
+        <div class="flex flex-col gap-3">
+          <button class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-2xl transition-all" onclick="ui.show('user-login')"><i data-lucide="log-in" class="w-5 h-5"></i> İstifadəçi girişi</button>
+          <button class="flex items-center justify-center gap-2 border border-slate-600 hover:bg-slate-800/60 px-6 py-3 rounded-2xl transition-all" onclick="ui.show('user-register')"><i data-lucide="user-plus"></i> Qeydiyyat</button>
+          <button class="flex items-center justify-center gap-2 border border-slate-600 hover:bg-slate-800/60 px-6 py-3 rounded-2xl transition-all" onclick="guestTakeTest()"><i data-lucide="link"></i> Link ilə test (qonaq)</button>
+          <button class="flex items-center justify-center gap-2 border border-amber-600/50 text-amber-300 hover:bg-amber-950/30 px-6 py-3 rounded-2xl transition-all" onclick="ui.show('admin-login')"><i data-lucide="crown"></i> Admin panel</button>
         </div>
-
-        <!-- USER LOGIN -->
-        <div id="screen-user-login" class="screen">
-            <div class="card" style="max-width: 400px; margin:2rem auto;">
-                <h2><i class="fas fa-sign-in-alt"></i> İstifadəçi girişi</h2>
-                <div class="input-group"><input type="email" id="login-email" placeholder="E-poçt"></div>
-                <div class="input-group"><input type="password" id="login-pass" placeholder="Şifrə"></div>
-                <button class="btn" onclick="userLogin()"><i class="fas fa-arrow-right"></i> Daxil ol</button>
-                <button class="btn-outline" style="margin-top:1rem;" onclick="showScreen('entry')">Geri</button>
-            </div>
+        <div class="flex justify-between mt-8 text-sm">
+          <button onclick="toggleTheme()" class="flex items-center gap-1 text-slate-400"><i data-lucide="moon" class="w-4"></i> Tema</button>
+          <span class="text-slate-500">v3.0 · local-first</span>
         </div>
-
-        <!-- USER REGISTER -->
-        <div id="screen-user-register" class="screen">
-            <div class="card" style="max-width:400px; margin:2rem auto;">
-                <h2><i class="fas fa-user-plus"></i> Qeydiyyat</h2>
-                <div class="input-group"><input type="text" id="reg-name" placeholder="Ad Soyad"></div>
-                <div class="input-group"><input type="email" id="reg-email" placeholder="E-poçt"></div>
-                <div class="input-group"><input type="password" id="reg-pass" placeholder="Şifrə"></div>
-                <button class="btn" onclick="userRegister()">Qeydiyyatdan keç</button>
-                <button class="btn-outline" style="margin-top:1rem;" onclick="showScreen('entry')">Geri</button>
-            </div>
-        </div>
-
-        <!-- ADMIN LOGIN (separate) -->
-        <div id="screen-admin-login" class="screen">
-            <div class="card" style="max-width:400px; margin:2rem auto;">
-                <h2><i class="fas fa-lock"></i> Admin panel</h2>
-                <div class="input-group"><input type="text" id="admin-username" value="cesi" placeholder="İstifadəçi adı"></div>
-                <div class="input-group"><input type="password" id="admin-password" placeholder="Şifrə"></div>
-                <button class="btn" onclick="adminLogin()">Giriş</button>
-                <button class="btn-outline" onclick="showScreen('entry')">Geri</button>
-            </div>
-        </div>
-
-        <!-- USER DASHBOARD (profile, tests, history) -->
-        <div id="screen-user-dashboard" class="screen">
-            <div class="card">
-                <div style="display:flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                    <h2><i class="fas fa-user-circle"></i> <span id="dashboard-user-name">İstifadəçi</span></h2>
-                    <div>
-                        <button class="btn-outline" onclick="showEditProfile()"><i class="fas fa-edit"></i> Redaktə</button>
-                        <button class="btn-outline" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Çıxış</button>
-                    </div>
-                </div>
-                <div style="display:flex; gap:2rem; flex-wrap: wrap; margin:2rem 0;">
-                    <button class="btn" onclick="showScreen('test-create')"><i class="fas fa-plus-circle"></i> Test yarat</button>
-                    <button class="btn-outline" onclick="loadMyTests()"><i class="fas fa-list"></i> Mənim testlərim</button>
-                    <button class="btn-outline" onclick="loadHistory()"><i class="fas fa-history"></i> Tarixçə</button>
-                </div>
-                <div id="user-tests-list" style="margin-top:2rem;">Testləriniz burada görünəcək...</div>
-            </div>
-        </div>
-
-        <!-- EDIT PROFILE MODAL (inline) -->
-        <div id="screen-edit-profile" class="screen">
-            <div class="card" style="max-width:500px; margin:2rem auto;">
-                <h2>Profili redaktə et</h2>
-                <div class="input-group"><input type="text" id="edit-name" placeholder="Ad Soyad"></div>
-                <div class="input-group"><input type="email" id="edit-email" placeholder="E-poçt"></div>
-                <div class="input-group"><input type="password" id="edit-pass" placeholder="Yeni şifrə (boş buraxıla bilər)"></div>
-                <div class="input-group"><input type="text" id="edit-avatar" placeholder="Avatar emoji və ya URL"></div>
-                <button class="btn" onclick="saveProfile()">Yadda saxla</button>
-                <button class="btn-outline" onclick="showScreen('user-dashboard')">Geri</button>
-            </div>
-        </div>
-
-        <!-- TEST CREATE FORM -->
-        <div id="screen-test-create" class="screen">
-            <div class="card" style="max-width:800px; margin:0 auto;">
-                <h2><i class="fas fa-pen"></i> Yeni test</h2>
-                <div class="grid-2">
-                    <div><input type="text" id="test-title" placeholder="Test adı"></div>
-                    <div><input type="text" id="test-category" placeholder="Kateqoriya (riyaziyyat, tarix...)"></div>
-                    <div><select id="test-difficulty"><option value="easy">Asan</option><option value="medium">Orta</option><option value="hard">Çətin</option></select></div>
-                    <div><input type="number" id="test-timer" placeholder="Timer (dəqiqə)" value="10"></div>
-                    <div><label><input type="checkbox" id="test-shuffle" > Variantları qarışdır</label></div>
-                    <div><label><input type="checkbox" id="test-public" checked> Public (linklə hər kəs)</label></div>
-                    <div><input type="text" id="test-password" placeholder="Parol (private seçilibsə)"></div>
-                    <div><input type="number" id="test-max-attempts" placeholder="Maks cəhd" value="0"></div>
-                </div>
-                <div class="input-group">
-                    <label>Suallar (JSON format)</label>
-                    <textarea id="test-json" rows="8" placeholder='[{"q":"2+2?","o":["3","4","5"],"a":1}]'></textarea>
-                </div>
-                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                    <button class="btn" onclick="previewTestJson()"><i class="fas fa-eye"></i> Preview</button>
-                    <button class="btn-success" onclick="createTest()"><i class="fas fa-save"></i> Testi yarat</button>
-                    <button class="btn-outline" onclick="showScreen('user-dashboard')">Ləğv et</button>
-                </div>
-                <div id="json-preview" style="margin-top:1rem; background: var(--surface-solid); padding:1rem; border-radius:1rem;"></div>
-            </div>
-        </div>
-
-        <!-- TEST SHARE (after creation) -->
-        <div id="screen-test-share" class="screen">
-            <div class="card" style="max-width:500px; margin:2rem auto;">
-                <h2><i class="fas fa-share-alt"></i> Test hazırdır!</h2>
-                <p>Linki kopyalayıb paylaşın:</p>
-                <div style="display:flex; background: var(--surface-solid); border-radius:2rem; padding:0.2rem;">
-                    <input type="text" id="share-link" readonly style="border:none; background:transparent;">
-                    <button class="btn" onclick="copyShareLink()"><i class="fas fa-copy"></i></button>
-                </div>
-                <div style="margin:1rem 0;" id="qr-code-container"></div>
-                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                    <a id="whatsapp-share" target="_blank" class="btn-success btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                    <a id="telegram-share" target="_blank" class="btn"><i class="fab fa-telegram"></i> Telegram</a>
-                </div>
-                <button class="btn-outline" onclick="showScreen('user-dashboard')">Dashboard</button>
-            </div>
-        </div>
-
-        <!-- TEST TAKING (guest or user) -->
-        <div id="screen-test-take" class="screen">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; flex-wrap:wrap;">
-                    <h3 id="take-test-title">Test</h3>
-                    <span class="badge" id="take-timer">00:00</span>
-                </div>
-                <div class="progress" style="margin:1rem 0;"><div class="progress-bar" id="take-progress" style="width:0%"></div></div>
-                <div id="take-question-text" style="font-size:1.3rem; margin:1rem 0;">Sual</div>
-                <div id="take-options"></div>
-                <div style="display:flex; justify-content:space-between; margin-top:2rem;">
-                    <button class="btn-outline" id="prevBtn" onclick="takePrev()"><i class="fas fa-chevron-left"></i> Geri</button>
-                    <button class="btn" id="nextBtn" onclick="takeNext()">Növbəti <i class="fas fa-chevron-right"></i></button>
-                </div>
-                <button class="btn-danger" style="margin-top:1rem;" id="submitTestBtn" onclick="submitTest()">Testi bitir</button>
-            </div>
-        </div>
-
-        <!-- TEST REVIEW / RESULT -->
-        <div id="screen-test-review" class="screen">
-            <div class="card">
-                <h2><i class="fas fa-chart-pie"></i> Nəticələr</h2>
-                <div style="font-size:3rem; font-weight:800;" id="review-score">0%</div>
-                <div class="grid-2" style="margin:1rem 0;">
-                    <div>Düzgün: <span id="review-correct">0</span></div>
-                    <div>Səhv: <span id="review-wrong">0</span></div>
-                </div>
-                <div id="review-detail"></div>
-                <button class="btn" onclick="showScreen('entry')">Ana səhifə</button>
-            </div>
-        </div>
-
-        <!-- ADMIN DASHBOARD (very simplified but covers essentials) -->
-        <div id="screen-admin-dashboard" class="screen">
-            <div class="card">
-                <h2><i class="fas fa-crown"></i> Admin panel</h2>
-                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                    <button class="btn-outline" onclick="adminListUsers()">İstifadəçilər</button>
-                    <button class="btn-outline" onclick="adminListTests()">Testlər</button>
-                    <button class="btn-outline" onclick="exportData()">JSON export</button>
-                    <button class="btn-outline" onclick="importData()">JSON import</button>
-                    <button class="btn-outline" onclick="logout()">Çıxış</button>
-                </div>
-                <div id="admin-content" style="margin-top:2rem; max-height:500px; overflow:auto;"></div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <script>
-        (function() {
-            // ---------- DATA LAYER (localStorage) ----------
-            const STORE = {
-                users: [],
-                tests: [],
-                results: [],
-                settings: { theme: 'dark' }
-            };
+    <!-- USER LOGIN -->
+    <div id="screen-user-login" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6 flex gap-2"><i data-lucide="log-in"></i> Giriş</h2>
+        <input type="email" id="login-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="login-pass" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl font-semibold" onclick="auth.login()">Daxil ol</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
+    </div>
 
-            // Load from localStorage
-            function loadDB() {
-                try {
-                    STORE.users = JSON.parse(localStorage.getItem('exam_users')) || [];
-                    STORE.tests = JSON.parse(localStorage.getItem('exam_tests')) || [];
-                    STORE.results = JSON.parse(localStorage.getItem('exam_results')) || [];
-                    let sets = localStorage.getItem('exam_settings');
-                    if(sets) STORE.settings = JSON.parse(sets);
-                } catch (e) { console.warn('DB error', e); }
-                // default admin if no users
-                if(!STORE.users.find(u => u.role === 'admin')) {
-                    STORE.users.push({ id: 'admin1', name:'Admin', email:'admin@local', password:'cesi123', role:'admin', avatar:'🛡️', createdAt: Date.now() });
-                }
-                // default sample tests?
-                if(STORE.tests.length === 0) {
-                    STORE.tests.push({
-                        id: 'sample1', title: 'Nümunə test', description: '', category: 'ümumi', difficulty:'easy', timer:5, isPublic:true, password:'', shuffle:false, maxAttempts:0, createdBy: 'admin1', createdAt: Date.now(),
-                        questions: [ { q:'Azərbaycanın paytaxtı?', o:['Bakı','Gəncə','Sumqayıt','Naxçıvan'], a:0 } ]
-                    });
-                }
-                saveDB();
-            }
-            function saveDB() {
-                localStorage.setItem('exam_users', JSON.stringify(STORE.users));
-                localStorage.setItem('exam_tests', JSON.stringify(STORE.tests));
-                localStorage.setItem('exam_results', JSON.stringify(STORE.results));
-                localStorage.setItem('exam_settings', JSON.stringify(STORE.settings));
-            }
+    <!-- USER REGISTER -->
+    <div id="screen-user-register" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6"><i data-lucide="user-plus"></i> Qeydiyyat</h2>
+        <input type="text" id="reg-name" placeholder="Ad Soyad" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="email" id="reg-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="reg-pass" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl" onclick="auth.register()">Qeydiyyatdan keç</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
+    </div>
 
-            loadDB();
+    <!-- ADMIN LOGIN -->
+    <div id="screen-admin-login" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl border-amber-700/50">
+        <h2 class="text-3xl font-bold mb-6 text-amber-400"><i data-lucide="crown"></i> Admin giriş</h2>
+        <input type="text" id="admin-username" value="cesi" placeholder="İstifadəçi adı" class="w-full p-4 bg-slate-800/60 border border-amber-700/50 rounded-2xl mb-3">
+        <input type="password" id="admin-password" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-amber-700/50 rounded-2xl mb-5">
+        <button class="w-full bg-amber-700 hover:bg-amber-800 py-4 rounded-2xl font-semibold" onclick="auth.adminLogin()">Giriş</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
+    </div>
 
-            // ---------- GLOBAL STATE ----------
-            let currentUser = null;               // { id, email, role... }
-            let currentTestTaking = null;          // test object in progress
-            let currentAnswers = {};                // { questionIndex: selectedOptionIndex }
-            let currentQuestionIndex = 0;
-            let timerInterval = null;
-            let timerSeconds = 0;
-            let testStartTime = null;
+    <!-- USER DASHBOARD -->
+    <div id="screen-user-dashboard" class="screen hidden">
+      <div class="glass p-6 rounded-3xl">
+        <div class="flex flex-wrap justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold flex gap-2"><i data-lucide="user"></i> <span id="dashboard-user-name">İstifadəçi</span></h2>
+          <div class="flex gap-2">
+            <button class="border border-slate-600 hover:bg-slate-700 px-4 py-2 rounded-xl" onclick="ui.show('edit-profile')"><i data-lucide="edit"></i> Redaktə</button>
+            <button class="border border-slate-600 hover:bg-slate-700 px-4 py-2 rounded-xl" onclick="auth.logout()"><i data-lucide="log-out"></i> Çıxış</button>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button class="bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl flex items-center gap-2" onclick="ui.show('test-create')"><i data-lucide="plus-circle"></i> Yeni test</button>
+          <button class="border border-slate-600 hover:bg-slate-800 px-5 py-3 rounded-xl flex items-center gap-2" onclick="mytest.load()"><i data-lucide="list"></i> Mənim testlərim</button>
+          <button class="border border-slate-600 hover:bg-slate-800 px-5 py-3 rounded-xl flex items-center gap-2" onclick="history.load()"><i data-lucide="history"></i> Tarixçə</button>
+        </div>
+        <div id="user-tests-list" class="text-slate-400 p-4 rounded-2xl bg-slate-900/40">Testləriniz burada görünəcək...</div>
+      </div>
+    </div>
 
-            // helper
-            function showScreen(id) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById(`screen-${id}`).classList.add('active');
-                if(id === 'user-dashboard' && currentUser) {
-                    document.getElementById('dashboard-user-name').innerText = currentUser.name || currentUser.email;
-                    loadMyTests();
-                }
-                if(id === 'admin-dashboard') adminListUsers();
-            }
+    <!-- EDIT PROFILE -->
+    <div id="screen-edit-profile" class="screen hidden">
+      <div class="glass max-w-lg mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6">Profili redaktə et</h2>
+        <input type="text" id="edit-name" placeholder="Ad Soyad" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="email" id="edit-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="edit-pass" placeholder="Yeni şifrə (boş)" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="text" id="edit-avatar" placeholder="Avatar emoji" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl" onclick="profile.save()">Yadda saxla</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('user-dashboard')">Geri</button>
+      </div>
+    </div>
 
-            window.showScreen = showScreen;
+    <!-- TEST CREATE -->
+    <div id="screen-test-create" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-3xl mx-auto">
+        <h2 class="text-3xl font-bold mb-4"><i data-lucide="pen-tool"></i> Yeni test</h2>
+        <div class="grid md:grid-cols-2 gap-3 mb-3">
+          <input type="text" id="test-title" placeholder="Test adı" class="p-3 bg-slate-800/60 border rounded-xl">
+          <input type="text" id="test-category" placeholder="Kateqoriya" class="p-3 bg-slate-800/60 border rounded-xl">
+          <select id="test-difficulty" class="p-3 bg-slate-800/60 border rounded-xl"><option value="easy">Asan</option><option value="medium">Orta</option><option value="hard">Çətin</option></select>
+          <input type="number" id="test-timer" value="10" placeholder="Dəqiqə" class="p-3 bg-slate-800/60 border rounded-xl">
+        </div>
+        <div class="flex flex-wrap gap-4 mb-3">
+          <label class="flex items-center gap-2"><input type="checkbox" id="test-shuffle"> <span>Qarışdır</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="test-public" checked> Public</label>
+          <input type="text" id="test-password" placeholder="Parol (private)" class="p-3 bg-slate-800/60 border rounded-xl flex-1">
+          <input type="number" id="test-max-attempts" value="0" placeholder="Maks cəhd" class="p-3 bg-slate-800/60 border rounded-xl w-32">
+        </div>
+        <label class="block mb-1 text-sm">Suallar (JSON)</label>
+        <textarea id="test-json" rows="6" class="w-full p-3 bg-slate-800/60 border rounded-xl font-mono" placeholder='[{"q":"2+2?","o":["3","4","5"],"a":1}]'></textarea>
+        <div class="flex gap-3 my-4">
+          <button class="bg-cyan-700 hover:bg-cyan-800 px-5 py-2 rounded-xl flex items-center gap-2" onclick="test.previewJson()"><i data-lucide="eye"></i> Preview</button>
+          <button class="bg-green-700 hover:bg-green-800 px-5 py-2 rounded-xl flex items-center gap-2" onclick="test.create()"><i data-lucide="save"></i> Yarat</button>
+          <button class="border border-slate-600 px-5 py-2 rounded-xl" onclick="ui.show('user-dashboard')">Ləğv et</button>
+        </div>
+        <div id="json-preview" class="bg-slate-900/60 p-3 rounded-xl text-sm"></div>
+      </div>
+    </div>
 
-            // toast
-            function toast(msg, type='success') {
-                let t = document.getElementById('toast');
-                t.querySelector('span').innerText = msg;
-                t.style.borderLeftColor = type==='error'?'var(--danger)':'var(--success)';
-                t.classList.add('show');
-                setTimeout(()=>t.classList.remove('show'),3000);
-            }
-            window.toast = toast;
+    <!-- TEST SHARE (QR) -->
+    <div id="screen-test-share" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl text-center">
+        <h2 class="text-3xl font-bold mb-4">🎉 Test hazırdır</h2>
+        <div class="flex bg-slate-800/80 rounded-full p-1 mb-4">
+          <input type="text" id="share-link" readonly class="w-full bg-transparent px-4 py-2 outline-none">
+          <button class="bg-indigo-600 hover:bg-indigo-700 px-4 rounded-full" onclick="copyShareLink()"><i data-lucide="copy"></i></button>
+        </div>
+        <div id="qr-code-container" class="flex justify-center my-4"></div>
+        <div class="flex justify-center gap-3 mb-6">
+          <a id="whatsapp-share" target="_blank" class="bg-green-700 p-3 rounded-full"><i data-lucide="message-circle"></i></a>
+          <a id="telegram-share" target="_blank" class="bg-sky-700 p-3 rounded-full"><i data-lucide="send"></i></a>
+        </div>
+        <button class="border border-slate-600 px-6 py-2 rounded-full" onclick="ui.show('user-dashboard')">Dashboard</button>
+      </div>
+    </div>
 
-            // toggle theme
-            window.toggleTheme = function() {
-                document.body.classList.toggle('light');
-                STORE.settings.theme = document.body.classList.contains('light') ? 'light' : 'dark';
-                saveDB();
-            }
-            if(STORE.settings.theme==='light') document.body.classList.add('light');
+    <!-- TEST TAKING -->
+    <div id="screen-test-take" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="take-test-title" class="text-2xl font-bold"></h3>
+          <span id="take-timer" class="bg-indigo-600/50 px-4 py-1 rounded-full text-xl font-mono">00:00</span>
+        </div>
+        <div class="h-2 bg-slate-700 rounded-full mb-4"><div id="take-progress" class="h-2 bg-indigo-500 rounded-full" style="width:0%"></div></div>
+        <div id="take-question-text" class="text-xl mb-6 min-h-[80px]"></div>
+        <div id="take-options" class="space-y-3 mb-6"></div>
+        <div class="flex justify-between">
+          <button class="border border-slate-600 px-5 py-2 rounded-xl" id="prevBtn" onclick="take.prev()">← Geri</button>
+          <button class="bg-indigo-600 px-5 py-2 rounded-xl" id="nextBtn" onclick="take.next()">Növbəti →</button>
+        </div>
+        <button class="w-full mt-4 bg-rose-700 hover:bg-rose-800 py-3 rounded-xl" onclick="take.submit()">Testi bitir</button>
+      </div>
+    </div>
 
-            // ---------- AUTH ----------
-            window.userRegister = function() {
-                let name = document.getElementById('reg-name').value.trim();
-                let email = document.getElementById('reg-email').value.trim();
-                let pass = document.getElementById('reg-pass').value.trim();
-                if(!email || !pass) return toast('Email və şifrə daxil edin','error');
-                if(STORE.users.find(u=>u.email===email)) return toast('Bu email artıq var','error');
-                let newUser = {
-                    id: 'u'+Date.now()+Math.random(),
-                    name: name || email.split('@')[0],
-                    email, password: pass, role: 'user',
-                    avatar: '👤', createdAt: Date.now()
-                };
-                STORE.users.push(newUser);
-                saveDB();
-                toast('Qeydiyyat uğurlu!');
-                showScreen('user-login');
-            };
+    <!-- REVIEW / RESULT -->
+    <div id="screen-test-review" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold flex gap-2"><i data-lucide="pie-chart"></i> Nəticələr</h2>
+        <div class="text-6xl font-black my-4" id="review-score">0%</div>
+        <div class="flex gap-5 text-lg">
+          <span>Düzgün: <span id="review-correct">0</span></span>
+          <span>Səhv: <span id="review-wrong">0</span></span>
+        </div>
+        <div id="review-detail" class="max-h-96 overflow-auto my-4 space-y-2"></div>
+        <canvas id="resultChart" class="w-full h-40 my-3"></canvas>
+        <button class="bg-indigo-600 px-6 py-2 rounded-full" onclick="ui.show('entry')">Ana səhifə</button>
+      </div>
+    </div>
 
-            window.userLogin = function() {
-                let email = document.getElementById('login-email').value.trim();
-                let pass = document.getElementById('login-pass').value.trim();
-                let user = STORE.users.find(u=>u.email===email && u.password===pass && u.role!=='admin');
-                if(user) {
-                    currentUser = user;
-                    toast('Xoş gəldiniz');
-                    showScreen('user-dashboard');
-                } else toast('Email və ya şifrə yanlış','error');
-            };
+    <!-- ADMIN DASHBOARD (COMMAND CENTER) -->
+    <div id="screen-admin-dashboard" class="screen hidden">
+      <div class="glass p-6 rounded-3xl border-amber-700/50">
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <h2 class="text-3xl font-bold text-amber-400"><i data-lucide="crown"></i> Komanda mərkəzi</h2>
+          <div class="flex gap-2 ml-auto">
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.listUsers()">İstifadəçilər</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.listTests()">Testlər</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.exportData()">Export</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.importData()">Import</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="auth.logout()">Çıxış</button>
+          </div>
+        </div>
+        <!-- live log & health -->
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+          <div class="bg-black/40 p-3 rounded-xl border border-amber-900/30">
+            <p class="text-xs text-amber-400">LIVE LOG</p>
+            <div id="live-log" class="h-32 overflow-auto text-xs font-mono text-green-300"></div>
+          </div>
+          <div class="bg-black/40 p-3 rounded-xl border border-amber-900/30 col-span-2">
+            <p class="text-amber-400 mb-2">Sistem sağlamlığı</p>
+            <div class="flex gap-4 flex-wrap"><span>💾 Local: <span id="storage-size">0</span> KB</span><span>📊 Test sayı: <span id="test-count">0</span></span><span>👥 User: <span id="user-count">0</span></span></div>
+            <div class="w-full bg-slate-700 h-2 mt-2 rounded-full"><div id="storage-bar" class="h-2 bg-amber-500 rounded-full" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div id="admin-content" class="bg-slate-900/60 p-4 rounded-2xl max-h-[400px] overflow-auto"></div>
+      </div>
+    </div>
 
-            window.adminLogin = function() {
-                let u = document.getElementById('admin-username').value;
-                let p = document.getElementById('admin-password').value;
-                let admin = STORE.users.find(us=>us.role==='admin' && us.password===p && us.email===u);
-                if(!admin && u==='cesi' && p==='cesi123') { // fallback
-                    admin = STORE.users.find(us=>us.role==='admin');
-                }
-                if(admin) { currentUser = admin; showScreen('admin-dashboard'); toast('Admin girişi'); }
-                else toast('Admin kredensialları səhv','error');
-            };
+    <!-- announcement bar (admin broadcast) -->
+    <div id="announcement-bar" class="fixed top-0 left-0 w-full bg-amber-700 text-white text-center py-2 hidden z-50">📢 </div>
+  </main>
 
-            window.logout = function() {
-                currentUser = null; showScreen('entry');
-                if(timerInterval) clearInterval(timerInterval);
-            };
+  <script>
+    (function() {
+      "use strict";
+      // ---------- GLOBAL STATE (store) ----------
+      window.store = {
+        users: JSON.parse(localStorage.getItem('exam_users')) || [],
+        tests: JSON.parse(localStorage.getItem('exam_tests')) || [],
+        results: JSON.parse(localStorage.getItem('exam_results')) || [],
+        settings: JSON.parse(localStorage.getItem('exam_settings')) || { theme: 'dark', announcement: '' },
+        currentUser: null,
+        currentTest: null,         // taking test object
+        currentAnswers: {},
+        currentQuestionIndex: 0,
+        timerInterval: null,
+        timerSeconds: 0,
+        tabWarnings: 0,
+        cheatLog: []
+      };
 
-            // profile edit
-            window.showEditProfile = function() {
-                document.getElementById('edit-name').value = currentUser.name || '';
-                document.getElementById('edit-email').value = currentUser.email || '';
-                document.getElementById('edit-avatar').value = currentUser.avatar || '';
-                showScreen('edit-profile');
-            };
-            window.saveProfile = function() {
-                let name = document.getElementById('edit-name').value.trim();
-                let email = document.getElementById('edit-email').value.trim();
-                let pass = document.getElementById('edit-pass').value.trim();
-                let avatar = document.getElementById('edit-avatar').value.trim();
-                if(email && email !== currentUser.email) {
-                    if(STORE.users.find(u=>u.email===email && u.id!==currentUser.id)) 
-                        return toast('Email istifadə olunur','error');
-                    currentUser.email = email;
-                }
-                if(name) currentUser.name = name;
-                if(pass) currentUser.password = pass;
-                if(avatar) currentUser.avatar = avatar;
-                saveDB();
-                toast('Profil yeniləndi');
-                showScreen('user-dashboard');
-            };
+      // default admin
+      if (!store.users.find(u => u.role === 'admin')) {
+        store.users.push({ id: 'admin1', name: 'Admin', email: 'cesi', password: 'cesi123', role: 'admin', avatar: '🛡️', createdAt: Date.now() });
+      }
+      // sample test
+      if (store.tests.length === 0) {
+        store.tests.push({ id: 'sample1', title: 'Nümunə: paytaxt', category: 'ümumi', difficulty: 'easy', timer: 2, isPublic: true, password: '', shuffle: false, maxAttempts: 0, createdBy: 'admin1', approved: true, questions: [{ q: 'Azərbaycanın paytaxtı?', o: ['Bakı','Gəncə','Sumqayıt'], a: 0 }] });
+      }
+      store.settings.theme = store.settings.theme || 'dark';
+      if (store.settings.theme === 'light') document.body.classList.remove('dark'); else document.body.classList.add('dark');
 
-            // ---------- TEST CREATION ----------
-            window.createTest = function() {
-                if(!currentUser) return toast('Daxil olun','error');
-                let title = document.getElementById('test-title').value.trim() || 'Adsız test';
-                let cat = document.getElementById('test-category').value.trim() || 'ümumi';
-                let diff = document.getElementById('test-difficulty').value;
-                let timer = parseInt(document.getElementById('test-timer').value) || 10;
-                let shuffle = document.getElementById('test-shuffle').checked;
-                let isPublic = document.getElementById('test-public').checked;
-                let pwd = document.getElementById('test-password').value;
-                let maxAttempts = parseInt(document.getElementById('test-max-attempts').value) || 0;
-                let jsonStr = document.getElementById('test-json').value.trim();
-                let questions;
-                try { questions = JSON.parse(jsonStr); }
-                catch(e) { return toast('JSON formatı səhvdir: '+e.message,'error'); }
-                if(!Array.isArray(questions) || questions.length===0) return toast('Suallar boş ola bilməz','error');
-                // basic validation
-                for(let q of questions) {
-                    if(!q.q || !Array.isArray(q.o) || q.a===undefined) 
-                        return toast('Hər sualda q, o (array) və a (index) olmalıdır','error');
-                }
-                let testId = 'test_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);
-                let newTest = {
-                    id: testId,
-                    title, category: cat, difficulty: diff, timer, shuffle, isPublic, password: pwd, maxAttempts,
-                    createdBy: currentUser.id,
-                    createdAt: Date.now(),
-                    questions: questions
-                };
-                STORE.tests.push(newTest);
-                saveDB();
-                // show share screen
-                let link = `${window.location.origin}${window.location.pathname}?test=${testId}`;
-                document.getElementById('share-link').value = link;
-                let qrDiv = document.getElementById('qr-code-container');
-                qrDiv.innerHTML = '';
-                let qr = qrcode(0, 'M');
-                qr.addData(link);
-                qr.make();
-                let img = qr.createImgTag(4);
-                qrDiv.innerHTML = img;
-                document.getElementById('whatsapp-share').href = `https://wa.me/?text=${encodeURIComponent(link)}`;
-                document.getElementById('telegram-share').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
-                showScreen('test-share');
-            };
+      // IndexedDB mock (localStorage istifadə olunur, real IndexedDB əvəzinə sadə saxlanılır)
+      // Lakin böyük datalar üçün localStorage kifayətdir.
 
-            window.copyShareLink = function() {
-                let link = document.getElementById('share-link');
-                link.select();
-                document.execCommand('copy');
-                toast('Link kopyalandı');
-            };
+      // Helper: save all
+      function saveAll() {
+        localStorage.setItem('exam_users', JSON.stringify(store.users));
+        localStorage.setItem('exam_tests', JSON.stringify(store.tests));
+        localStorage.setItem('exam_results', JSON.stringify(store.results));
+        localStorage.setItem('exam_settings', JSON.stringify(store.settings));
+      }
 
-            window.previewTestJson = function() {
-                try {
-                    let js = JSON.parse(document.getElementById('test-json').value);
-                    document.getElementById('json-preview').innerHTML = '<strong>' + js.length + ' sual tapıldı</strong><pre>' + JSON.stringify(js[0],null,2) + '</pre>';
-                } catch (e) { document.getElementById('json-preview').innerHTML = '<span style="color:var(--danger)">JSON xətası</span>'; }
-            };
+      // Toast
+      function toast(msg, type = 'success') {
+        let t = document.getElementById('toast');
+        t.innerHTML = `<i data-lucide="${type==='error'?'alert-circle':'check-circle'}" class="w-5"></i> <span>${msg}</span>`;
+        t.classList.remove('translate-x-[200%]'); t.classList.add('translate-x-0');
+        if (type === 'error') t.classList.add('bg-rose-900'); else t.classList.remove('bg-rose-900');
+        setTimeout(() => t.classList.add('translate-x-[200%]'), 3000);
+        lucide.createIcons();
+      }
+      window.toast = toast;
 
-            // load my tests
-            window.loadMyTests = function() {
-                if(!currentUser) return;
-                let my = STORE.tests.filter(t=>t.createdBy === currentUser.id);
-                let html = '<h3>Mənim testlərim</h3><ul>';
-                my.forEach(t=> html += `<li><b>${t.title}</b> (${t.questions.length} sual) <button class="btn-outline" onclick="deleteTest('${t.id}')"><i class="fas fa-trash"></i></button> <button class="btn-outline" onclick="shareTest('${t.id}')"><i class="fas fa-share"></i></button></li>`);
-                html += '</ul>';
-                document.getElementById('user-tests-list').innerHTML = html;
-            };
+      // UI router
+      window.ui = {
+        show: (id) => {
+          document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+          document.getElementById(`screen-${id}`).classList.remove('hidden');
+          if (id === 'user-dashboard' && store.currentUser) {
+            document.getElementById('dashboard-user-name').innerText = store.currentUser.name || store.currentUser.email;
+            mytest.load();
+          }
+          if (id === 'admin-dashboard') { admin.listUsers(); updateHealth(); }
+          lucide.createIcons();
+        }
+      };
 
-            window.deleteTest = function(testId) {
-                if(!currentUser) return;
-                STORE.tests = STORE.tests.filter(t=>!(t.id===testId && t.createdBy===currentUser.id));
-                saveDB();
-                loadMyTests();
-                toast('Test silindi');
-            };
+      // Theme
+      window.toggleTheme = () => {
+        document.body.classList.toggle('dark');
+        store.settings.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        saveAll();
+      };
 
-            window.shareTest = function(testId) {
-                let test = STORE.tests.find(t=>t.id===testId);
-                if(!test) return;
-                let link = `${window.location.origin}${window.location.pathname}?test=${testId}`;
-                document.getElementById('share-link').value = link;
-                let qrDiv = document.getElementById('qr-code-container');
-                qrDiv.innerHTML = '';
-                let qr = qrcode(0, 'M');
-                qr.addData(link);
-                qr.make();
-                qrDiv.innerHTML = qr.createImgTag(4);
-                document.getElementById('whatsapp-share').href = `https://wa.me/?text=${encodeURIComponent(link)}`;
-                document.getElementById('telegram-share').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
-                showScreen('test-share');
-            };
+      // ---------- AUTH ----------
+      window.auth = {
+        register: () => {
+          let name = document.getElementById('reg-name').value.trim();
+          let email = document.getElementById('reg-email').value.trim();
+          let pass = document.getElementById('reg-pass').value.trim();
+          if (!email || !pass) return toast('Email və şifrə tələb olunur', 'error');
+          if (store.users.find(u => u.email === email)) return toast('Email mövcuddur', 'error');
+          let user = { id: 'u'+Date.now(), name: name || email.split('@')[0], email, password: pass, role: 'user', avatar: '👤', createdAt: Date.now() };
+          store.users.push(user); saveAll(); toast('Qeydiyyat uğurlu'); ui.show('user-login');
+        },
+        login: () => {
+          let email = document.getElementById('login-email').value.trim();
+          let pass = document.getElementById('login-pass').value.trim();
+          let user = store.users.find(u => u.email === email && u.password === pass && u.role !== 'admin');
+          if (user) { store.currentUser = user; toast('Xoş gəldiniz'); ui.show('user-dashboard'); } 
+          else toast('Email və ya şifrə yanlış', 'error');
+        },
+        adminLogin: () => {
+          let u = document.getElementById('admin-username').value;
+          let p = document.getElementById('admin-password').value;
+          let admin = store.users.find(us => us.role === 'admin' && us.password === p && us.email === u);
+          if (admin || (u === 'cesi' && p === 'cesi123')) {
+            if (!admin) admin = store.users.find(us => us.role === 'admin');
+            store.currentUser = admin; toast('Admin girişi'); ui.show('admin-dashboard'); logEvent('Admin giriş');
+          } else toast('Admin kredensialları səhv', 'error');
+        },
+        logout: () => { store.currentUser = null; clearInterval(store.timerInterval); ui.show('entry'); }
+      };
 
-            // ---------- GUEST / TEST TAKING via URL ----------
-            function getTestFromUrl() {
-                let params = new URLSearchParams(window.location.search);
-                let testId = params.get('test');
-                if(testId) {
-                    let test = STORE.tests.find(t=>t.id===testId);
-                    if(test) {
-                        startTest(test, true); // guest mode
-                    } else toast('Test tapılmadı','error');
-                }
-            }
-            window.guestTakeTest = function() {
-                let link = prompt('Test linkini daxil edin:');
-                if(!link) return;
-                try {
-                    let url = new URL(link);
-                    let testId = url.searchParams.get('test');
-                    if(testId) {
-                        let test = STORE.tests.find(t=>t.id===testId);
-                        if(test) startTest(test, true);
-                        else toast('Test yoxdur','error');
-                    } else toast('Linkdə test kodu yoxdur','error');
-                } catch { toast('Düzgün link daxil edin','error'); }
-            };
+      // log for admin
+      function logEvent(msg) {
+        let logDiv = document.getElementById('live-log');
+        if (logDiv) {
+          let time = new Date().toLocaleTimeString();
+          logDiv.innerHTML += `<div>🕒 ${time} → ${msg}</div>`;
+          logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        store.cheatLog.push({ time: Date.now(), msg });
+      }
 
-            function startTest(test, guestMode = true) {
-                if(timerInterval) clearInterval(timerInterval);
-                currentTestTaking = JSON.parse(JSON.stringify(test)); // clone
-                if(currentTestTaking.shuffle) {
-                    // shuffle options for each question? placeholder
-                }
-                currentAnswers = {};
-                currentQuestionIndex = 0;
-                timerSeconds = (currentTestTaking.timer || 10) * 60;
-                testStartTime = Date.now();
-                document.getElementById('take-test-title').innerText = currentTestTaking.title;
-                renderTakeQuestion();
-                startTimer();
-                showScreen('test-take');
-            }
+      // ANTI-CHEAT: tab switch
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && store.currentTest) {
+          store.tabWarnings++;
+          logEvent(`🚨 Tələbə tab dəyişdi (${store.tabWarnings})`);
+          toast('Xəbərdarlıq: Tərk etməyin!', 'error');
+          document.body.classList.add('cheat-flash');
+          setTimeout(()=>document.body.classList.remove('cheat-flash'),1000);
+        }
+      });
 
-            function renderTakeQuestion() {
-                let q = currentTestTaking.questions[currentQuestionIndex];
-                document.getElementById('take-question-text').innerText = q.q;
-                let optsHtml = '';
-                q.o.forEach((opt, idx) => {
-                    let sel = currentAnswers[currentQuestionIndex] === idx ? 'selected' : '';
-                    optsHtml += `<div class="option ${sel}" onclick="selectTakeOption(${idx})">${opt}</div>`;
-                });
-                document.getElementById('take-options').innerHTML = optsHtml;
-                document.getElementById('take-progress').style.width = ((currentQuestionIndex+1)/currentTestTaking.questions.length*100)+'%';
-                // next/prev button text
-                document.getElementById('nextBtn').innerText = (currentQuestionIndex === currentTestTaking.questions.length-1) ? 'Bitir' : 'Növbəti';
-            }
+      // right click disable
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('copy', e => e.preventDefault());
 
-            window.selectTakeOption = function(idx) {
-                currentAnswers[currentQuestionIndex] = idx;
-                renderTakeQuestion();
-            };
+      // fullscreen lock for test
+      function lockFullscreen() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
+      }
 
-            window.takeNext = function() {
-                if(currentQuestionIndex < currentTestTaking.questions.length-1) {
-                    currentQuestionIndex++;
-                    renderTakeQuestion();
-                } else {
-                    submitTest();
-                }
-            };
-            window.takePrev = function() {
-                if(currentQuestionIndex > 0) {
-                    currentQuestionIndex--;
-                    renderTakeQuestion();
-                }
-            };
+      // ---------- TEST CREATION ----------
+      window.test = {
+        previewJson: () => {
+          try {
+            let js = JSON.parse(document.getElementById('test-json').value);
+            document.getElementById('json-preview').innerHTML = `<span class="text-green-400">✓ ${js.length} sual</span><pre class="text-xs">${JSON.stringify(js[0], null, 2)}</pre>`;
+          } catch (e) { document.getElementById('json-preview').innerHTML = `<span class="text-rose-400">JSON xətası: ${e.message}</span>`; }
+        },
+        create: () => {
+          if (!store.currentUser) return toast('Daxil olun', 'error');
+          let title = document.getElementById('test-title').value.trim() || 'Adsız';
+          let cat = document.getElementById('test-category').value.trim() || 'ümumi';
+          let diff = document.getElementById('test-difficulty').value;
+          let timer = parseInt(document.getElementById('test-timer').value) || 10;
+          let shuffle = document.getElementById('test-shuffle').checked;
+          let isPublic = document.getElementById('test-public').checked;
+          let pwd = document.getElementById('test-password').value;
+          let maxAttempts = parseInt(document.getElementById('test-max-attempts').value) || 0;
+          let jsonStr = document.getElementById('test-json').value.trim();
+          let questions;
+          try { questions = JSON.parse(jsonStr); } catch (e) { return toast('JSON formatı səhv', 'error'); }
+          if (!Array.isArray(questions) || questions.length === 0) return toast('Suallar boş', 'error');
+          for (let q of questions) { if (!q.q || !Array.isArray(q.o) || q.a === undefined) return toast('Hər sualda q, o (array) və a olmalıdır', 'error'); }
+          let testId = 't_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);
+          let newTest = { id: testId, title, category: cat, difficulty: diff, timer, shuffle, isPublic, password: pwd, maxAttempts, createdBy: store.currentUser.id, createdAt: Date.now(), approved: false, questions };
+          store.tests.push(newTest); saveAll();
+          logEvent(`Yeni test yaradıldı: ${title}`);
+          // share screen
+          let link = window.location.origin + window.location.pathname + '?test=' + testId;
+          document.getElementById('share-link').value = link;
+          let qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+          document.getElementById('qr-code-container').innerHTML = qr.createImgTag(4);
+          document.getElementById('whatsapp-share').href = `https://wa.me/?text=${encodeURIComponent(link)}`;
+          document.getElementById('telegram-share').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
+          ui.show('test-share');
+        }
+      };
 
-            function startTimer() {
-                if(timerInterval) clearInterval(timerInterval);
-                timerInterval = setInterval(() => {
-                    if(timerSeconds <= 0) {
-                        clearInterval(timerInterval);
-                        submitTest();
-                        return;
-                    }
-                    timerSeconds--;
-                    let m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
-                    let s = (timerSeconds%60).toString().padStart(2,'0');
-                    document.getElementById('take-timer').innerText = `${m}:${s}`;
-                },1000);
-            }
+      // ---------- MY TESTS ----------
+      window.mytest = {
+        load: () => {
+          if (!store.currentUser) return;
+          let my = store.tests.filter(t => t.createdBy === store.currentUser.id);
+          let html = '<h3 class="font-bold mb-2">Mənim testlərim</h3><ul class="space-y-2">';
+          my.forEach(t => html += `<li class="flex justify-between bg-slate-800/40 p-3 rounded-xl"><span>${t.title} (${t.questions.length} sual) ${t.approved?'✅':'⏳'}</span> <div><button class="text-cyan-400 mr-2" onclick="shareTest('${t.id}')"><i data-lucide="share"></i></button><button class="text-rose-400" onclick="deleteTest('${t.id}')"><i data-lucide="trash"></i></button></div></li>`);
+          html += '</ul>';
+          document.getElementById('user-tests-list').innerHTML = html; lucide.createIcons();
+        }
+      };
+      window.deleteTest = (id) => { store.tests = store.tests.filter(t => !(t.id === id && t.createdBy === store.currentUser.id)); saveAll(); mytest.load(); toast('Test silindi'); };
+      window.shareTest = (id) => {
+        let test = store.tests.find(t => t.id === id); if (!test) return;
+        let link = window.location.origin + window.location.pathname + '?test=' + id;
+        document.getElementById('share-link').value = link;
+        let qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+        document.getElementById('qr-code-container').innerHTML = qr.createImgTag(4);
+        ui.show('test-share');
+      };
 
-            window.submitTest = function() {
-                clearInterval(timerInterval);
-                // calculate result
-                let correct = 0;
-                currentTestTaking.questions.forEach((q, idx) => {
-                    if(currentAnswers[idx] === q.a) correct++;
-                });
-                let total = currentTestTaking.questions.length;
-                let wrong = total - correct;
-                let score = Math.round((correct/total)*100);
-                // save result
-                let result = {
-                    id: 'res_'+Date.now(),
-                    testId: currentTestTaking.id,
-                    userId: currentUser ? currentUser.id : 'guest_'+Date.now(),
-                    answers: currentAnswers,
-                    score, correct, wrong,
-                    completedAt: Date.now(),
-                    timeSpent: (currentTestTaking.timer*60) - timerSeconds
-                };
-                STORE.results.push(result);
-                saveDB();
+      // ---------- TAKE TEST (guest / user) ----------
+      window.take = {
+        start: (test, guestMode = true) => {
+          clearInterval(store.timerInterval);
+          store.currentTest = JSON.parse(JSON.stringify(test)); // clone
+          store.currentAnswers = {};
+          store.currentQuestionIndex = 0;
+          store.timerSeconds = (store.currentTest.timer || 10) * 60;
+          store.tabWarnings = 0;
+          document.getElementById('take-test-title').innerText = store.currentTest.title;
+          take.renderQuestion();
+          take.startTimer();
+          ui.show('test-take');
+          lockFullscreen();
+          logEvent(`Test başladı: ${test.title}`);
+        },
+        renderQuestion: () => {
+          let q = store.currentTest.questions[store.currentQuestionIndex];
+          document.getElementById('take-question-text').innerText = q.q;
+          let html = '';
+          q.o.forEach((opt, idx) => {
+            let sel = store.currentAnswers[store.currentQuestionIndex] === idx ? 'bg-indigo-900/60 border-indigo-400' : 'bg-slate-800/40 border-transparent';
+            html += `<div class="option p-4 rounded-xl border-2 cursor-pointer hover:bg-slate-700/60 ${sel}" onclick="take.select(${idx})">${opt}</div>`;
+          });
+          document.getElementById('take-options').innerHTML = html;
+          document.getElementById('take-progress').style.width = ((store.currentQuestionIndex+1)/store.currentTest.questions.length*100)+'%';
+          document.getElementById('nextBtn').innerText = (store.currentQuestionIndex === store.currentTest.questions.length-1) ? 'Bitir' : 'Növbəti';
+        },
+        select: (idx) => { store.currentAnswers[store.currentQuestionIndex] = idx; take.renderQuestion(); },
+        next: () => {
+          if (store.currentQuestionIndex < store.currentTest.questions.length-1) { store.currentQuestionIndex++; take.renderQuestion(); } 
+          else take.submit();
+        },
+        prev: () => { if (store.currentQuestionIndex > 0) { store.currentQuestionIndex--; take.renderQuestion(); } },
+        startTimer: () => {
+          store.timerInterval = setInterval(() => {
+            if (store.timerSeconds <= 0) { clearInterval(store.timerInterval); take.submit(); return; }
+            store.timerSeconds--;
+            let m = Math.floor(store.timerSeconds/60).toString().padStart(2,'0');
+            let s = (store.timerSeconds%60).toString().padStart(2,'0');
+            document.getElementById('take-timer').innerText = `${m}:${s}`;
+          },1000);
+        },
+        submit: () => {
+          clearInterval(store.timerInterval);
+          let correct = 0;
+          store.currentTest.questions.forEach((q, i) => { if (store.currentAnswers[i] === q.a) correct++; });
+          let total = store.currentTest.questions.length;
+          let wrong = total - correct;
+          let score = Math.round((correct/total)*100);
+          let result = { id: 'r'+Date.now(), testId: store.currentTest.id, userId: store.currentUser ? store.currentUser.id : 'guest_'+Date.now(), answers: store.currentAnswers, score, correct, wrong, completedAt: Date.now(), tabWarns: store.tabWarnings };
+          store.results.push(result); saveAll();
+          if (score === 100) confetti({particleCount:150, spread:80});
+          document.getElementById('review-score').innerText = score+'%';
+          document.getElementById('review-correct').innerText = correct;
+          document.getElementById('review-wrong').innerText = wrong;
+          let detail = '';
+          store.currentTest.questions.forEach((q, i) => {
+            let u = store.currentAnswers[i] ?? -1;
+            let st = u === q.a ? '✅' : (u===-1?'⚠️ boş':'❌');
+            detail += `<div class="border-b border-slate-700 pb-2"><b>${i+1}. ${q.q}</b> ${st}<br> <span class="text-sm">Siz: ${u!==-1?q.o[u]:'—'} | Düzgün: ${q.o[q.a]}</span></div>`;
+          });
+          document.getElementById('review-detail').innerHTML = detail;
+          // chart
+          new Chart(document.getElementById('resultChart'), { type: 'doughnut', data: { labels: ['Düzgün','Səhv'], datasets: [{ data: [correct, wrong], backgroundColor: ['#10b981','#ef4444'] }] } });
+          ui.show('test-review');
+          logEvent(`Test bitdi. Bal: ${score}%`);
+        }
+      };
+      window.take = take;
 
-                // show review
-                document.getElementById('review-score').innerText = score+'%';
-                document.getElementById('review-correct').innerText = correct;
-                document.getElementById('review-wrong').innerText = wrong;
-                let detail = '';
-                currentTestTaking.questions.forEach((q, i) => {
-                    let userAns = currentAnswers[i] ?? -1;
-                    let status = userAns === q.a ? '✅' : (userAns === -1 ? '⚠️ boş' : '❌');
-                    detail += `<div style="border-bottom:1px solid var(--border); padding:0.5rem;"><b>${i+1}. ${q.q}</b> ${status} <br> Cavabınız: ${userAns!==-1?q.o[userAns]:'boş'} | Düzgün: ${q.o[q.a]}</div>`;
-                });
-                document.getElementById('review-detail').innerHTML = detail;
-                if(score === 100) confetti({particleCount:100, spread:70, origin:{y:0.6}});
-                showScreen('test-review');
-            };
+      // guest start from link
+      window.guestTakeTest = () => {
+        let link = prompt('Test linkini daxil edin:');
+        if (!link) return;
+        try {
+          let url = new URL(link);
+          let testId = url.searchParams.get('test');
+          let test = store.tests.find(t => t.id === testId);
+          if (test) take.start(test, true);
+          else toast('Test tapılmadı', 'error');
+        } catch { toast('Düzgün link daxil edin', 'error'); }
+      };
 
-            // ---------- ADMIN functions ----------
-            window.adminListUsers = function() {
-                let html = '<h3>İstifadəçilər</h3><ul>';
-                STORE.users.forEach(u => {
-                    html += `<li>${u.avatar || '👤'} ${u.name || u.email} (${u.role}) <button class="btn-outline" onclick="adminDeleteUser('${u.id}')"><i class="fas fa-ban"></i> sil/ban</button></li>`;
-                });
-                html += '</ul>';
-                document.getElementById('admin-content').innerHTML = html;
-            };
-            window.adminDeleteUser = function(id) {
-                if(currentUser && currentUser.id === id) return toast('Özünüzü silə bilməzsiniz','error');
-                STORE.users = STORE.users.filter(u=>u.id!==id);
-                saveDB();
-                adminListUsers();
-                toast('İstifadəçi silindi');
-            };
-            window.adminListTests = function() {
-                let html = '<h3>Bütün testlər</h3><ul>';
-                STORE.tests.forEach(t => {
-                    html += `<li>${t.title} (${t.questions.length} sual) - yaradan: ${STORE.users.find(u=>u.id===t.createdBy)?.email||'?'} <button class="btn-outline" onclick="adminDeleteTest('${t.id}')">sil</button></li>`;
-                });
-                html += '</ul>';
-                document.getElementById('admin-content').innerHTML = html;
-            };
-            window.adminDeleteTest = function(id) {
-                STORE.tests = STORE.tests.filter(t=>t.id!==id);
-                saveDB();
-                adminListTests();
-            };
-            window.exportData = function() {
-                let data = { users: STORE.users, tests: STORE.tests, results: STORE.results };
-                let blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-                let a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'exam_backup.json';
-                a.click();
-            };
-            window.importData = function() {
-                let input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.json';
-                input.onchange = e => {
-                    let file = e.target.files[0];
-                    let reader = new FileReader();
-                    reader.onload = ee => {
-                        try {
-                            let j = JSON.parse(ee.target.result);
-                            if(j.users) STORE.users = j.users;
-                            if(j.tests) STORE.tests = j.tests;
-                            if(j.results) STORE.results = j.results;
-                            saveDB();
-                            toast('Məlumatlar import edildi');
-                        } catch(ex) { toast('Xəta','error'); }
-                    };
-                    reader.readAsText(file);
-                };
-                input.click();
-            };
+      // check url on load
+      (function initFromUrl() {
+        let params = new URLSearchParams(window.location.search);
+        let testId = params.get('test');
+        if (testId) {
+          let test = store.tests.find(t => t.id === testId);
+          if (test) take.start(test, true);
+        }
+      })();
 
-            // on load, check url test param
-            getTestFromUrl();
-        })();
-    </script>
+      // ---------- ADMIN ----------
+      window.admin = {
+        listUsers: () => {
+          let html = '<h3 class="text-lg mb-2">👥 İstifadəçilər</h3>';
+          store.users.forEach(u => html += `<div class="flex justify-between p-2 border-b border-slate-700"><span>${u.avatar||'👤'} ${u.name||u.email} (${u.role})</span><button class="text-rose-400" onclick="admin.deleteUser('${u.id}')"><i data-lucide="ban"></i></button></div>`);
+          document.getElementById('admin-content').innerHTML = html; lucide.createIcons();
+        },
+        deleteUser: (id) => { if (store.currentUser && store.currentUser.id === id) return toast('Özünüzü silə bilməzsiniz','error'); store.users = store.users.filter(u=>u.id!==id); saveAll(); admin.listUsers(); },
+        listTests: () => {
+          let html = '<h3>📋 Bütün testlər</h3>';
+          store.tests.forEach(t => html += `<div class="p-2 border-b flex justify-between"><span>${t.title} (${t.questions.length}) - ${t.approved?'✅ təsdiqləndi':'⏳ gözləyir'}</span><div><button class="text-green-400 mr-2" onclick="admin.approveTest('${t.id}')">✔</button><button class="text-rose-400" onclick="admin.deleteTest('${t.id}')">🗑</button></div></div>`);
+          document.getElementById('admin-content').innerHTML = html;
+        },
+        approveTest: (id) => { let t = store.tests.find(t=>t.id===id); if(t) t.approved = true; saveAll(); admin.listTests(); },
+        deleteTest: (id) => { store.tests = store.tests.filter(t=>t.id!==id); saveAll(); admin.listTests(); },
+        exportData: () => { let data = { users: store.users, tests: store.tests, results: store.results }; let blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exam_backup.json'; a.click(); },
+        importData: () => { let input = document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange = e => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = ee => { try { let j = JSON.parse(ee.target.result); if(j.users) store.users = j.users; if(j.tests) store.tests = j.tests; if(j.results) store.results = j.results; saveAll(); toast('İdxal edildi'); admin.listUsers(); } catch(ex){ toast('Xəta','error'); } }; reader.readAsText(file); }; input.click(); }
+      };
+
+      function updateHealth() {
+        let size = new Blob([localStorage.getItem('exam_tests')||'']).size / 1024;
+        document.getElementById('storage-size').innerText = size.toFixed(1);
+        document.getElementById('test-count').innerText = store.tests.length;
+        document.getElementById('user-count').innerText = store.users.length;
+        let percent = Math.min(100, (size / 5000)*100);
+        document.getElementById('storage-bar').style.width = percent+'%';
+      }
+
+      // profile
+      window.profile = {
+        save: () => {
+          let name = document.getElementById('edit-name').value.trim();
+          let email = document.getElementById('edit-email').value.trim();
+          let pass = document.getElementById('edit-pass').value.trim();
+          let avatar = document.getElementById('edit-avatar').value.trim();
+          if (email && email !== store.currentUser.email) {
+            if (store.users.find(u=>u.email===email && u.id!==store.currentUser.id)) return toast('Email istifadə olunur','error');
+            store.currentUser.email = email;
+          }
+          if (name) store.currentUser.name = name;
+          if (pass) store.currentUser.password = pass;
+          if (avatar) store.currentUser.avatar = avatar;
+          saveAll(); toast('Yeniləndi'); ui.show('user-dashboard');
+        }
+      };
+
+      // copy link
+      window.copyShareLink = () => { let link = document.getElementById('share-link'); link.select(); document.execCommand('copy'); toast('Link kopyalandı'); };
+
+      // init icons
+      lucide.createIcons();
+    })();
+  </script>
 </body>
 </html>
