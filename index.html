@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamMaster Ultra Pro | Startup Edition</title>
+    <title>ExamMaster Ultra | Pro Test Platform</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -12,402 +12,812 @@
 
     <style>
         :root {
-            --neon-primary: #6366f1;
-            --neon-secondary: #06b6d4;
-            --glass-bg: rgba(15, 23, 42, 0.8);
+            --primary: #6366f1;
+            --secondary: #06b6d4;
+            --glass: rgba(15, 23, 42, 0.7);
         }
+        
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: #020617;
             color: #f8fafc;
+            transition: all 0.3s ease;
             overflow-x: hidden;
         }
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
+
         .neon-border {
+            border: 1px solid var(--primary);
             box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
-            border: 1px solid rgba(99, 102, 241, 0.5);
         }
-        .animate-slide-up {
-            animation: slideUp 0.5s ease-out;
+
+        .gradient-text {
+            background: linear-gradient(to right, #fff, #6366f1, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        /* Quiz Specifics */
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .option-card:hover { transform: translateX(8px); background: rgba(99, 102, 241, 0.1); }
+        .option-card.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+        .option-card.correct { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .option-card.wrong { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="app" class="relative min-h-screen pb-12">
-        <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center mb-8">
+    <div id="toast-container"></div>
+
+    <div id="app">
+        <nav id="navbar" class="glass-card sticky top-0 z-50 px-6 py-4 flex justify-between items-center hidden">
             <div class="flex items-center gap-2 cursor-pointer" onclick="router.navigate('home')">
-                <div class="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/50">
-                    <i data-lucide="graduation-cap" class="text-white"></i>
-                </div>
-                <span class="text-xl font-800 bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">
-                    EXAMMASTER <span class="text-xs font-bold border border-indigo-500 px-1 rounded ml-1">ULTRA</span>
-                </span>
+                <div class="p-2 bg-indigo-600 rounded-lg"><i data-lucide="graduation-cap" class="text-white"></i></div>
+                <span class="text-xl font-bold tracking-tighter">EXAM<span class="text-indigo-500">MASTER</span></span>
             </div>
-            
-            <div id="nav-actions" class="flex items-center gap-4">
+            <div id="nav-right" class="flex items-center gap-4">
                 </div>
         </nav>
 
-        <main id="main-view" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main id="view-container" class="container mx-auto px-4 py-8 max-w-7xl">
             </main>
+    </div>
 
-        <div id="toast-container" class="fixed bottom-5 right-5 z-[100]"></div>
+    <div id="modal-container" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div id="modal-content" class="glass-card p-8 rounded-3xl max-w-lg w-full m-4 scale-95 transition-transform"></div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION & STATE ---
-        const CONFIG = {
-            ADMIN_USER: "cesi",
-            ADMIN_PASS: "cesi123"
+        /**
+         * -------------------------------------------------------------------
+         * 1. STATE & STORAGE MANAGEMENT
+         * -------------------------------------------------------------------
+         */
+        const STORAGE_KEYS = {
+            USERS: 'em_users',
+            TESTS: 'em_tests',
+            RESULTS: 'em_results',
+            SESSION: 'em_session',
+            SETTINGS: 'em_settings'
         };
 
-        let state = {
-            users: JSON.parse(localStorage.getItem('em_users')) || [],
-            currentUser: JSON.parse(localStorage.getItem('em_session')) || null,
-            tests: JSON.parse(localStorage.getItem('em_tests')) || [],
-            attempts: JSON.parse(localStorage.getItem('em_attempts')) || [],
-            currentView: 'home',
-            activeQuiz: null
+        const state = {
+            users: JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [],
+            tests: JSON.parse(localStorage.getItem(STORAGE_KEYS.TESTS)) || [],
+            results: JSON.parse(localStorage.getItem(STORAGE_KEYS.RESULTS)) || [],
+            session: JSON.parse(localStorage.getItem(STORAGE_KEYS.SESSION)) || null,
+            settings: JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS)) || { darkMode: true, sound: true },
+            activeQuiz: null,
+            activeQuizAnswers: {}
         };
 
-        // --- 2. CORE SERVICES ---
-        const storage = {
-            save() {
-                localStorage.setItem('em_users', JSON.stringify(state.users));
-                localStorage.setItem('em_tests', JSON.stringify(state.tests));
-                localStorage.setItem('em_attempts', JSON.stringify(state.attempts));
-                localStorage.setItem('em_session', JSON.stringify(state.currentUser));
-            }
+        const saveToStorage = () => {
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(state.users));
+            localStorage.setItem(STORAGE_KEYS.TESTS, JSON.stringify(state.tests));
+            localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(state.results));
+            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(state.session));
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
         };
 
-        const auth = {
-            login(user, pass) {
-                if (user === CONFIG.ADMIN_USER && pass === CONFIG.ADMIN_PASS) {
-                    state.currentUser = { username: 'Admin Cesi', role: 'admin', id: 'admin' };
-                } else {
-                    const u = state.users.find(u => u.username === user && u.password === pass);
-                    if (!u) return false;
-                    state.currentUser = u;
-                }
-                storage.save();
-                return true;
+        // Initialize Admin if not exists
+        if (!state.users.find(u => u.username === 'cesi')) {
+            state.users.push({
+                id: 'admin-0',
+                username: 'cesi',
+                password: 'cesi123',
+                role: 'admin',
+                fullName: 'System Admin',
+                createdAt: Date.now()
+            });
+            saveToStorage();
+        }
+
+        /**
+         * -------------------------------------------------------------------
+         * 2. UTILS & UI HELPERS
+         * -------------------------------------------------------------------
+         */
+        const ui = {
+            toast(msg, type = 'success') {
+                const colors = { success: 'bg-emerald-500', error: 'bg-rose-500', info: 'bg-indigo-500' };
+                const toast = document.createElement('div');
+                toast.className = `${colors[type]} text-white px-6 py-3 rounded-xl shadow-2xl mb-3 animate-fade flex items-center gap-2`;
+                toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${msg}`;
+                document.getElementById('toast-container').appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => toast.remove(), 4000);
             },
-            logout() {
-                state.currentUser = null;
-                storage.save();
-                router.navigate('home');
+            showModal(contentHtml) {
+                const container = document.getElementById('modal-container');
+                const content = document.getElementById('modal-content');
+                content.innerHTML = contentHtml;
+                container.classList.remove('hidden');
+                setTimeout(() => content.classList.remove('scale-95'), 10);
+                lucide.createIcons();
+            },
+            closeModal() {
+                document.getElementById('modal-container').classList.add('hidden');
+            },
+            formatDate(ts) {
+                return new Date(ts).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' });
             }
         };
 
-        // --- 3. UI ENGINE (ROUTER & VIEWS) ---
+        /**
+         * -------------------------------------------------------------------
+         * 3. ROUTER & VIEWS
+         * -------------------------------------------------------------------
+         */
         const router = {
             navigate(view, params = null) {
-                state.currentView = view;
-                this.render(params);
-                window.scrollTo(0,0);
-            },
-            render(params) {
-                const main = document.getElementById('main-view');
-                const navActions = document.getElementById('nav-actions');
+                const container = document.getElementById('view-container');
+                const navbar = document.getElementById('navbar');
                 
-                // Update Nav
-                if (state.currentUser) {
-                    navActions.innerHTML = `
-                        <span class="text-sm text-slate-400 hidden md:inline">Xoş gəldin, <b>${state.currentUser.username}</b></span>
-                        <button onclick="router.navigate('dashboard')" class="p-2 hover:bg-slate-800 rounded-full"><i data-lucide="layout-dashboard"></i></button>
-                        <button onclick="auth.logout()" class="text-red-400 hover:text-red-300 ml-2"><i data-lucide="log-out"></i></button>
+                // Navigation Logic
+                if (view === 'quiz') {
+                    navbar.classList.add('hidden'); // Hide nav during quiz
+                } else {
+                    navbar.classList.remove('hidden');
+                    this.updateNavbar();
+                }
+
+                container.innerHTML = `<div class="animate-fade">${this.views[view](params)}</div>`;
+                lucide.createIcons();
+                window.scrollTo(0, 0);
+            },
+
+            updateNavbar() {
+                const navRight = document.getElementById('nav-right');
+                if (state.session) {
+                    navRight.innerHTML = `
+                        <button onclick="router.navigate('dashboard')" class="text-sm font-semibold hover:text-indigo-400">Panel</button>
+                        ${state.session.role === 'admin' ? '<button onclick="router.navigate(\'admin\')" class="text-amber-500 font-bold">ADMIN</button>' : ''}
+                        <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold cursor-pointer" onclick="router.navigate('profile')">
+                            ${state.session.username[0].toUpperCase()}
+                        </div>
+                        <button onclick="auth.logout()" class="p-2 hover:bg-slate-800 rounded-lg text-rose-400"><i data-lucide="log-out" class="w-5 h-5"></i></button>
                     `;
                 } else {
-                    navActions.innerHTML = `
-                        <button onclick="router.navigate('login')" class="text-sm font-semibold hover:text-indigo-400 transition">Giriş</button>
-                        <button onclick="router.navigate('register')" class="bg-indigo-600 px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 transition">Qeydiyyat</button>
+                    navRight.innerHTML = `
+                        <button onclick="router.navigate('login')" class="text-sm font-bold">Giriş</button>
+                        <button onclick="router.navigate('register')" class="bg-indigo-600 px-5 py-2 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/30">Qeydiyyat</button>
                     `;
                 }
+            },
 
-                // Route Handler
-                switch(state.currentView) {
-                    case 'home': main.innerHTML = views.home(); break;
-                    case 'login': main.innerHTML = views.login(); break;
-                    case 'register': main.innerHTML = views.register(); break;
-                    case 'dashboard': 
-                        if(!state.currentUser) return this.navigate('login');
-                        main.innerHTML = state.currentUser.role === 'admin' ? views.adminPanel() : views.dashboard(); 
-                        break;
-                    case 'create-test': main.innerHTML = views.createTest(); break;
-                    case 'quiz': main.innerHTML = views.quiz(params); break;
-                    case 'results': main.innerHTML = views.results(params); break;
-                }
-                lucide.createIcons();
+            views: {
+                home: () => `
+                    <div class="text-center py-20">
+                        <h1 class="text-6xl md:text-8xl font-800 mb-6 tracking-tighter leading-tight">İmtahanları <br><span class="gradient-text">Professional</span> Keçin</h1>
+                        <p class="text-slate-400 text-lg max-w-2xl mx-auto mb-10">Google Forms sadəliyi, Kahoot enerjisi. Testlərinizi yaradın, paylaşın və real-time nəticələri izləyin.</p>
+                        <div class="flex justify-center gap-4">
+                            <button onclick="router.navigate('dashboard')" class="bg-indigo-600 px-10 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition active:scale-95 shadow-xl shadow-indigo-500/20">İndi Başla</button>
+                            <button class="glass-card px-10 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition">Video İzlə</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                        <div class="glass-card p-8 rounded-3xl border-white/5">
+                            <i data-lucide="zap" class="text-amber-500 mb-4 w-10 h-10"></i>
+                            <h3 class="text-xl font-bold mb-2">Sürətli Start</h3>
+                            <p class="text-slate-400 text-sm">Heç bir qeydiyyat tələb olunmadan linklə birbaşa testə giriş.</p>
+                        </div>
+                        <div class="glass-card p-8 rounded-3xl border-white/5">
+                            <i data-lucide="shield-check" class="text-emerald-500 mb-4 w-10 h-10"></i>
+                            <h3 class="text-xl font-bold mb-2">Anti-Cheat</h3>
+                            <p class="text-slate-400 text-sm">Tab dəyişməyə qarşı xəbərdarlıq sistemi və tam ekran rejimi.</p>
+                        </div>
+                        <div class="glass-card p-8 rounded-3xl border-white/5">
+                            <i data-lucide="bar-chart-3" class="text-indigo-500 mb-4 w-10 h-10"></i>
+                            <h3 class="text-xl font-bold mb-2">Dərin Analiz</h3>
+                            <p class="text-slate-400 text-sm">Hər sual üzrə statistikalar və detallı performans hesabatı.</p>
+                        </div>
+                    </div>
+                `,
+
+                login: () => `
+                    <div class="max-w-md mx-auto py-12">
+                        <div class="glass-card p-10 rounded-3xl">
+                            <h2 class="text-3xl font-bold mb-2">Xoş Gəldin</h2>
+                            <p class="text-slate-400 mb-8 text-sm">Davam etmək üçün hesabınıza daxil olun.</p>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">İstifadəçi Adı</label>
+                                    <input id="l-user" type="text" placeholder="cesi" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Şifrə</label>
+                                    <input id="l-pass" type="password" placeholder="••••••••" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl focus:border-indigo-500 outline-none transition">
+                                </div>
+                                <button onclick="auth.login()" class="w-full bg-indigo-600 py-4 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20">Daxil Ol</button>
+                            </div>
+                        </div>
+                    </div>
+                `,
+
+                register: () => `
+                    <div class="max-w-md mx-auto py-12">
+                        <div class="glass-card p-10 rounded-3xl">
+                            <h2 class="text-3xl font-bold mb-2">Hesab Yarat</h2>
+                            <p class="text-slate-400 mb-8 text-sm">Platformanın bütün imkanlarından yararlanın.</p>
+                            <div class="space-y-4">
+                                <input id="r-name" type="text" placeholder="Ad Soyad" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500">
+                                <input id="r-user" type="text" placeholder="İstifadəçi adı" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500">
+                                <input id="r-pass" type="password" placeholder="Şifrə" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500">
+                                <button onclick="auth.register()" class="w-full bg-indigo-600 py-4 rounded-xl font-bold shadow-lg shadow-indigo-500/20">Qeydiyyatı Tamamla</button>
+                            </div>
+                        </div>
+                    </div>
+                `,
+
+                dashboard: () => {
+                    const myTests = state.tests.filter(t => t.creatorId === state.session?.id);
+                    const myResults = state.results.filter(r => r.userId === state.session?.id);
+                    
+                    return `
+                        <div class="flex justify-between items-center mb-10">
+                            <div>
+                                <h2 class="text-4xl font-800 tracking-tight">İş Masası</h2>
+                                <p class="text-slate-500">Sizin testləriniz və nəticələriniz.</p>
+                            </div>
+                            <button onclick="router.navigate('create-test')" class="bg-indigo-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition"><i data-lucide="plus"></i> Yeni Test</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="file-text" class="text-indigo-400"></i> Mənim Testlərim</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${myTests.length ? myTests.map(t => `
+                                        <div class="glass-card p-6 rounded-3xl border-white/5 hover:neon-border transition cursor-pointer group">
+                                            <div class="flex justify-between items-start mb-4">
+                                                <div class="p-3 bg-indigo-500/10 rounded-xl"><i data-lucide="help-circle" class="text-indigo-400"></i></div>
+                                                <button onclick="actions.shareTest('${t.id}')" class="p-2 hover:bg-white/10 rounded-lg text-slate-400"><i data-lucide="share-2" class="w-4 h-4"></i></button>
+                                            </div>
+                                            <h4 class="font-bold text-lg mb-1 group-hover:text-indigo-400 transition">${t.title}</h4>
+                                            <p class="text-slate-500 text-xs mb-4 line-clamp-2">${t.description}</p>
+                                            <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                                                <span class="text-xs font-bold text-slate-400">${t.questions.length} Sual</span>
+                                                <button onclick="quizEngine.start('${t.id}')" class="text-xs font-bold text-indigo-400 hover:underline">Başlat</button>
+                                            </div>
+                                        </div>
+                                    `).join('') : '<div class="col-span-2 py-12 text-center text-slate-500 glass-card rounded-3xl">Hələ test yaratmamısınız.</div>'}
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <h3 class="text-xl font-bold flex items-center gap-2"><i data-lucide="history" class="text-emerald-400"></i> Son Nəticələr</h3>
+                                <div class="space-y-3">
+                                    ${myResults.length ? myResults.reverse().slice(0, 5).map(r => `
+                                        <div class="glass-card p-4 rounded-2xl flex justify-between items-center border-white/5">
+                                            <div>
+                                                <div class="font-bold text-sm">${state.tests.find(t => t.id === r.testId)?.title || 'Silinmiş Test'}</div>
+                                                <div class="text-[10px] text-slate-500 uppercase font-bold">${ui.formatDate(r.timestamp)}</div>
+                                            </div>
+                                            <div class="text-lg font-black ${r.score >= 70 ? 'text-emerald-400' : 'text-rose-400'}">${r.score}%</div>
+                                        </div>
+                                    `).join('') : '<div class="py-12 text-center text-slate-500 glass-card rounded-2xl">Nəticə tapılmadı.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                createTest: () => `
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex items-center gap-4 mb-8">
+                            <button onclick="router.navigate('dashboard')" class="p-3 glass-card rounded-2xl hover:bg-white/10 transition"><i data-lucide="chevron-left"></i></button>
+                            <h2 class="text-3xl font-800">Test Konstruktoru</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div class="glass-card p-8 rounded-3xl space-y-4">
+                                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Əsas Məlumatlar</h3>
+                                    <input id="t-title" type="text" placeholder="Testin Adı" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500">
+                                    <textarea id="t-desc" placeholder="Açıqlama" class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500 h-24"></textarea>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Vaxt (Dəq)</label>
+                                            <input id="t-timer" type="number" value="15" class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Kateqoriya</label>
+                                            <select id="t-cat" class="w-full bg-slate-900/50 border border-slate-700 p-3 rounded-xl outline-none focus:border-indigo-500">
+                                                <option>Genel</option>
+                                                <option>Proqramlaşdırma</option>
+                                                <option>Riyaziyyat</option>
+                                                <option>Məntiq</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div class="glass-card p-8 rounded-3xl">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Sual Bazası (JSON)</h3>
+                                        <button onclick="actions.showJsonHelp()" class="text-indigo-400 text-xs hover:underline">Nümunə Format</button>
+                                    </div>
+                                    <textarea id="t-json" placeholder='[{"q": "Sual?", "o": ["A", "B", "C"], "a": 0}]' class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-indigo-500 h-64 font-mono text-xs"></textarea>
+                                    <button onclick="actions.handleCreateTest()" class="w-full bg-indigo-600 py-4 mt-4 rounded-2xl font-bold shadow-xl shadow-indigo-500/20 hover:bg-indigo-500 transition">Testi Yarat və Yayımla</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+
+                quiz: (testId) => {
+                    const test = state.tests.find(t => t.id === testId);
+                    if (!test) return `<div>Test tapılmadı.</div>`;
+                    
+                    return `
+                        <div class="max-w-3xl mx-auto py-4">
+                            <div class="flex justify-between items-center mb-8 glass-card p-4 rounded-2xl px-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-xl" id="q-timer">00:00</div>
+                                    <div>
+                                        <h4 class="font-bold text-sm truncate max-w-[150px]">${test.title}</h4>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase" id="q-progress-text">Sual 1 / ${test.questions.length}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="quizEngine.toggleFullscreen()" class="p-2 hover:bg-white/10 rounded-lg"><i data-lucide="maximize" class="w-4 h-4"></i></button>
+                                    <button onclick="quizEngine.submit()" class="bg-rose-500/10 text-rose-500 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-500 hover:text-white transition">Bitir</button>
+                                </div>
+                            </div>
+
+                            <div class="w-full h-1.5 bg-slate-800 rounded-full mb-8 overflow-hidden">
+                                <div id="q-progress-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+
+                            <div id="question-area" class="glass-card p-10 rounded-3xl min-h-[400px] flex flex-col justify-center animate-fade">
+                                </div>
+
+                            <div class="flex justify-between mt-8">
+                                <button onclick="quizEngine.prev()" class="glass-card px-8 py-3 rounded-2xl font-bold hover:bg-white/10 transition flex items-center gap-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Geri</button>
+                                <button onclick="quizEngine.next()" id="q-next-btn" class="bg-indigo-600 px-8 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition flex items-center gap-2">Növbəti <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                result: (resultId) => {
+                    const res = state.results.find(r => r.id === resultId);
+                    const test = state.tests.find(t => t.id === res.testId);
+                    
+                    return `
+                        <div class="max-w-4xl mx-auto text-center py-12">
+                            <div class="mb-8">
+                                <div class="inline-flex p-6 bg-indigo-500/10 rounded-full mb-6">
+                                    <i data-lucide="award" class="w-16 h-16 text-indigo-500"></i>
+                                </div>
+                                <h2 class="text-4xl font-800 mb-2">İmtahan Bitdi!</h2>
+                                <p class="text-slate-500">Nəticələriniz analiz edildi.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                                <div class="glass-card p-8 rounded-3xl">
+                                    <div class="text-4xl font-black text-indigo-400 mb-1">${res.score}%</div>
+                                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ümumi Bal</div>
+                                </div>
+                                <div class="glass-card p-8 rounded-3xl">
+                                    <div class="text-4xl font-black text-emerald-400 mb-1">${res.correct}</div>
+                                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Düzgün Cavab</div>
+                                </div>
+                                <div class="glass-card p-8 rounded-3xl">
+                                    <div class="text-4xl font-black text-rose-400 mb-1">${res.wrong}</div>
+                                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Səhv Cavab</div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-center gap-4">
+                                <button onclick="router.navigate('dashboard')" class="bg-indigo-600 px-8 py-4 rounded-2xl font-bold shadow-lg shadow-indigo-500/20">Panelə Dön</button>
+                                <button onclick="actions.reviewTest('${res.id}')" class="glass-card px-8 py-4 rounded-2xl font-bold hover:bg-white/10">Cavabları İncələ</button>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                admin: () => `
+                    <div class="space-y-10">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h2 class="text-4xl font-800 tracking-tight">Admin Kontrol</h2>
+                                <p class="text-slate-500">Sistem statistikası və idarəetmə.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="actions.exportSystemData()" class="glass-card p-3 rounded-xl hover:bg-white/10 transition"><i data-lucide="download"></i></button>
+                                <button onclick="actions.backupRestore()" class="glass-card p-3 rounded-xl hover:bg-white/10 transition"><i data-lucide="refresh-cw"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="glass-card p-6 rounded-2xl">
+                                <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Cəmi User</div>
+                                <div class="text-3xl font-black">${state.users.length}</div>
+                            </div>
+                            <div class="glass-card p-6 rounded-2xl">
+                                <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Aktiv Test</div>
+                                <div class="text-3xl font-black">${state.tests.length}</div>
+                            </div>
+                            <div class="glass-card p-6 rounded-2xl">
+                                <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Tamamlanmış</div>
+                                <div class="text-3xl font-black">${state.results.length}</div>
+                            </div>
+                            <div class="glass-card p-6 rounded-2xl">
+                                <div class="text-slate-500 text-[10px] font-bold uppercase mb-2">Sistem Status</div>
+                                <div class="text-emerald-400 text-sm font-bold flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Online</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-3xl overflow-hidden">
+                            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                                <h3 class="font-bold">İstifadəçilər</h3>
+                                <input type="text" placeholder="Axtar..." class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-xs outline-none focus:border-indigo-500 w-64">
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-white/5 text-slate-400 uppercase text-[10px] font-bold">
+                                        <tr>
+                                            <th class="p-4">İstifadəçi</th>
+                                            <th class="p-4">Rol</th>
+                                            <th class="p-4">Tarix</th>
+                                            <th class="p-4 text-right">Aksiya</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-white/5">
+                                        ${state.users.map(u => `
+                                            <tr class="hover:bg-white/5 transition">
+                                                <td class="p-4 font-bold">${u.username}</td>
+                                                <td class="p-4"><span class="px-2 py-1 rounded-md bg-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase">${u.role}</span></td>
+                                                <td class="p-4 text-slate-500">${ui.formatDate(u.createdAt)}</td>
+                                                <td class="p-4 text-right">
+                                                    <button onclick="actions.deleteUser('${u.id}')" class="text-rose-500 hover:bg-rose-500/20 p-2 rounded-lg transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `
             }
         };
 
-        // --- 4. VIEW TEMPLATES ---
-        const views = {
-            home: () => `
-                <div class="flex flex-col items-center text-center py-20 animate-slide-up">
-                    <h1 class="text-5xl md:text-7xl font-900 mb-6 bg-gradient-to-b from-white to-slate-500 bg-clip-text text-transparent leading-tight">
-                        İntellektual İmtahan <br> Platforması
-                    </h1>
-                    <p class="text-slate-400 max-w-2xl text-lg mb-10">
-                        Google Forms sadəliyi, Kahoot rəqabəti və Udemy keyfiyyəti bir arada. Testlərinizi saniyələr içində yaradın və paylaşın.
-                    </p>
-                    <div class="flex gap-4">
-                        <button onclick="router.navigate('dashboard')" class="bg-indigo-600 px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-500/20 hover:scale-105 transition active:scale-95">Başla</button>
-                        <button class="glass px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/5 transition">Demo</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
-                    ${['Sürətli', 'Təhlükəsiz', 'Analitik'].map(item => `
-                        <div class="glass p-8 rounded-2xl border-white/5">
-                            <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center mb-4">
-                                <i data-lucide="zap" class="text-indigo-500"></i>
-                            </div>
-                            <h3 class="text-xl font-bold mb-2">${item}</h3>
-                            <p class="text-slate-400">Startup səviyyəsində performans və modern UI ilə bütün testlər nəzarət altında.</p>
-                        </div>
-                    `).join('')}
-                </div>
-            `,
-
-            login: () => `
-                <div class="max-w-md mx-auto glass p-8 rounded-3xl animate-slide-up">
-                    <h2 class="text-3xl font-bold mb-6">Giriş</h2>
-                    <input id="login-user" type="text" placeholder="İstifadəçi adı" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-4 focus:border-indigo-500 outline-none">
-                    <input id="login-pass" type="password" placeholder="Şifrə" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl mb-6 focus:border-indigo-500 outline-none">
-                    <button onclick="actions.handleLogin()" class="w-full bg-indigo-600 p-4 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/30">Daxil ol</button>
-                </div>
-            `,
-
-            dashboard: () => {
-                const myTests = state.tests.filter(t => t.creatorId === state.currentUser.id);
-                return `
-                    <div class="flex justify-between items-center mb-10">
-                        <h2 class="text-3xl font-bold">Mənim Panelim</h2>
-                        <button onclick="router.navigate('create-test')" class="bg-indigo-600 px-6 py-3 rounded-xl font-bold flex items-center gap-2">
-                            <i data-lucide="plus"></i> Yeni Test
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        ${myTests.length ? myTests.map(t => `
-                            <div class="glass p-6 rounded-2xl border-white/10 hover:neon-border transition cursor-pointer group">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="p-3 bg-indigo-500/10 rounded-xl"><i data-lucide="file-text" class="text-indigo-400"></i></div>
-                                    <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-400">${t.category}</span>
-                                </div>
-                                <h3 class="text-xl font-bold mb-1">${t.title}</h3>
-                                <p class="text-slate-400 text-sm mb-4 line-clamp-2">${t.desc}</p>
-                                <div class="flex items-center justify-between mt-6">
-                                    <span class="text-xs text-slate-500">${t.questions.length} Sual</span>
-                                    <button onclick="actions.startQuiz('${t.id}')" class="text-indigo-400 font-bold group-hover:translate-x-1 transition flex items-center gap-1">Testə başla <i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                        `).join('') : `<p class="text-slate-500 col-span-3 text-center py-20 glass rounded-3xl">Hələ test yaratmamısınız.</p>`}
-                    </div>
-                `;
-            },
-
-            createTest: () => `
-                <div class="max-w-4xl mx-auto animate-slide-up">
-                    <div class="flex items-center gap-4 mb-8">
-                        <button onclick="router.navigate('dashboard')" class="p-2 glass rounded-full"><i data-lucide="arrow-left"></i></button>
-                        <h2 class="text-3xl font-bold">Yeni Test Yarat</h2>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-4">
-                            <div class="glass p-6 rounded-2xl">
-                                <h3 class="font-bold mb-4 text-indigo-400">Ümumi Məlumat</h3>
-                                <input id="test-title" type="text" placeholder="Testin adı" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg mb-4 outline-none">
-                                <textarea id="test-desc" placeholder="Açıqlama" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg mb-4 outline-none h-24"></textarea>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <select id="test-cat" class="bg-slate-900 border border-slate-700 p-3 rounded-lg outline-none">
-                                        <option>Proqramlaşdırma</option>
-                                        <option>Riyaziyyat</option>
-                                        <option>Məntiq</option>
-                                    </select>
-                                    <input id="test-timer" type="number" placeholder="Vaxt (dəq)" class="bg-slate-900 border border-slate-700 p-3 rounded-lg outline-none">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="glass p-6 rounded-2xl">
-                            <h3 class="font-bold mb-4 text-emerald-400">Sual Bazası (JSON)</h3>
-                            <p class="text-xs text-slate-500 mb-2">Format: [{"q":"Sual?","o":["A","B"],"a":0}]</p>
-                            <textarea id="test-json" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg outline-none h-64 font-mono text-xs" placeholder="JSON kodunu bura yapışdırın..."></textarea>
-                            <button onclick="actions.handleCreateTest()" class="w-full bg-indigo-600 mt-4 p-4 rounded-xl font-bold hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">Testi Yayımla</button>
-                        </div>
-                    </div>
-                </div>
-            `,
-
-            quiz: (testId) => {
-                const test = state.tests.find(t => t.id === testId);
-                state.activeQuiz = { test, current: 0, answers: [], timeLeft: test.timer * 60, startTime: Date.now() };
-                startQuizTimer();
-                return `
-                    <div class="max-w-3xl mx-auto">
-                        <div class="flex justify-between items-center mb-8 glass p-4 rounded-2xl px-6">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="text-indigo-400"></i>
-                                <span id="timer-display" class="font-mono text-xl font-bold">00:00</span>
-                            </div>
-                            <div class="flex-1 mx-8 h-2 bg-slate-800 rounded-full overflow-hidden">
-                                <div id="quiz-progress" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
-                            </div>
-                            <button onclick="actions.submitQuiz()" class="bg-red-500/10 text-red-400 px-4 py-2 rounded-lg font-bold hover:bg-red-500 hover:text-white transition">Bitir</button>
-                        </div>
-                        
-                        <div id="question-container" class="glass p-10 rounded-3xl border-white/10 min-h-[400px]">
-                            </div>
-
-                        <div class="flex justify-between mt-8">
-                            <button onclick="actions.prevQuestion()" class="glass px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-white/5"><i data-lucide="chevron-left"></i> Geri</button>
-                            <button onclick="actions.nextQuestion()" id="next-btn" class="bg-indigo-600 px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-500 transition">Növbəti <i data-lucide="chevron-right"></i></button>
-                        </div>
-                    </div>
-                `;
-            }
-        };
-
-        // --- 5. LOGIC & ACTIONS ---
-        const actions = {
-            handleLogin() {
-                const u = document.getElementById('login-user').value;
-                const p = document.getElementById('login-pass').value;
-                if (auth.login(u, p)) router.navigate('dashboard');
-                else alert('Səhv məlumat!');
-            },
-
-            handleCreateTest() {
-                const title = document.getElementById('test-title').value;
-                const jsonStr = document.getElementById('test-json').value;
-                try {
-                    const questions = JSON.parse(jsonStr);
-                    const newTest = {
-                        id: 't' + Date.now(),
-                        creatorId: state.currentUser.id,
-                        title,
-                        desc: document.getElementById('test-desc').value,
-                        category: document.getElementById('test-cat').value,
-                        timer: parseInt(document.getElementById('test-timer').value) || 10,
-                        questions: questions.map((q, i) => ({ ...q, id: i }))
-                    };
-                    state.tests.push(newTest);
-                    storage.save();
+        /**
+         * -------------------------------------------------------------------
+         * 4. AUTHENTICATION SERVICE
+         * -------------------------------------------------------------------
+         */
+        const auth = {
+            login() {
+                const u = document.getElementById('l-user').value;
+                const p = document.getElementById('l-pass').value;
+                const user = state.users.find(x => x.username === u && x.password === p);
+                
+                if (user) {
+                    state.session = user;
+                    saveToStorage();
+                    ui.toast(`Xoş gəldin, ${user.username}!`);
                     router.navigate('dashboard');
-                } catch(e) {
-                    alert('JSON formatı səhvdir!');
+                } else {
+                    ui.toast('Məlumatlar yanlışdır!', 'error');
                 }
             },
+            register() {
+                const u = document.getElementById('r-user').value;
+                const p = document.getElementById('r-pass').value;
+                const n = document.getElementById('r-name').value;
 
-            startQuiz(id) {
-                router.navigate('quiz', id);
+                if (state.users.some(x => x.username === u)) return ui.toast('Bu istifadəçi artıq var!', 'error');
+                
+                const newUser = { id: 'u-' + Date.now(), username: u, password: p, fullName: n, role: 'user', createdAt: Date.now() };
+                state.users.push(newUser);
+                state.session = newUser;
+                saveToStorage();
+                ui.toast('Hesab uğurla yaradıldı!');
+                router.navigate('dashboard');
+            },
+            logout() {
+                state.session = null;
+                saveToStorage();
+                router.navigate('home');
+                ui.toast('Çıxış edildi.', 'info');
+            }
+        };
+
+        /**
+         * -------------------------------------------------------------------
+         * 5. QUIZ ENGINE (CORE LOGIC)
+         * -------------------------------------------------------------------
+         */
+        const quizEngine = {
+            timer: null,
+            timeLeft: 0,
+            currentIndex: 0,
+
+            start(testId) {
+                const test = state.tests.find(t => t.id === testId);
+                state.activeQuiz = JSON.parse(JSON.stringify(test)); // Deep copy
+                state.activeQuizAnswers = {};
+                this.currentIndex = 0;
+                this.timeLeft = test.timer * 60;
+                
+                router.navigate('quiz', testId);
                 this.renderQuestion();
+                this.startTimer();
+
+                // Anti-cheat alert
+                window.onblur = () => ui.toast('Xəbərdarlıq: Tab dəyişmək qayda pozuntusudur!', 'error');
+            },
+
+            startTimer() {
+                clearInterval(this.timer);
+                const timerEl = document.getElementById('q-timer');
+                this.timer = setInterval(() => {
+                    if (this.timeLeft <= 0) {
+                        this.submit();
+                        return;
+                    }
+                    this.timeLeft--;
+                    const m = Math.floor(this.timeLeft / 60);
+                    const s = this.timeLeft % 60;
+                    timerEl.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    if (this.timeLeft < 60) timerEl.classList.add('bg-rose-500', 'animate-pulse');
+                }, 1000);
             },
 
             renderQuestion() {
-                const qCont = document.getElementById('question-container');
-                const quiz = state.activeQuiz;
-                const question = quiz.test.questions[quiz.current];
+                const q = state.activeQuiz.questions[this.currentIndex];
+                const area = document.getElementById('question-area');
+                const nextBtn = document.getElementById('q-next-btn');
                 
-                // Progress
-                const progress = ((quiz.current + 1) / quiz.test.questions.length) * 100;
-                document.getElementById('quiz-progress').style.width = `${progress}%`;
+                // Update Progress
+                const progress = ((this.currentIndex + 1) / state.activeQuiz.questions.length) * 100;
+                document.getElementById('q-progress-bar').style.width = `${progress}%`;
+                document.getElementById('q-progress-text').innerText = `Sual ${this.currentIndex + 1} / ${state.activeQuiz.questions.length}`;
 
-                qCont.innerHTML = `
-                    <span class="text-indigo-400 font-bold mb-4 block">Sual ${quiz.current + 1}</span>
-                    <h2 class="text-2xl font-bold mb-8 leading-relaxed">${question.q}</h2>
-                    <div class="grid grid-cols-1 gap-4">
-                        ${question.o.map((opt, i) => `
-                            <button onclick="actions.selectOption(${i})" class="w-full text-left p-5 rounded-2xl border ${quiz.answers[quiz.current] === i ? 'border-indigo-500 bg-indigo-500/10' : 'border-white/5 hover:bg-white/5'} transition-all">
-                                <span class="inline-block w-8 h-8 rounded-lg bg-slate-800 text-center leading-8 mr-4 text-xs font-bold">${String.fromCharCode(65+i)}</span>
-                                ${opt}
-                            </button>
-                        `).join('')}
+                nextBtn.innerHTML = this.currentIndex === state.activeQuiz.questions.length - 1 ? 'Bitir <i data-lucide="check"></i>' : 'Növbəti <i data-lucide="arrow-right"></i>';
+
+                area.innerHTML = `
+                    <div class="animate-fade">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 block">Mövzu: ${state.activeQuiz.category}</span>
+                        <h2 class="text-2xl font-bold mb-10 leading-relaxed">${q.q}</h2>
+                        <div class="grid grid-cols-1 gap-4">
+                            ${q.o.map((opt, idx) => `
+                                <div onclick="quizEngine.select(${idx})" class="option-card glass-card p-5 rounded-2xl border-white/5 flex items-center gap-4 ${state.activeQuizAnswers[this.currentIndex] === idx ? 'selected' : ''}">
+                                    <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs">${String.fromCharCode(65 + idx)}</div>
+                                    <div class="text-sm font-medium">${opt}</div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 `;
                 lucide.createIcons();
             },
 
-            selectOption(idx) {
-                state.activeQuiz.answers[state.activeQuiz.current] = idx;
+            select(idx) {
+                state.activeQuizAnswers[this.currentIndex] = idx;
                 this.renderQuestion();
             },
 
-            nextQuestion() {
-                if (state.activeQuiz.current < state.activeQuiz.test.questions.length - 1) {
-                    state.activeQuiz.current++;
+            next() {
+                if (this.currentIndex < state.activeQuiz.questions.length - 1) {
+                    this.currentIndex++;
                     this.renderQuestion();
                 } else {
-                    this.submitQuiz();
+                    this.submit();
                 }
             },
 
-            submitQuiz() {
-                clearInterval(quizInterval);
-                const quiz = state.activeQuiz;
+            prev() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.renderQuestion();
+                }
+            },
+
+            submit() {
+                clearInterval(this.timer);
+                window.onblur = null;
+                
                 let correct = 0;
-                quiz.test.questions.forEach((q, i) => {
-                    if(quiz.answers[i] === q.a) correct++;
+                state.activeQuiz.questions.forEach((q, i) => {
+                    if (state.activeQuizAnswers[i] === q.a) correct++;
                 });
 
                 const result = {
-                    id: 'r' + Date.now(),
-                    testId: quiz.test.id,
-                    userId: state.currentUser?.id || 'guest',
-                    score: Math.round((correct / quiz.test.questions.length) * 100),
-                    correct,
-                    total: quiz.test.questions.length
+                    id: 'res-' + Date.now(),
+                    testId: state.activeQuiz.id,
+                    userId: state.session?.id || 'guest',
+                    score: Math.round((correct / state.activeQuiz.questions.length) * 100),
+                    correct: correct,
+                    wrong: state.activeQuiz.questions.length - correct,
+                    timestamp: Date.now(),
+                    userAnswers: state.activeQuizAnswers
                 };
+
+                state.results.push(result);
+                saveToStorage();
                 
-                state.attempts.push(result);
-                storage.save();
+                if (result.score >= 70) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 
-                // Confetti if high score
-                if(result.score > 70) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                
-                alert(`İmtahan bitdi! Nəticə: ${result.score}%`);
-                router.navigate('dashboard');
+                router.navigate('result', result.id);
+            },
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+                else document.exitFullscreen();
             }
         };
 
-        let quizInterval;
-        function startQuizTimer() {
-            quizInterval = setInterval(() => {
-                if (state.activeQuiz.timeLeft <= 0) {
-                    actions.submitQuiz();
-                    return;
-                }
-                state.activeQuiz.timeLeft--;
-                const mins = Math.floor(state.activeQuiz.timeLeft / 60);
-                const secs = state.activeQuiz.timeLeft % 60;
-                const display = document.getElementById('timer-display');
-                if(display) display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
+        /**
+         * -------------------------------------------------------------------
+         * 6. SYSTEM ACTIONS
+         * -------------------------------------------------------------------
+         */
+        const actions = {
+            handleCreateTest() {
+                const title = document.getElementById('t-title').value;
+                const desc = document.getElementById('t-desc').value;
+                const timer = document.getElementById('t-timer').value;
+                const cat = document.getElementById('t-cat').value;
+                const jsonRaw = document.getElementById('t-json').value;
 
-        // --- 6. INITIALIZATION ---
-        window.onload = () => {
-            router.navigate('home');
-            
-            // Anti-cheat mock
-            window.addEventListener('blur', () => {
-                if(state.currentView === 'quiz') {
-                    console.warn("Anti-cheat: Tab switched!");
+                try {
+                    const questions = JSON.parse(jsonRaw);
+                    if (!Array.isArray(questions)) throw new Error();
+                    
+                    const newTest = {
+                        id: 'test-' + Math.random().toString(36).substr(2, 9),
+                        creatorId: state.session.id,
+                        title, description: desc, timer: parseInt(timer), category: cat,
+                        questions: questions,
+                        createdAt: Date.now()
+                    };
+
+                    state.tests.push(newTest);
+                    saveToStorage();
+                    ui.toast('Test uğurla yaradıldı!');
+                    router.navigate('dashboard');
+                } catch (e) {
+                    ui.toast('JSON formatı yalnışdır!', 'error');
                 }
-            });
+            },
+
+            shareTest(id) {
+                const url = window.location.origin + window.location.pathname + '?quizId=' + id;
+                ui.showModal(`
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold mb-4">Testi Paylaş</h3>
+                        <div class="bg-white p-4 rounded-2xl mb-6 inline-block">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${url}" alt="QR">
+                        </div>
+                        <input type="text" value="${url}" readonly class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-xs mb-4">
+                        <div class="flex gap-2">
+                            <button onclick="navigator.clipboard.writeText('${url}'); ui.toast('Link kopyalandı!')" class="flex-1 bg-indigo-600 py-3 rounded-xl font-bold text-sm">Linki Kopyala</button>
+                            <button onclick="ui.closeModal()" class="flex-1 glass-card py-3 rounded-xl font-bold text-sm">Bağla</button>
+                        </div>
+                    </div>
+                `);
+            },
+
+            reviewTest(resultId) {
+                const res = state.results.find(r => r.id === resultId);
+                const test = state.tests.find(t => t.id === res.testId);
+                
+                ui.showModal(`
+                    <div class="max-h-[80vh] overflow-y-auto pr-2">
+                        <h3 class="text-xl font-bold mb-6">Cavabların Review-su</h3>
+                        <div class="space-y-6">
+                            ${test.questions.map((q, i) => `
+                                <div class="p-4 rounded-2xl bg-white/5 border ${res.userAnswers[i] === q.a ? 'border-emerald-500/30' : 'border-rose-500/30'}">
+                                    <p class="font-bold text-sm mb-3">${i + 1}. ${q.q}</p>
+                                    <div class="grid grid-cols-1 gap-2">
+                                        ${q.o.map((opt, oi) => {
+                                            let color = 'text-slate-400';
+                                            if (oi === q.a) color = 'text-emerald-400 font-bold';
+                                            if (res.userAnswers[i] === oi && oi !== q.a) color = 'text-rose-400 font-bold';
+                                            return `<div class="text-xs ${color}">${String.fromCharCode(65+oi)}) ${opt}</div>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button onclick="ui.closeModal()" class="w-full bg-indigo-600 py-4 mt-6 rounded-xl font-bold">Bağla</button>
+                    </div>
+                `);
+            },
+
+            showJsonHelp() {
+                ui.showModal(`
+                    <h3 class="text-xl font-bold mb-4">JSON Formatı</h3>
+                    <p class="text-slate-400 text-sm mb-4">Aşağıdakı strukturu kopyalayıb öz suallarınıza uyğun dəyişə bilərsiniz:</p>
+                    <pre class="bg-black/50 p-4 rounded-xl text-[10px] text-indigo-300 overflow-x-auto">
+[
+  {
+    "q": "Azərbaycanın paytaxtı haradır?",
+    "o": ["Gəncə", "Bakı", "Sumqayıt"],
+    "a": 1
+  },
+  {
+    "q": "2 + 2 neçə edir?",
+    "o": ["3", "4", "5"],
+    "a": 1
+  }
+]
+                    </pre>
+                    <button onclick="ui.closeModal()" class="w-full bg-indigo-600 py-3 mt-4 rounded-xl font-bold">Anladım</button>
+                `);
+            },
+
+            deleteUser(id) {
+                if (confirm('İstifadəçini silmək istədiyinizə əminsiniz?')) {
+                    state.users = state.users.filter(u => u.id !== id);
+                    saveToStorage();
+                    router.navigate('admin');
+                    ui.toast('İstifadəçi silindi.', 'info');
+                }
+            },
+
+            exportSystemData() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "exammaster_backup.json");
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            }
         };
+
+        /**
+         * -------------------------------------------------------------------
+         * 7. INITIALIZATION & DEEP LINKING
+         * -------------------------------------------------------------------
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const quizId = urlParams.get('quizId');
+
+            if (quizId) {
+                // If a quiz link is opened, start directly as Guest
+                const test = state.tests.find(t => t.id === quizId);
+                if (test) {
+                    quizEngine.start(quizId);
+                } else {
+                    router.navigate('home');
+                }
+            } else {
+                router.navigate('home');
+            }
+        });
+
     </script>
 </body>
 </html>
