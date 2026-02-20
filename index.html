@@ -2,169 +2,276 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AxtarGet Pro - Anonim Sosial Platforma</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AxtarGet · Anonim Söhbət</title>
+    <!-- Font & Tailwind -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Firebase SDK (modüler) -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: #f8fafc;
-            overflow: hidden;
-        }
-
-        .glass {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .gradient-btn {
-            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gradient-btn:hover {
-            transform: scale(1.02);
-            filter: brightness(1.1);
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
-        }
-
-        .message-bubble {
-            max-width: 85%;
+            background: #0b0f1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            animation: popIn 0.3s ease-out;
+            overflow-x: hidden;
         }
-
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
+        /* Animated Mesh Gradient Background */
+        .mesh-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(6, 182, 212, 0.25) 0%, transparent 35%),
+                        radial-gradient(circle at 70% 60%, rgba(59, 130, 246, 0.3) 0%, transparent 40%),
+                        radial-gradient(circle at 10% 80%, rgba(168, 85, 247, 0.2) 0%, transparent 45%),
+                        radial-gradient(circle at 90% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+            animation: meshMove 30s ease-in-out infinite alternate;
+            z-index: -2;
+        }
+        @keyframes meshMove {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5%, 5%) scale(1.05); }
+        }
+        /* Glassmorphism 2.0 */
+        .glass {
+            background: rgba(20, 30, 45, 0.4);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255,255,255,0.05);
+        }
+        .glass-card {
+            background: rgba(18, 25, 40, 0.6);
+            backdrop-filter: blur(20px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            box-shadow: 0 25px 45px -12px rgba(6, 182, 212, 0.25);
+        }
+        /* Micro-interactions */
+        .btn-glow {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-glow:active {
+            transform: scale(0.94);
+            filter: brightness(1.2);
+        }
+        /* Custom scroll */
+        .scroll-custom::-webkit-scrollbar { width: 4px; }
+        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 10px; }
+        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.4); border-radius: 10px; }
+        /* Message animations */
+        .message-reaction {
+            transform-origin: bottom;
+            animation: popReaction 0.3s ease;
+        }
+        @keyframes popReaction {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); }
             100% { transform: scale(1); opacity: 1; }
         }
-
-        .emoji-panel {
-            display: none;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 5px;
-            bottom: 80px;
-            left: 20px;
-            z-index: 100;
-        }
-
-        .typing-indicator span {
-            width: 4px;
-            height: 4px;
+        .double-tick path { stroke-dasharray: 18; stroke-dashoffset: 18; animation: drawTick 0.4s forwards; }
+        @keyframes drawTick { to { stroke-dashoffset: 0; } }
+        /* Typing indicator (lottie style) */
+        .typing-bounce span {
+            width: 8px; height: 8px;
             background: #06b6d4;
             border-radius: 50%;
             display: inline-block;
-            animation: bounce 1.4s infinite ease-in-out both;
+            animation: bounce 1.4s infinite;
         }
-
+        .typing-bounce span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-bounce span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+            0%,60%,100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); background: #3b82f6; }
         }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        /* Shake animation (new match) */
+        .shake {
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+        @keyframes shake {
+            10%,90% { transform: translate3d(-1px, 0, 0); }
+            20%,80% { transform: translate3d(2px, 0, 0); }
+            30%,50%,70% { transform: translate3d(-4px, 0, 0); }
+            40%,60% { transform: translate3d(4px, 0, 0); }
+        }
+        /* Confetti (simplified) */
+        .confetti-piece {
+            position: absolute; width: 8px; height: 16px; background: cyan; opacity: 0.7;
+            animation: confettiRain 3s linear infinite;
+        }
+        @keyframes confettiRain {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        /* Avatar generation (gradient based on uid) */
+        .avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; color: white; text-shadow: 0 2px 5px black;
+            box-shadow: 0 8px 20px rgba(6,182,212,0.3);
+            flex-shrink: 0;
+        }
+        /* Lightbox */
+        .lightbox {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
+        }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 2rem; }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center p-0 md:p-4">
+<body class="text-white antialiased">
+    <!-- Animated Background -->
+    <div class="mesh-bg"></div>
+    <!-- Confetti container (dynamically filled) -->
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" onclick="this.style.display='none'">
+        <img id="lightbox-img" src="" alt="">
+    </div>
 
-    <div class="w-full max-w-4xl h-full md:h-[90vh] glass rounded-none md:rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-        
-        <div id="start-screen" class="flex-1 flex flex-col items-center justify-center p-8 space-y-10">
-            <div class="text-center space-y-4">
-                <h1 class="text-7xl font-bold tracking-tighter"><span class="text-cyan-400">Axtar</span>Get<span class="text-blue-500">.</span></h1>
-                <p class="text-slate-400 text-lg">Anonim, sürətli və tamamilə pulsuz.</p>
+    <!-- Main App Container -->
+    <div class="relative w-full max-w-4xl mx-auto p-3 sm:p-5 z-10">
+        <!-- Language Selector (glass) -->
+        <div class="absolute top-4 right-4 z-30">
+            <div class="glass flex items-center gap-1 px-2 py-1 rounded-full">
+                <button id="lang-az" class="px-3 py-1.5 rounded-full text-sm font-medium transition-all btn-glow" style="background: rgba(6,182,212,0.3);">AZ</button>
+                <button id="lang-tr" class="px-3 py-1.5 rounded-full text-sm font-medium transition-all btn-glow">TR</button>
             </div>
+        </div>
 
-            <div class="w-full max-w-md space-y-4">
-                <div class="relative">
-                    <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                    <input type="text" id="user-name-input" placeholder="Ləqəbiniz..." 
-                        class="w-full bg-slate-900/50 border border-slate-700 p-4 pl-12 rounded-2xl outline-none focus:border-cyan-500 transition-all">
+        <!-- Start Screen -->
+        <div id="start-screen" class="glass-card p-6 sm:p-10 max-w-xl mx-auto mt-12 transition-all duration-500">
+            <h1 class="text-5xl sm:text-6xl font-black text-center bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">AxtarGet</h1>
+            <p class="text-center text-slate-300 mt-2 text-lg" data-i18n="subtitle">Pulsuz Anonim Söhbət</p>
+            <div class="mt-8 space-y-5">
+                <div class="glass px-4 py-3 rounded-2xl">
+                    <label class="text-sm font-medium text-slate-300" data-i18n="nameLabel">Adınız (istəyə bağlı)</label>
+                    <input type="text" id="username-input" maxlength="20" class="w-full bg-transparent border-b border-slate-600 py-2 text-lg focus:outline-none focus:border-cyan-400 transition" placeholder="...">
                 </div>
-                <button onclick="app.handleStart()" class="gradient-btn w-full py-4 rounded-2xl font-bold text-xl flex items-center justify-center gap-3">
-                    <i class="fas fa-bolt"></i> Söhbətə Başla
+                <button id="start-chat-btn" class="btn-glow w-full py-4 text-xl font-bold rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2">
+                    <span>⚡</span> <span data-i18n="startButton">Söhbətə Başla</span>
                 </button>
+                <button id="show-tutorial" class="w-full py-3 text-slate-300 hover:text-white transition text-sm" data-i18n="tutorialButton">Necə istifadə olunur?</button>
+            </div>
+            <p class="text-xs text-slate-600 text-center mt-8" data-i18n="footerText">AxtarGet · anonim · təhlükəsiz</p>
+        </div>
+
+        <!-- Matching Screen -->
+        <div id="matching-screen" class="glass-card p-10 max-w-xl mx-auto mt-12 hidden text-center">
+            <div class="flex justify-center mb-6">
+                <div class="w-24 h-24 border-4 border-slate-600 border-t-cyan-400 rounded-full animate-spin"></div>
+            </div>
+            <h2 class="text-3xl font-bold" data-i18n="matchingText">Söhbət tərəfdaşı axtarılır...</h2>
+            <p id="countdown" class="text-cyan-400 text-xl mt-2 font-mono">20 saniyə</p>
+            <button id="cancel-match" class="mt-8 px-8 py-3 bg-red-500/20 hover:bg-red-500/40 rounded-full transition text-red-200 btn-glow" data-i18n="cancelButton">Ləğv et</button>
+            <div id="retry-container" class="hidden mt-6">
+                <p class="text-yellow-300" data-i18n="noUsersText">Aktiv istifadəçi tapılmadı</p>
+                <button id="retry-match" class="mt-3 btn-glow px-6 py-2 bg-cyan-600 rounded-full" data-i18n="tryAgainText">Yenidən cəhd et</button>
             </div>
         </div>
 
-        <div id="matching-screen" class="hidden flex-1 flex flex-col items-center justify-center p-8 space-y-6">
-            <div class="relative">
-                <div class="w-32 h-32 border-4 border-slate-800 border-t-cyan-500 rounded-full animate-spin"></div>
-                <i class="fas fa-search absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl text-cyan-400 animate-pulse"></i>
-            </div>
-            <h2 class="text-2xl font-semibold">Tərəfdaş axtarılır...</h2>
-            <p id="match-timer" class="text-slate-500">00:20</p>
-            <button onclick="app.cancelMatching()" class="text-red-400 hover:text-red-300 font-medium">Ləğv et</button>
-        </div>
-
-        <div id="chat-screen" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-            <header class="p-4 border-b border-slate-700/50 flex items-center justify-between glass">
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="hidden glass-card h-[80vh] max-h-[800px] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-white/10">
                 <div class="flex items-center gap-3">
-                    <div id="partner-avatar" class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-lg">
-                        ?
-                    </div>
+                    <div id="partner-avatar" class="avatar">👤</div>
                     <div>
-                        <h3 id="partner-name" class="font-bold text-white">...</h3>
-                        <div id="typing-box" class="opacity-0 transition-opacity flex items-center gap-1">
-                            <span class="text-[10px] text-cyan-400 font-medium uppercase tracking-widest">Yazır</span>
-                            <div class="typing-indicator"><span></span><span></span><span></span></div>
+                        <h3 id="partner-name" class="font-semibold text-lg">-</h3>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span id="partner-language-indicator" class="px-2 py-0.5 bg-white/10 rounded-full">AZ</span>
+                            <span id="online-status" class="flex items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span> <span data-i18n="activeText">Aktiv</span></span>
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-4 text-slate-400">
-                    <button onclick="app.changeChat()" title="Yeni adam"><i class="fas fa-redo-alt hover:text-cyan-400 transition-colors"></i></button>
-                    <button onclick="app.closeChat()" title="Çıxış"><i class="fas fa-times hover:text-red-400 transition-colors"></i></button>
-                </div>
-            </header>
-
-            <main id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-slate-900/20"></main>
-
-            <footer class="p-4 glass relative">
-                <div id="emoji-panel" class="emoji-panel absolute glass p-3 rounded-2xl border border-slate-600">
-                    <button onclick="app.addEmoji('😊')">😊</button>
-                    <button onclick="app.addEmoji('😂')">😂</button>
-                    <button onclick="app.addEmoji('❤️')">❤️</button>
-                    <button onclick="app.addEmoji('🔥')">🔥</button>
-                    <button onclick="app.addEmoji('👍')">👍</button>
-                    <button onclick="app.addEmoji('😮')">😮</button>
-                    <button onclick="app.addEmoji('😢')">😢</button>
-                    <button onclick="app.addEmoji('😎')">😎</button>
-                </div>
-
-                <div class="flex items-end gap-2 max-w-4xl mx-auto">
-                    <div class="flex gap-2 mb-1">
-                        <button onclick="app.toggleEmoji()" class="text-slate-400 hover:text-cyan-400 p-2"><i class="far fa-smile text-xl"></i></button>
-                        <button onclick="document.getElementById('img-input').click()" class="text-slate-400 hover:text-cyan-400 p-2"><i class="fas fa-paperclip text-xl"></i></button>
-                    </div>
-                    
-                    <input type="file" id="img-input" class="hidden" accept="image/*" onchange="app.handleImage(event)">
-                    
-                    <div class="flex-1 relative">
-                        <textarea id="message-input" rows="1" placeholder="Mesaj yazın..." 
-                            class="w-full bg-slate-800/50 border border-slate-700 p-3 rounded-2xl outline-none focus:border-cyan-500 transition-all resize-none max-h-32"
-                            oninput="app.autoResize(this); app.sendTypingStatus()"></textarea>
-                    </div>
-
-                    <button onclick="app.sendMessage()" class="gradient-btn w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0">
-                        <i class="fas fa-paper-plane"></i>
+                <div class="flex gap-2">
+                    <button id="change-chat" class="p-2 glass rounded-full w-10 h-10 flex items-center justify-center btn-glow hover:bg-cyan-500/20" title="Yeni söhbət">
+                        <span class="text-xl">🔄</span>
+                    </button>
+                    <button id="close-chat" class="p-2 glass rounded-full w-10 h-10 flex items-center justify-center btn-glow hover:bg-red-500/20" title="Bağla">
+                        <span class="text-xl">✕</span>
                     </button>
                 </div>
-            </footer>
+            </div>
+            <!-- Messages -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-4 scroll-custom flex flex-col gap-3"></div>
+            <!-- Input Area (with multimedia) -->
+            <div class="p-4 border-t border-white/10">
+                <div class="flex items-center gap-2 glass px-3 py-1 rounded-full">
+                    <button id="attach-image" class="p-2 hover:text-cyan-400 transition btn-glow" title="Şəkil göndər">
+                        <span class="text-xl">📷</span>
+                    </button>
+                    <button id="voice-note" class="p-2 hover:text-cyan-400 transition btn-glow" title="Səsli mesaj (demo)">
+                        <span class="text-xl">🎤</span>
+                    </button>
+                    <input type="text" id="message-input" placeholder="Mesajınız..." class="flex-1 bg-transparent px-3 py-2 text-base focus:outline-none">
+                    <button id="send-message" class="p-2 bg-cyan-500 rounded-full w-10 h-10 flex items-center justify-center btn-glow shadow-lg shadow-cyan-500/30">
+                        <span class="text-xl">➤</span>
+                    </button>
+                </div>
+                <!-- Voice note simulator (hidden by default) -->
+                <div id="voice-sim" class="hidden mt-2 glass px-4 py-2 rounded-full flex items-center gap-3">
+                    <span class="text-red-400 animate-pulse">🔴</span>
+                    <span id="voice-timer">0:00</span>
+                    <div class="flex gap-1 items-center">
+                        <span class="w-1 h-4 bg-cyan-400 rounded-full animate-pulse"></span><span class="w-1 h-6 bg-cyan-400 rounded-full animate-pulse"></span><span class="w-1 h-3 bg-cyan-400 rounded-full"></span>
+                    </div>
+                    <button id="stop-voice" class="ml-auto text-red-300 btn-glow">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tutorial Modal (glass) -->
+        <div id="tutorial-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
+            <div class="glass-card max-w-lg w-full p-8 space-y-4">
+                <h2 class="text-3xl font-bold text-cyan-400" data-i18n="tutorialTitle">AxtarGet - İstifadə qaydası</h2>
+                <ul class="space-y-3 text-slate-200">
+                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">1.</span> <span data-i18n="step1Text">Adınızı yazın və ya boş buraxın.</span></li>
+                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">2.</span> <span data-i18n="step2Text">Söhbətə başla düyməsinə basın, sistem sizi qoşacaq.</span></li>
+                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">3.</span> <span data-i18n="step3Text">Mesaj yazın, şəkil göndərin, reaksiya verin.</span></li>
+                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">4.</span> <span data-i18n="step4Text">Hər şey anonim və müvəqqətidir.</span></li>
+                </ul>
+                <button id="close-tutorial" class="btn-glow w-full py-3 mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full font-semibold" data-i18n="understandButton">Başa düşdüm, başlayaq!</button>
+            </div>
+        </div>
+
+        <!-- Feedback Modal (after chat end) -->
+        <div id="feedback-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
+            <div class="glass-card max-w-md w-full p-6">
+                <h3 class="text-2xl font-bold" data-i18n="feedbackTitle">Söhbət bitdi. Rəy bildirin</h3>
+                <div class="flex gap-2 justify-center my-4 text-3xl">
+                    <button class="feedback-emoji btn-glow">😊</button>
+                    <button class="feedback-emoji btn-glow">😐</button>
+                    <button class="feedback-emoji btn-glow">☹️</button>
+                </div>
+                <button id="close-feedback" class="w-full py-2 glass rounded-full" data-i18n="closeButton">Bağla</button>
+            </div>
         </div>
     </div>
 
-    <audio id="msg-sound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+    <!-- Hidden file input for image sharing -->
+    <input type="file" id="image-upload" accept="image/*" class="hidden">
 
     <script type="module">
+        // -------------------- FIREBASE INIT --------------------
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, updateDoc, onSnapshot, collection, runTransaction, deleteDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, runTransaction, deleteDoc, serverTimestamp, arrayUnion, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAAbLWwzSE9WgqFKK_n9hqsl5mokZlNacM",
@@ -174,177 +281,451 @@
             messagingSenderId: "509543495829",
             appId: "1:509543495829:web:833feb9c271328f8e4039c"
         };
-
-        class AxtarGetPro {
-            constructor() {
-                this.app = initializeApp(firebaseConfig);
-                this.db = getFirestore(this.app);
-                this.auth = getAuth(this.app);
-                this.userId = null;
-                this.chatId = null;
-                this.partnerId = null;
-                this.userName = "";
-                this.unsubscribe = null;
-                this.typingTimeout = null;
-                this.renderedMsgCount = 0;
-
-                this.initAuth();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // -------------------- STATE & VARIABLES --------------------
+        let currentUser = null;
+        let userId = null;
+        let userName = '';
+        let userLang = 'az';
+        let chatId = null;
+        let partnerId = null;
+        let partnerName = '';
+        let partnerLang = 'az';
+        let unsubscribeChat = null;
+        let matchingTimer = null;
+        let heartbeatInterval = null;
+        let renderedMsgIds = new Set();
+        
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const matchingScreen = document.getElementById('matching-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const messagesDiv = document.getElementById('messages-container');
+        const partnerNameSpan = document.getElementById('partner-name');
+        const partnerAvatarDiv = document.getElementById('partner-avatar');
+        const partnerLangSpan = document.getElementById('partner-language-indicator');
+        const usernameInput = document.getElementById('username-input');
+        const messageInput = document.getElementById('message-input');
+        const countdownSpan = document.getElementById('countdown');
+        const retryContainer = document.getElementById('retry-container');
+        
+        // Translations object (simplified, only keys used)
+        const translations = {
+            az: {
+                subtitle: 'Pulsuz Anonim Söhbət',
+                nameLabel: 'Adınız (istəyə bağlı)',
+                startButton: 'Söhbətə Başla',
+                tutorialButton: 'Necə istifadə olunur?',
+                footerText: 'AxtarGet · anonim · təhlükəsiz',
+                matchingText: 'Söhbət tərəfdaşı axtarılır...',
+                cancelButton: 'Ləğv et',
+                noUsersText: 'Aktiv istifadəçi tapılmadı',
+                tryAgainText: 'Yenidən cəhd et',
+                activeText: 'Aktiv',
+                typingText: 'yazır...',
+                changeButton: 'Dəyiş',
+                closeButton: 'Bağla',
+                partnerLeft: '❌ Tərəfdaş söhbətdən ayrıldı',
+                messageError: 'Mesaj göndərilmədi',
+                tutorialTitle: 'AxtarGet - İstifadə qaydası',
+                step1Text: 'Adınızı yazın və ya boş buraxın.',
+                step2Text: 'Söhbətə başla düyməsinə basın, sistem sizi qoşacaq.',
+                step3Text: 'Mesaj yazın, şəkil göndərin, reaksiya verin.',
+                step4Text: 'Hər şey anonim və müvəqqətidir.',
+                understandButton: 'Başa düşdüm, başlayaq!',
+                feedbackTitle: 'Söhbət bitdi. Rəy bildirin'
+            },
+            tr: {
+                subtitle: 'Ücretsiz Anonim Sohbet',
+                nameLabel: 'Adınız (isteğe bağlı)',
+                startButton: 'Sohbete Başla',
+                tutorialButton: 'Nasıl kullanılır?',
+                footerText: 'AxtarGet · anonim · güvenli',
+                matchingText: 'Sohbet partneri aranıyor...',
+                cancelButton: 'İptal et',
+                noUsersText: 'Aktif kullanıcı bulunamadı',
+                tryAgainText: 'Yeniden dene',
+                activeText: 'Aktif',
+                typingText: 'yazıyor...',
+                changeButton: 'Değiştir',
+                closeButton: 'Kapat',
+                partnerLeft: '❌ Partner sohbetten ayrıldı',
+                messageError: 'Mesaj gönderilemedi',
+                tutorialTitle: 'AxtarGet - Kullanım Kılavuzu',
+                step1Text: 'Adınızı yazın veya boş bırakın.',
+                step2Text: 'Sohbete başla butonuna basın, sistem sizi eşleştirecek.',
+                step3Text: 'Mesaj yazın, resim gönderin, reaksiyon verin.',
+                step4Text: 'Her şey anonim ve geçicidir.',
+                understandButton: 'Anladım, başlayalım!',
+                feedbackTitle: 'Sohbet bitti. Görüşleriniz'
             }
-
-            async initAuth() {
-                signInAnonymously(this.auth).then(user => this.userId = user.user.uid);
-            }
-
-            showScreen(id) {
-                ['start-screen', 'matching-screen', 'chat-screen'].forEach(s => document.getElementById(s).classList.add('hidden'));
-                document.getElementById(id).classList.remove('hidden');
-            }
-
-            async handleStart() {
-                const name = document.getElementById('user-name-input').value.trim();
-                this.userName = name || "Anonim";
-                this.showScreen('matching-screen');
-                this.startMatching();
-            }
-
-            async startMatching() {
-                const qRef = doc(this.db, "queues", "active_match");
-                
-                try {
-                    await runTransaction(this.db, async (transaction) => {
-                        const snap = await transaction.get(qRef);
-                        const data = snap.exists() ? snap.data() : null;
-
-                        if (data && data.uid && data.uid !== this.userId) {
-                            this.chatId = `room_${Date.now()}`;
-                            this.partnerId = data.uid;
-                            
-                            transaction.set(doc(this.db, "chats", this.chatId), {
-                                users: [this.userId, this.partnerId],
-                                names: {[this.userId]: this.userName, [this.partnerId]: data.name},
-                                messages: [],
-                                typing: {[this.userId]: false, [this.partnerId]: false},
-                                status: 'active'
-                            });
-                            transaction.update(qRef, { uid: null });
-                            transaction.set(doc(this.db, "users", this.partnerId), { roomId: this.chatId, partnerName: this.userName });
-                            this.initChat(this.chatId, data.name);
-                        } else {
-                            transaction.set(qRef, { uid: this.userId, name: this.userName });
-                            this.listenForMatch();
-                        }
-                    });
-                } catch (e) { console.error(e); }
-            }
-
-            listenForMatch() {
-                this.unsubscribe = onSnapshot(doc(this.db, "users", this.userId), (snap) => {
-                    if (snap.exists() && snap.data().roomId) {
-                        this.initChat(snap.data().roomId, snap.data().partnerName);
-                        deleteDoc(doc(this.db, "users", this.userId));
-                    }
-                });
-            }
-
-            initChat(cid, pName) {
-                this.chatId = cid;
-                this.showScreen('chat-screen');
-                document.getElementById('partner-name').innerText = pName;
-                document.getElementById('partner-avatar').innerText = pName[0].toUpperCase();
-                this.listenMessages();
-            }
-
-            listenMessages() {
-                if (this.unsubscribe) this.unsubscribe();
-                this.unsubscribe = onSnapshot(doc(this.db, "chats", this.chatId), (snap) => {
-                    if (!snap.exists()) return this.closeChat();
-                    const data = snap.data();
-                    
-                    if (data.status === 'closed') return this.handlePartnerExit();
-
-                    // Yazır statusu
-                    const pTyping = data.typing[Object.keys(data.typing).find(id => id !== this.userId)];
-                    document.getElementById('typing-box').style.opacity = pTyping ? "1" : "0";
-
-                    // Yeni mesajlar
-                    if (data.messages.length > this.renderedMsgCount) {
-                        for (let i = this.renderedMsgCount; i < data.messages.length; i++) {
-                            const m = data.messages[i];
-                            this.renderMessage(m.text, m.sid === this.userId, m.type);
-                            if (m.sid !== this.userId) document.getElementById('msg-sound').play();
-                        }
-                        this.renderedMsgCount = data.messages.length;
-                    }
-                });
-            }
-
-            async sendMessage(customText = null, type = 'text') {
-                const input = document.getElementById('message-input');
-                const text = customText || input.value.trim();
-                if (!text) return;
-
-                input.value = "";
-                input.style.height = 'auto';
-                
-                await updateDoc(doc(this.db, "chats", this.chatId), {
-                    messages: arrayUnion({ sid: this.userId, text, type, time: Date.now() }),
-                    [`typing.${this.userId}`]: false
-                });
-            }
-
-            renderMessage(text, isMine, type) {
-                const container = document.getElementById('chat-messages');
-                const div = document.createElement('div');
-                div.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
-                
-                let content = type === 'image' 
-                    ? `<img src="${text}" class="rounded-xl max-w-full shadow-lg border border-slate-700">`
-                    : `<p class="break-words">${text}</p>`;
-
-                div.innerHTML = `
-                    <div class="message-bubble p-3 rounded-2xl ${isMine ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-200 rounded-tl-none'}">
-                        ${content}
-                    </div>
-                `;
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
-            }
-
-            handleImage(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (el) => this.sendMessage(el.target.result, 'image');
-                reader.readAsDataURL(file);
-            }
-
-            sendTypingStatus() {
-                updateDoc(doc(this.db, "chats", this.chatId), { [`typing.${this.userId}`]: true });
-                clearTimeout(this.typingTimeout);
-                this.typingTimeout = setTimeout(() => {
-                    updateDoc(doc(this.db, "chats", this.chatId), { [`typing.${this.userId}`]: false });
-                }, 2000);
-            }
-
-            async changeChat() {
-                if (this.chatId) await updateDoc(doc(this.db, "chats", this.chatId), { status: 'closed' });
-                location.reload(); 
-            }
-
-            closeChat() { location.reload(); }
-
-            handlePartnerExit() {
-                alert("Tərəfdaş söhbətdən çıxdı.");
-                location.reload();
-            }
-
-            // UI Yardımçıları
-            autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-            toggleEmoji() { const p = document.getElementById('emoji-panel'); p.style.display = p.style.display === 'grid' ? 'none' : 'grid'; }
-            addEmoji(e) { document.getElementById('message-input').value += e; this.toggleEmoji(); }
+        };
+        
+        // -------------------- I18N --------------------
+        function setLanguage(lang) {
+            userLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+            document.getElementById('lang-az').style.background = lang === 'az' ? 'rgba(6,182,212,0.3)' : 'transparent';
+            document.getElementById('lang-tr').style.background = lang === 'tr' ? 'rgba(6,182,212,0.3)' : 'transparent';
         }
-
-        window.app = new AxtarGetPro();
+        document.getElementById('lang-az').addEventListener('click', () => setLanguage('az'));
+        document.getElementById('lang-tr').addEventListener('click', () => setLanguage('tr'));
+        
+        // -------------------- AVATAR GENERATOR --------------------
+        function getAvatar(uid, name) {
+            const colors = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'];
+            const hash = uid ? uid.split('').reduce((a,b)=>a+b.charCodeAt(0),0) : 0;
+            const gradient = `linear-gradient(135deg, ${colors[hash%5]}, ${colors[(hash+3)%5]})`;
+            const letter = name ? name.charAt(0).toUpperCase() : '?';
+            return { gradient, letter };
+        }
+        
+        // -------------------- HEARTBEAT --------------------
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(async () => {
+                if (userId) {
+                    try {
+                        await updateDoc(doc(db, 'chats', userId), { heartbeat: serverTimestamp(), isOnline: true });
+                    } catch (e) {}
+                }
+            }, 5000);
+        }
+        function stopHeartbeat() { clearInterval(heartbeatInterval); }
+        
+        // -------------------- MESSAGE RENDERING --------------------
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/[&<>"]/g, function(m) {
+                if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; if(m === '"') return '&quot;';
+                return m;
+            });
+        }
+        
+        function addMessage(msg, isSelf, msgId) {
+            if (renderedMsgIds.has(msgId)) return;
+            renderedMsgIds.add(msgId);
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex ${isSelf ? 'justify-end' : 'justify-start'} message-reaction`;
+            msgDiv.setAttribute('data-msg-id', msgId);
+            
+            const isImage = msg.text && msg.text.startsWith('data:image') || (msg.text && msg.text.match(/\.(jpeg|jpg|gif|png|webp)$/i));
+            
+            let contentHtml = '';
+            if (isImage) {
+                contentHtml = `<img src="${escapeHtml(msg.text)}" class="max-w-[200px] max-h-[200px] rounded-2xl cursor-pointer shadow-xl" onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').style.display='flex';">`;
+            } else {
+                contentHtml = `<span class="break-words">${escapeHtml(msg.text)}</span>`;
+            }
+            
+            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            
+            msgDiv.innerHTML = `
+                <div class="flex items-end gap-1 max-w-[70%]">
+                    ${!isSelf ? '<div class="avatar text-sm" style="background:'+getAvatar(msg.senderId, msg.senderName).gradient+'">'+getAvatar(msg.senderId, msg.senderName).letter+'</div>' : ''}
+                    <div class="glass px-4 py-2 rounded-2xl relative group">
+                        ${contentHtml}
+                        <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-slate-400">
+                            <span>${time}</span>
+                            ${isSelf ? `<span class="msg-status">✓✓</span>` : ''}
+                        </div>
+                        <!-- Reaction bar (on hover) -->
+                        <div class="absolute -bottom-5 left-0 hidden group-hover:flex glass rounded-full px-2 py-1 gap-1 text-lg z-10">
+                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '❤️')">❤️</span>
+                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '😂')">😂</span>
+                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '🔥')">🔥</span>
+                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '👍')">👍</span>
+                        </div>
+                        <!-- Reaction display -->
+                        <div id="reaction-${msgId}" class="absolute -top-2 -right-2 text-xs bg-black/60 rounded-full px-1"></div>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(msgDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Reaction function (global)
+        window.reactToMessage = async (msgId, emoji) => {
+            if (!chatId) return;
+            const msgRef = doc(db, 'chats', chatId, 'messages', msgId);
+            await updateDoc(msgRef, {
+                reaction: emoji
+            });
+            document.getElementById(`reaction-${msgId}`).innerText = emoji;
+        };
+        
+        // -------------------- FIREBASE CHAT LISTENER --------------------
+        function setupChatListener() {
+            if (!chatId) return;
+            const chatRef = doc(db, 'chats', chatId);
+            unsubscribeChat = onSnapshot(chatRef, (snap) => {
+                if (!snap.exists()) {
+                    // Chat deleted, partner left
+                    addSystemMessage(translations[userLang].partnerLeft);
+                    setTimeout(() => disconnect(true), 2000);
+                    return;
+                }
+                const data = snap.data();
+                // Typing indicator
+                if (data.typingStatus && data.typingStatus[partnerId]) {
+                    document.getElementById('online-status').innerHTML = `<span class="w-2 h-2 bg-yellow-400 rounded-full"></span> <span>${translations[userLang].typingText}</span>`;
+                } else {
+                    document.getElementById('online-status').innerHTML = `<span class="w-2 h-2 bg-green-400 rounded-full"></span> <span>${translations[userLang].activeText}</span>`;
+                }
+                // Messages
+                if (data.messages) {
+                    data.messages.forEach((msg, idx) => {
+                        const msgId = `${msg.senderId}-${msg.timestamp}-${idx}`;
+                        addMessage(msg, msg.senderId === userId, msgId);
+                    });
+                }
+                // Read status (double tick) - just simulate for self
+            });
+        }
+        
+        function addSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = 'text-center my-2 text-sm text-yellow-300';
+            div.innerText = text;
+            messagesDiv.appendChild(div);
+        }
+        
+        // -------------------- MATCHING & CHAT LOGIC --------------------
+        async function startMatching() {
+            if (!userId) return;
+            matchingScreen.classList.remove('hidden');
+            startScreen.classList.add('hidden');
+            let countdown = 20;
+            countdownSpan.innerText = countdown + ' saniyə';
+            matchingTimer = setInterval(() => {
+                countdown--;
+                countdownSpan.innerText = countdown + ' saniyə';
+                if (countdown <= 0) {
+                    clearInterval(matchingTimer);
+                    retryContainer.classList.remove('hidden');
+                }
+            }, 1000);
+            
+            // Add to queue
+            const queueRef = doc(db, 'chats', 'match_queue');
+            await setDoc(doc(db, 'chats', userId), { 
+                userName, userLang, isOnline: true, status: 'waiting', heartbeat: serverTimestamp() 
+            });
+            // Use transaction for matching
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const queueDoc = await transaction.get(queueRef);
+                    if (queueDoc.exists() && queueDoc.data().waitingUserId && queueDoc.data().waitingUserId !== userId) {
+                        // Match found
+                        const waiting = queueDoc.data();
+                        partnerId = waiting.waitingUserId;
+                        partnerName = waiting.waitingUserName;
+                        partnerLang = waiting.waitingUserLang;
+                        chatId = 'chat_' + Date.now() + '_' + Math.random().toString(36);
+                        
+                        // Create chat doc
+                        transaction.set(doc(db, 'chats', chatId), {
+                            users: { [userId]: { name: userName, lang: userLang }, [partnerId]: { name: partnerName, lang: partnerLang } },
+                            messages: [],
+                            typingStatus: {},
+                            createdAt: serverTimestamp(),
+                            status: 'active'
+                        });
+                        // Update partner's doc
+                        transaction.update(doc(db, 'chats', partnerId), { matched: true, chatId, partnerId: userId, partnerName: userName });
+                        // Clear queue
+                        transaction.set(queueRef, { waitingUserId: null, waitingUserName: null, waitingUserLang: null });
+                        
+                        // Show match and start chat
+                        clearInterval(matchingTimer);
+                        matchingScreen.classList.add('hidden');
+                        chatScreen.classList.remove('hidden');
+                        partnerNameSpan.innerText = partnerName;
+                        partnerLangSpan.innerText = partnerLang.toUpperCase();
+                        const { gradient, letter } = getAvatar(partnerId, partnerName);
+                        partnerAvatarDiv.style.background = gradient;
+                        partnerAvatarDiv.innerText = letter;
+                        setupChatListener();
+                        startHeartbeat();
+                        // Shake and confetti
+                        document.querySelector('.glass-card').classList.add('shake');
+                        setTimeout(()=> document.querySelector('.glass-card').classList.remove('shake'), 500);
+                        launchConfetti();
+                    } else {
+                        // No partner, add self to queue
+                        transaction.set(queueRef, { waitingUserId: userId, waitingUserName: userName, waitingUserLang: userLang, timestamp: serverTimestamp() });
+                    }
+                });
+            } catch (e) {
+                console.log('Matching error', e);
+            }
+        }
+        
+        function launchConfetti() {
+            for (let i=0; i<30; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti-piece';
+                conf.style.left = Math.random()*100+'%';
+                conf.style.background = `hsl(${Math.random()*360}, 70%, 60%)`;
+                conf.style.animationDuration = (Math.random()*2+2)+'s';
+                document.getElementById('confetti-container').appendChild(conf);
+                setTimeout(()=> conf.remove(), 5000);
+            }
+        }
+        
+        async function disconnect(showFeedback=false) {
+            stopHeartbeat();
+            if (unsubscribeChat) unsubscribeChat();
+            if (chatId) {
+                await updateDoc(doc(db, 'chats', chatId), { status: 'closed', closedBy: userId });
+                if (showFeedback) document.getElementById('feedback-modal').classList.remove('hidden');
+            }
+            await deleteDoc(doc(db, 'chats', userId)).catch(()=>{});
+            chatId = null; partnerId = null;
+            messagesDiv.innerHTML = '';
+            renderedMsgIds.clear();
+            chatScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+        
+        // -------------------- EVENT LISTENERS --------------------
+        document.getElementById('start-chat-btn').addEventListener('click', async () => {
+            if (!userId) return;
+            userName = usernameInput.value.trim() || (userLang === 'az' ? 'İstifadəçi' : 'Kullanıcı') + userId.substring(0,4);
+            startMatching();
+        });
+        
+        document.getElementById('cancel-match').addEventListener('click', async () => {
+            clearInterval(matchingTimer);
+            await deleteDoc(doc(db, 'chats', userId));
+            matchingScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+        
+        document.getElementById('retry-match').addEventListener('click', () => {
+            retryContainer.classList.add('hidden');
+            startMatching();
+        });
+        
+        document.getElementById('send-message').addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || !chatId) return;
+            messageInput.value = '';
+            const msg = {
+                senderId: userId,
+                senderName: userName,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+            try {
+                await updateDoc(doc(db, 'chats', chatId), {
+                    messages: arrayUnion(msg)
+                });
+            } catch (e) {
+                addSystemMessage(translations[userLang].messageError);
+            }
+        }
+        
+        // Typing indicator
+        messageInput.addEventListener('input', async () => {
+            if (!chatId) return;
+            await updateDoc(doc(db, 'chats', chatId), {
+                [`typingStatus.${userId}`]: messageInput.value.length > 0
+            });
+        });
+        
+        // Image sharing
+        document.getElementById('attach-image').addEventListener('click', () => {
+            document.getElementById('image-upload').click();
+        });
+        document.getElementById('image-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !chatId) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const base64 = ev.target.result;
+                const msg = {
+                    senderId: userId,
+                    senderName: userName,
+                    text: base64,
+                    timestamp: new Date().toISOString()
+                };
+                await updateDoc(doc(db, 'chats', chatId), { messages: arrayUnion(msg) });
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Voice note simulation
+        document.getElementById('voice-note').addEventListener('click', () => {
+            document.getElementById('voice-sim').classList.remove('hidden');
+            let sec = 0;
+            const timer = setInterval(() => {
+                sec++;
+                document.getElementById('voice-timer').innerText = '0:' + (sec<10?'0'+sec:sec);
+            }, 1000);
+            document.getElementById('stop-voice').onclick = () => {
+                clearInterval(timer);
+                document.getElementById('voice-sim').classList.add('hidden');
+            };
+        });
+        
+        document.getElementById('change-chat').addEventListener('click', async () => {
+            if (!chatId) return;
+            await disconnect(false);
+            startMatching();
+        });
+        
+        document.getElementById('close-chat').addEventListener('click', () => disconnect(true));
+        
+        document.getElementById('close-feedback').addEventListener('click', () => {
+            document.getElementById('feedback-modal').classList.add('hidden');
+        });
+        
+        document.querySelectorAll('.feedback-emoji').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('feedback-modal').classList.add('hidden');
+                alert('Rəyiniz üçün təşəkkürlər!');
+            });
+        });
+        
+        document.getElementById('show-tutorial').addEventListener('click', () => {
+            document.getElementById('tutorial-modal').classList.remove('hidden');
+        });
+        document.getElementById('close-tutorial').addEventListener('click', () => {
+            document.getElementById('tutorial-modal').classList.add('hidden');
+        });
+        
+        // -------------------- AUTH --------------------
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                currentUser = user;
+                // Auto-set default name
+                userName = userLang === 'az' ? 'İstifadəçi' : 'Kullanıcı';
+            } else {
+                await signInAnonymously(auth);
+            }
+        });
+        
+        // Set default language
+        setLanguage('az');
+        
+        // Cleanup on page hide
+        window.addEventListener('beforeunload', () => {
+            if (userId) deleteDoc(doc(db, 'chats', userId));
+        });
     </script>
 </body>
 </html>
