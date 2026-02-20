@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-CYBER ULTIMATE | Future of Chat</title>
+    <title>X-CYBER cesi | Next-Gen Anonim Chat</title>
     
+    <meta name="description" content="cesi ilə pulsuz online chat edin. Futuristik və anonim söhbət platforması.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
@@ -14,392 +15,445 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
 
         :root {
-            --neon-blue: #00f3ff;
-            --neon-purple: #bc13fe;
-            --dark-bg: #050505;
-            --glass-bg: rgba(255, 255, 255, 0.05);
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #bc13fe;
+            --dark-core: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         body {
-            background: var(--dark-bg);
+            background-color: var(--dark-core);
             color: #e0e0e0;
             font-family: 'Rajdhani', sans-serif;
             height: 100vh;
             overflow: hidden;
         }
 
-        .cyber-border {
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        /* Cyber UI Elements */
+        .cyber-panel {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .neon-text {
+            text-shadow: 0 0 10px var(--neon-cyan);
+            color: var(--neon-cyan);
         }
 
-        .chat-container {
-            height: calc(100vh - 120px);
+        .neon-border {
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 10px; }
-
-        .message-bubble {
-            max-width: 75%;
+        /* Message Bubbles */
+        .msg-bubble {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 15px;
             position: relative;
-            clip-path: polygon(0 0, 100% 0, 100% 70%, 95% 100%, 0 100%);
-            transition: transform 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
         }
 
-        .message-bubble:hover { transform: scale(1.02); }
-
-        .sent {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            background-size: 200% 200%;
-            animation: gradientMove 5s ease infinite;
+        .msg-sent {
+            background: linear-gradient(135deg, #005f73, #0a9396);
             align-self: flex-end;
-            color: white;
+            border-right: 3px solid var(--neon-cyan);
         }
 
-        .received {
-            background: rgba(255, 255, 255, 0.1);
+        .msg-received {
+            background: rgba(255, 255, 255, 0.07);
             align-self: flex-start;
-            border-left: 3px solid var(--neon-blue);
+            border-left: 3px solid var(--neon-magenta);
         }
 
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* Animations */
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
         }
 
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--neon-blue);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out;
-        }
-
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-        .status-online { position: relative; }
-        .status-online::after {
+        .scanner::after {
             content: '';
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            background: #22c55e;
-            border: 2px solid var(--dark-bg);
-            border-radius: 50%;
-            box-shadow: 0 0 10px #22c55e;
+            width: 100%;
+            height: 2px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            animation: scan 2s linear infinite;
         }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 10px; }
+
+        .loading-spin {
+            border-top-color: var(--neon-cyan);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <div id="boot-screen" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center font-mono">
-        <div id="boot-text" class="text-blue-500 text-lg mb-4"></div>
-        <div class="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div id="boot-progress" class="h-full bg-cyan-500 w-0 transition-all duration-300"></div>
+    <div id="boot-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono p-4">
+        <div id="boot-log" class="text-cyan-500 text-sm mb-6 w-full max-w-md"></div>
+        <div class="w-64 h-1 bg-gray-900 rounded-full overflow-hidden">
+            <div id="boot-bar" class="h-full bg-cyan-400 w-0 transition-all duration-300"></div>
         </div>
     </div>
 
-    <header class="h-20 border-b border-white/10 glass-panel flex items-center justify-between px-8 z-10">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-cyan-500 rounded-lg flex items-center justify-center cyber-border rotate-45">
-                <i class="fas fa-bolt text-black text-2xl -rotate-45"></i>
+    <header class="h-20 cyber-panel flex items-center justify-between px-6 z-10 border-b border-cyan-500/20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 neon-border rounded rotate-45 flex items-center justify-center bg-cyan-500/10">
+                <i class="fas fa-atom text-cyan-400 -rotate-45"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tighter orbitron">X-CYBER <span class="text-cyan-400">ULTIMATE</span></h1>
+            <h1 class="text-2xl font-bold orbitron tracking-tighter">CESI <span class="text-cyan-400">X-CYBER</span></h1>
         </div>
-        <div class="flex items-center gap-6">
-            <div class="text-right hidden md:block">
-                <p id="user-display-name" class="font-bold text-white">İstifadəçi</p>
-                <p class="text-xs text-cyan-500 uppercase tracking-widest">Sistem Aktiv</p>
+
+        <div class="flex items-center gap-4">
+            <div id="lang-selector" class="flex bg-white/5 rounded-lg p-1 border border-white/10">
+                <button onclick="changeLang('az')" id="btn-az" class="px-3 py-1 text-xs rounded transition-all">AZ</button>
+                <button onclick="changeLang('tr')" id="btn-tr" class="px-3 py-1 text-xs rounded transition-all">TR</button>
             </div>
-            <button onclick="toggleSettings()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:text-cyan-400 transition-all">
-                <i class="fas fa-cog"></i>
-            </button>
         </div>
     </header>
 
-    <main class="flex-1 flex overflow-hidden">
+    <main class="flex-1 relative flex flex-col overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         
-        <aside class="w-20 md:w-80 border-r border-white/5 glass-panel flex flex-col">
-            <div class="p-4">
-                <div class="relative hidden md:block">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    <input type="text" placeholder="Şifrəli axtarış..." class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 outline-none focus:border-cyan-500 transition-all">
+        <div id="start-screen" class="absolute inset-0 z-20 flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+            <div class="w-full max-w-md cyber-panel p-8 rounded-2xl border-t-2 border-cyan-500">
+                <h2 class="text-3xl font-bold mb-2 orbitron neon-text text-center" id="ui-welcome">XƏTTƏ XOŞ GƏLDİNİZ</h2>
+                <p class="text-gray-400 text-center text-sm mb-8" id="ui-desc">Sənin anonimliyini biz qoruyuruq.</p>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs uppercase tracking-widest text-cyan-500 mb-2 font-bold" id="ui-label-name">Kod Adın</label>
+                        <input type="text" id="user-name-input" maxlength="15" placeholder="Məs: Ghost_99" 
+                               class="w-full bg-white/5 border border-white/10 rounded-xl p-4 outline-none focus:border-cyan-500 transition-all text-white">
+                    </div>
+                    
+                    <button onclick="handleStart()" class="w-full py-4 bg-cyan-600 hover:bg-cyan-400 text-black font-bold rounded-xl transition-all flex items-center justify-center gap-3 orbitron shadow-[0_0_20px_rgba(0,243,255,0.4)]">
+                        <i class="fas fa-bolt"></i> <span id="ui-btn-start">SİSTEMƏ DAXİL OL</span>
+                    </button>
+
+                    <div class="bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-lg flex gap-3 items-start">
+                        <i class="fas fa-shield-halved text-yellow-500 mt-1"></i>
+                        <p class="text-[11px] text-yellow-200/70" id="ui-warning">XƏBƏRDARLIQ: Mesajlar heç bir serverdə saxlanılmır. Pəncərəni bağladığınız an məlumatlar məhv edilir.</p>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div id="contact-list" class="flex-1 overflow-y-auto p-2 space-y-2">
+        <div id="matching-screen" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-black/80 backdrop-blur-xl">
+            <div class="text-center relative p-20">
+                <div class="w-48 h-48 border-2 border-cyan-500/30 rounded-full flex items-center justify-center scanner">
+                    <div class="w-40 h-40 border border-cyan-500/50 rounded-full flex items-center justify-center animate-pulse">
+                        <i class="fas fa-satellite-dish text-5xl text-cyan-400"></i>
+                    </div>
                 </div>
-        </aside>
+                <h3 class="mt-8 text-2xl font-bold orbitron animate-pulse" id="ui-matching">SİQNAL AXTARILIR...</h3>
+                <p id="countdown-text" class="text-cyan-500 mt-2 font-mono">NODE: 0.0.0.0</p>
+                <button onclick="handleCancelMatching()" class="mt-10 text-xs text-red-500 hover:underline tracking-widest uppercase font-bold" id="ui-btn-cancel">Ləğv et</button>
+            </div>
+        </div>
 
-        <section class="flex-1 flex flex-col relative bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-            
-            <div id="chat-header" class="p-4 border-b border-white/5 flex items-center justify-between glass-panel">
+        <div id="chat-screen" class="hidden h-full flex flex-col">
+            <div class="p-4 cyber-panel border-b border-white/10 flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div id="active-avatar" class="w-12 h-12 rounded-xl status-online cyber-border overflow-hidden">
-                        <img src="" alt="">
+                    <div class="w-12 h-12 rounded-lg neon-border bg-cyan-500/20 flex items-center justify-center">
+                        <i class="fas fa-user-secret text-2xl text-cyan-400"></i>
                     </div>
                     <div>
-                        <h2 id="active-name" class="font-bold text-lg">Söhbət seçilməyib</h2>
-                        <p id="active-status" class="text-xs text-gray-500 italic"></p>
+                        <div class="flex items-center gap-2">
+                            <h2 id="partner-name" class="font-bold text-lg orbitron">Nəfər...</h2>
+                            <span id="partner-lang-tag" class="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 rounded">AZ</span>
+                        </div>
+                        <div id="partner-status" class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
+                            <span class="text-xs text-green-500 uppercase font-bold tracking-widest" id="ui-active">AKTİV SİQNAL</span>
+                        </div>
                     </div>
                 </div>
-                <div class="flex gap-4">
-                    <button class="p-2 hover:text-cyan-400"><i class="fas fa-video"></i></button>
-                    <button class="p-2 hover:text-cyan-400"><i class="fas fa-phone"></i></button>
-                    <button class="p-2 hover:text-red-400" onclick="clearCurrentChat()"><i class="fas fa-trash"></i></button>
+                <div class="flex gap-2">
+                    <button onclick="handleChangeChat()" class="p-3 bg-white/5 hover:bg-white/10 rounded-lg text-cyan-400" title="Dəyiş">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button onclick="handleCloseChat()" class="p-3 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-500" title="Bağla">
+                        <i class="fas fa-power-off"></i>
+                    </button>
                 </div>
             </div>
 
-            <div id="messages-display" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 chat-container">
-                <div id="welcome-msg" class="h-full flex flex-col items-center justify-center text-gray-600 text-center">
-                    <i class="fas fa-shield-alt text-6xl mb-4 animate-pulse"></i>
-                    <h3 class="text-xl font-bold uppercase tracking-widest">Ucdan-uca Şifrələmə Aktivdir</h3>
-                    <p class="text-sm max-w-xs">Bütün mesajlar local yaddaşda saxlanılır və heç bir serverə ötürülmür.</p>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 custom-scrollbar">
                 </div>
+
+            <div id="typing-indicator" class="px-6 py-2 opacity-0 transition-opacity">
+                <p class="text-[10px] text-cyan-500 italic"><span id="partner-name-typing">...</span> yazır...</p>
             </div>
 
-            <div class="p-4 glass-panel border-t border-white/10">
-                <div id="typing-ui" class="h-6 ml-4 text-xs text-cyan-500 opacity-0 transition-opacity">Yazır...</div>
-                <form id="chat-form" class="flex items-center gap-4">
-                    <button type="button" onclick="triggerFileUpload()" class="w-12 h-12 rounded-xl glass-panel hover:text-cyan-400 transition-all flex items-center justify-center">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <input type="file" id="media-upload" class="hidden" accept="image/*">
-                    <input type="text" id="message-input" placeholder="Mesajınızı bura daxil edin..." autocomplete="off" class="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-cyan-500 transition-all">
-                    <button type="button" id="voice-btn" class="w-12 h-12 rounded-xl glass-panel hover:text-red-500 transition-all">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <button type="submit" class="w-14 h-12 bg-cyan-600 hover:bg-cyan-400 text-black rounded-xl font-bold transition-all flex items-center justify-center">
+            <div class="p-6 bg-black/40 border-t border-white/5">
+                <div class="flex gap-4 items-center max-w-5xl mx-auto">
+                    <input type="text" id="message-input" placeholder="Şifrəli mesaj yaz..." 
+                           class="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-cyan-500 transition-all">
+                    <button onclick="sendMessage()" class="w-14 h-14 bg-cyan-600 hover:bg-cyan-400 text-black rounded-2xl shadow-[0_0_15px_rgba(0,243,255,0.3)] transition-all flex items-center justify-center">
                         <i class="fas fa-paper-plane text-xl"></i>
                     </button>
-                </form>
+                </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <script>
-        // --- DATA STRUCTURE & INITIALIZATION ---
-        const MOCK_CONTACTS = [
-            { id: 1, name: 'Nova AI', avatar: 'https://i.pravatar.cc/150?u=nova', bio: 'Sizin rəqəmsal köməkçiniz', bot: true },
-            { id: 2, name: 'Zaur Həsənov', avatar: 'https://i.pravatar.cc/150?u=zaur', bio: 'Frontend Developer', bot: false },
-            { id: 3, name: 'Cyber Hunter', avatar: 'https://i.pravatar.cc/150?u=hunter', bio: 'Hacker mode on', bot: false }
-        ];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, updateDoc, onSnapshot, collection, runTransaction, deleteDoc, serverTimestamp, arrayUnion, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        let activeContactId = null;
-        let messages = JSON.parse(localStorage.getItem('cyber_messages')) || [];
-
-        // --- BOOT SEQUENCE ANIMATION ---
-        window.onload = () => {
-            const bootScreen = document.getElementById('boot-screen');
-            const bootText = document.getElementById('boot-text');
-            const progress = document.getElementById('boot-progress');
-            const lines = [
-                "> X-CYBER OS LOADING...",
-                "> SECURITY PROTOCOLS: ACTIVE",
-                "> CONNECTING TO LOCAL_NODE...",
-                "> ENCRYPTION KEY: 0x8823F...",
-                "> SYSTEM READY."
-            ];
-
-            let lineIdx = 0;
-            const interval = setInterval(() => {
-                bootText.innerHTML += lines[lineIdx] + "<br>";
-                lineIdx++;
-                progress.style.width = (lineIdx / lines.length) * 100 + "%";
-                if(lineIdx >= lines.length) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        bootScreen.classList.add('animate__animated', 'animate__fadeOut');
-                        setTimeout(() => bootScreen.remove(), 1000);
-                        renderContacts();
-                    }, 500);
-                }
-            }, 400);
+        // CONFIG (Sənin verdiyin)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAbLWwzSE9WgqFKK_n9hqsl5mokZlNacM",
+            authDomain: "cesibot.firebaseapp.com",
+            projectId: "cesibot",
+            storageBucket: "cesibot.firebasestorage.app",
+            messagingSenderId: "509543495829",
+            appId: "1:509543495829:web:833feb9c271328f8e4039c"
         };
 
-        // --- CONTACT MANAGEMENT ---
-        function renderContacts() {
-            const list = document.getElementById('contact-list');
-            list.innerHTML = MOCK_CONTACTS.map(c => `
-                <div onclick="selectChat(${c.id})" class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-all ${activeContactId === c.id ? 'bg-white/10 cyber-border' : ''}">
-                    <div class="relative">
-                        <img src="${c.avatar}" class="w-12 h-12 rounded-xl object-cover">
-                        <div class="status-online"></div>
-                    </div>
-                    <div class="flex-1 hidden md:block">
-                        <h4 class="font-bold text-sm">${c.name}</h4>
-                        <p class="text-xs text-gray-500 truncate">${c.bio}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // --- CHAT LOGIC ---
-        function selectChat(id) {
-            activeContactId = id;
-            const contact = MOCK_CONTACTS.find(c => c.id === id);
-            document.getElementById('active-name').innerText = contact.name;
-            document.getElementById('active-avatar').querySelector('img').src = contact.avatar;
-            document.getElementById('active-status').innerText = contact.bot ? 'AI Bot (Həmişə onlayn)' : 'Online';
-            document.getElementById('welcome-msg').classList.add('hidden');
-            renderContacts();
-            renderMessages();
-        }
+        let userId, userName, chatId, partnerId, currentLang = 'az';
+        let unsubscribeChat = null;
 
-        function renderMessages() {
-            const display = document.getElementById('messages-display');
-            display.innerHTML = '';
+        const TRANSLATIONS = {
+            az: {
+                welcome: "XƏTTƏ XOŞ GƏLDİNİZ", desc: "Sənin anonimliyini biz qoruyuruq.",
+                l_name: "Kod Adın", btn_start: "SİSTEMƏ DAXİL OL", matching: "SİQNAL AXTARILIR...",
+                cancel: "Ləğv et", active: "AKTİV SİQNAL", placeholder: "Şifrəli mesaj yaz...",
+                left: "❌ Tərəfdaş xətdən qırıldı."
+            },
+            tr: {
+                welcome: "HATTA HOŞ GELDİNİZ", desc: "Anonimliğiniz bizimle güvende.",
+                l_name: "Kod Adın", btn_start: "SİSTEME GİRİŞ YAP", matching: "SİNYAL ARANIYOR...",
+                cancel: "İptal et", active: "AKTİF SİNYAL", placeholder: "Şifreli mesaj yaz...",
+                left: "❌ Partner bağlantısı kesildi."
+            }
+        };
+
+        // UI Language Switcher
+        window.changeLang = (lang) => {
+            currentLang = lang;
+            document.getElementById('btn-az').className = lang === 'az' ? 'px-3 py-1 text-xs rounded bg-cyan-500 text-black' : 'px-3 py-1 text-xs rounded text-white';
+            document.getElementById('btn-tr').className = lang === 'tr' ? 'px-3 py-1 text-xs rounded bg-cyan-500 text-black' : 'px-3 py-1 text-xs rounded text-white';
             
-            const filtered = messages.filter(m => 
-                (m.senderId === 'me' && m.receiverId === activeContactId) || 
-                (m.senderId === activeContactId && m.receiverId === 'me')
-            );
+            const t = TRANSLATIONS[lang];
+            document.getElementById('ui-welcome').innerText = t.welcome;
+            document.getElementById('ui-desc').innerText = t.desc;
+            document.getElementById('ui-label-name').innerText = t.l_name;
+            document.getElementById('ui-btn-start').innerText = t.btn_start;
+            document.getElementById('ui-matching').innerText = t.matching;
+            document.getElementById('ui-btn-cancel').innerText = t.cancel;
+            document.getElementById('ui-active').innerText = t.active;
+            document.getElementById('message-input').placeholder = t.placeholder;
+        };
 
-            filtered.forEach(m => {
-                const div = document.createElement('div');
-                div.className = `message-bubble p-4 ${m.senderId === 'me' ? 'sent' : 'received'} animate__animated animate__fadeInUp`;
-                
-                let content = `<p class="text-sm">${m.text}</p>`;
-                if(m.image) content += `<img src="${m.image}" class="mt-2 rounded-lg max-w-full">`;
-                
-                div.innerHTML = `
-                    ${content}
-                    <div class="flex justify-end gap-2 mt-1 opacity-50 text-[10px]">
-                        <span>${m.time}</span>
-                        ${m.senderId === 'me' ? '<i class="fas fa-check-double text-blue-400"></i>' : ''}
-                    </div>
-                `;
-                display.appendChild(div);
-            });
-            display.scrollTop = display.scrollHeight;
+        // Boot Animation
+        window.onload = () => {
+            changeLang('az');
+            const log = document.getElementById('boot-log');
+            const bar = document.getElementById('boot-bar');
+            const lines = ["> INITIALIZING CORE...", "> ENCRYPTING PROTOCOLS...", "> CONNECTING TO CESI NODES...", "> SYSTEM SECURED."];
+            let i = 0;
+            const interval = setInterval(() => {
+                log.innerHTML += lines[i] + "<br>";
+                i++;
+                bar.style.width = (i/lines.length)*100 + "%";
+                if(i >= lines.length) {
+                    clearInterval(interval);
+                    setTimeout(() => document.getElementById('boot-screen').fadeOut(), 500);
+                }
+            }, 500);
+        };
+
+        Element.prototype.fadeOut = function() {
+            this.style.opacity = '0';
+            this.style.transition = 'opacity 0.5s';
+            setTimeout(() => this.remove(), 500);
+        };
+
+        // Authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (user) userId = user.uid;
+            else await signInAnonymously(auth);
+        });
+
+        // Start Process
+        window.handleStart = async () => {
+            if(!userId) return;
+            const inputName = document.getElementById('user-name-input').value.trim();
+            userName = inputName || "User_" + userId.substring(0,4);
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('matching-screen').classList.remove('hidden');
+            startMatching();
+        };
+
+        async function startMatching() {
+            const queueRef = doc(db, "match_queue", "global");
+            
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const snap = await transaction.get(queueRef);
+                    const data = snap.exists() ? snap.data() : {};
+
+                    if (data.waitingId && data.waitingId !== userId) {
+                        // MATCH FOUND
+                        partnerId = data.waitingId;
+                        chatId = "chat_" + Date.now();
+                        
+                        const chatData = {
+                            users: [userId, partnerId],
+                            names: { [userId]: userName, [partnerId]: data.waitingName },
+                            langs: { [userId]: currentLang, [partnerId]: data.waitingLang },
+                            messages: [],
+                            typing: { [userId]: false, [partnerId]: false },
+                            status: "active"
+                        };
+
+                        transaction.set(doc(db, "active_chats", chatId), chatData);
+                        transaction.update(queueRef, { waitingId: null });
+                        
+                        // Notify partner
+                        transaction.set(doc(db, "signals", partnerId), { chatId: chatId, partnerId: userId });
+                        
+                        enterChat(chatId, partnerId, data.waitingName, data.waitingLang);
+                    } else {
+                        // WAIT IN QUEUE
+                        transaction.set(queueRef, { 
+                            waitingId: userId, 
+                            waitingName: userName, 
+                            waitingLang: currentLang 
+                        });
+                        listenForSignal();
+                    }
+                });
+            } catch (e) { console.error(e); }
         }
 
-        // --- SEND MESSAGE ---
-        document.getElementById('chat-form').onsubmit = (e) => {
-            e.preventDefault();
-            if(!activeContactId) return;
+        function listenForSignal() {
+            const signalRef = doc(db, "signals", userId);
+            const unsub = onSnapshot(signalRef, async (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const chatSnap = await getDoc(doc(db, "active_chats", data.chatId));
+                    const chatData = chatSnap.data();
+                    unsub();
+                    enterChat(data.chatId, data.partnerId, chatData.names[data.partnerId], chatData.langs[data.partnerId]);
+                    deleteDoc(signalRef);
+                }
+            });
+        }
 
+        function enterChat(id, pId, pName, pLang) {
+            chatId = id; partnerId = pId;
+            document.getElementById('matching-screen').classList.add('hidden');
+            document.getElementById('chat-screen').classList.remove('hidden');
+            document.getElementById('partner-name').innerText = pName;
+            document.getElementById('partner-lang-tag').innerText = pLang.toUpperCase();
+            document.getElementById('partner-name-typing').innerText = pName;
+            setupChatListener();
+        }
+
+        function setupChatListener() {
+            if(unsubscribeChat) unsubscribeChat();
+            const chatRef = doc(db, "active_chats", chatId);
+            
+            unsubscribeChat = onSnapshot(chatRef, (snap) => {
+                if(!snap.exists()) {
+                    handlePartnerLeft();
+                    return;
+                }
+                const data = snap.data();
+                renderMessages(data.messages);
+                
+                // Typing indicator
+                const isTyping = data.typing[partnerId];
+                document.getElementById('typing-indicator').style.opacity = isTyping ? '1' : '0';
+            });
+        }
+
+        function renderMessages(msgs) {
+            const container = document.getElementById('chat-messages');
+            const currentCount = container.children.length;
+            
+            if(msgs.length > currentCount) {
+                for(let i = currentCount; i < msgs.length; i++) {
+                    const m = msgs[i];
+                    const div = document.createElement('div');
+                    div.className = `msg-bubble animate__animated animate__fadeInUp ${m.sender === userId ? 'msg-sent' : 'msg-received'}`;
+                    div.innerHTML = `<p>${m.text}</p><span class="text-[9px] opacity-40 block text-right mt-1">${new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+                    container.appendChild(div);
+                }
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        window.sendMessage = async () => {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
-            if(!text) return;
+            if(!text || !chatId) return;
 
-            sendMessage(text);
             input.value = '';
+            const chatRef = doc(db, "active_chats", chatId);
+            await updateDoc(chatRef, {
+                messages: arrayUnion({
+                    sender: userId,
+                    text: text,
+                    time: Date.now()
+                })
+            });
         };
 
-        function sendMessage(text, image = null) {
-            const newMsg = {
-                id: Date.now(),
-                senderId: 'me',
-                receiverId: activeContactId,
-                text: text,
-                image: image,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                timestamp: Date.now()
-            };
-
-            messages.push(newMsg);
-            saveAndRender();
-
-            // AI Bot Response
-            const contact = MOCK_CONTACTS.find(c => c.id === activeContactId);
-            if(contact.bot) {
-                simulateBotResponse(text);
-            }
-        }
-
-        function simulateBotResponse(userText) {
-            document.getElementById('typing-ui').style.opacity = '1';
+        // Typing Status
+        document.getElementById('message-input').oninput = async (e) => {
+            if(!chatId) return;
+            const chatRef = doc(db, "active_chats", chatId);
+            await updateDoc(chatRef, { [`typing.${userId}`]: e.target.value.length > 0 });
             
-            setTimeout(() => {
-                const botMsg = {
-                    id: Date.now(),
-                    senderId: activeContactId,
-                    receiverId: 'me',
-                    text: `Analiz edildi: "${userText}". Sizin üçün nə edə bilərəm?`,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    timestamp: Date.now()
-                };
-                messages.push(botMsg);
-                document.getElementById('typing-ui').style.opacity = '0';
-                saveAndRender();
-                playNotifySound();
-            }, 1500);
-        }
-
-        function saveAndRender() {
-            localStorage.setItem('cyber_messages', JSON.stringify(messages));
-            renderMessages();
-        }
-
-        // --- MEDIA UPLOAD (BASE64) ---
-        function triggerFileUpload() { document.getElementById('media-upload').click(); }
-
-        document.getElementById('media-upload').onchange = function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                sendMessage("Şəkil göndərildi", reader.result);
-            }
-            if(file) reader.readAsDataURL(file);
+            clearTimeout(window.typingTimer);
+            window.typingTimer = setTimeout(async () => {
+                await updateDoc(chatRef, { [`typing.${userId}`]: false });
+            }, 3000);
         };
 
-        // --- VOICE RECOGNITION (WEB SPEECH API) ---
-        const voiceBtn = document.getElementById('voice-btn');
-        if ('webkitSpeechRecognition' in window) {
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = 'az-AZ';
-            
-            voiceBtn.onclick = () => {
-                recognition.start();
-                voiceBtn.classList.add('text-red-500', 'animate-pulse');
-            };
+        window.handleCloseChat = async () => {
+            if(chatId) {
+                await deleteDoc(doc(db, "active_chats", chatId));
+                location.reload();
+            }
+        };
 
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('message-input').value = transcript;
-                voiceBtn.classList.remove('text-red-500', 'animate-pulse');
-            };
-        }
-
-        function playNotifySound() {
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
-            audio.play();
-        }
-
-        function clearCurrentChat() {
+        function handlePartnerLeft() {
             Swal.fire({
-                title: 'Əminsiniz?',
-                text: "Bu söhbətin bütün tarixçəsi silinəcək!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#00f3ff',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Bəli, sil!',
+                title: 'SİQNAL İTDİ',
+                text: TRANSLATIONS[currentLang].left,
+                icon: 'error',
                 background: '#050505',
-                color: '#fff'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    messages = messages.filter(m => 
-                        !(m.senderId === 'me' && m.receiverId === activeContactId) && 
-                        !(m.senderId === activeContactId && m.receiverId === 'me')
-                    );
-                    saveAndRender();
-                }
-            })
+                color: '#fff',
+                confirmButtonColor: '#00f3ff'
+            }).then(() => location.reload());
         }
+
+        window.handleChangeChat = () => handleCloseChat();
+        window.handleCancelMatching = () => location.reload();
+        
+        // Enter key for message
+        document.getElementById('message-input').onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
     </script>
 </body>
 </html>
