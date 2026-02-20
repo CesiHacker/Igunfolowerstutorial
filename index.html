@@ -2,730 +2,2614 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AxtarGet · Anonim Söhbət</title>
-    <!-- Font & Tailwind -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK (modüler) -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AxtarGet Chat — Anonim Online Chat Platforması</title>
+    <meta name="description" content="AxtarGet ilə pulsuz online chat edin. Yeni insanlarla tanış olun. Heç bir qeydiyyat yoxdur.">
+    <link rel="canonical" href="https://axtarget.com/">
+
+    <!-- Google Fonts: Outfit + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- =============================================
+         GLOBAL STYLES — Glassmorphism 2.0
+    ============================================= -->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
+        /* ---- CSS Reset & Variables ---- */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark:        #060a14;
+            --glass-bg:       rgba(255,255,255,0.05);
+            --glass-border:   rgba(255,255,255,0.12);
+            --glass-blur:     blur(24px);
+            --accent:         #38bdf8;
+            --accent-glow:    rgba(56,189,248,0.25);
+            --accent2:        #818cf8;
+            --accent2-glow:   rgba(129,140,248,0.20);
+            --success:        #34d399;
+            --danger:         #f87171;
+            --warning:        #fbbf24;
+            --text-primary:   #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted:     #475569;
+            --radius-lg:      20px;
+            --radius-md:      14px;
+            --radius-sm:      8px;
+            --shadow-glow:    0 0 40px rgba(56,189,248,0.12);
+            --transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Outfit', 'Inter', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Animated Mesh Gradient Background ---- */
+        /* Bu arxa fon — hərəkət edən neon duman effektidir */
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .mesh-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: orbFloat linear infinite;
+        }
+
+        .orb1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #0ea5e9 0%, transparent 70%);
+            top: -20%;
+            left: -10%;
+            animation-duration: 18s;
+            animation-delay: 0s;
+        }
+
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #818cf8 0%, transparent 70%);
+            top: 30%;
+            right: -10%;
+            animation-duration: 22s;
+            animation-delay: -5s;
+        }
+
+        .orb3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+            bottom: -10%;
+            left: 30%;
+            animation-duration: 25s;
+            animation-delay: -10s;
+        }
+
+        .orb4 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+            top: 60%;
+            left: -5%;
+            animation-duration: 20s;
+            animation-delay: -3s;
+        }
+
+        @keyframes orbFloat {
+            0%   { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+            25%  { transform: translate(40px, -30px) rotate(90deg) scale(1.1); }
+            50%  { transform: translate(-20px, 50px) rotate(180deg) scale(0.9); }
+            75%  { transform: translate(-40px, -20px) rotate(270deg) scale(1.05); }
+            100% { transform: translate(0px, 0px) rotate(360deg) scale(1); }
+        }
+
+        /* Noise texture overlay for depth */
+        #bg-canvas::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* ---- App Shell ---- */
+        #app {
+            position: relative;
+            z-index: 1;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* ---- Glassmorphism Card ---- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .glass-strong {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), var(--shadow-glow);
+        }
+
+        /* ---- Gradient Text ---- */
+        .gradient-text {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ---- Screens ---- */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 520px;
+            animation: screenFade 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes screenFade {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---- Buttons ---- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            border: none;
             font-family: 'Outfit', sans-serif;
-            background: #0b0f1a;
-            min-height: 100vh;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(14,165,233,0.30);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(14,165,233,0.45);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-ghost {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.10);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: rgba(248,113,113,0.15);
+            border: 1px solid rgba(248,113,113,0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: rgba(248,113,113,0.25);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+        }
+
+        /* ---- Input ---- */
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+        }
+
+        /* ---- START SCREEN ---- */
+        #start-screen {
+            text-align: center;
+        }
+
+        .logo-wrap {
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow-x: hidden;
+            font-size: 36px;
+            box-shadow: 0 8px 32px rgba(14,165,233,0.3);
+            animation: logoPulse 3s ease-in-out infinite;
         }
-        /* Animated Mesh Gradient Background */
-        .mesh-bg {
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(14,165,233,0.3); }
+            50%       { box-shadow: 0 8px 48px rgba(99,102,241,0.5); }
+        }
+
+        .logo-title {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .logo-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .start-card {
+            padding: 28px;
+            text-align: left;
+        }
+
+        .alert-box {
+            padding: 14px;
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.25);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: #fcd34d;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .start-footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+
+        /* ---- LANGUAGE SELECTOR ---- */
+        .lang-selector {
             position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(6, 182, 212, 0.25) 0%, transparent 35%),
-                        radial-gradient(circle at 70% 60%, rgba(59, 130, 246, 0.3) 0%, transparent 40%),
-                        radial-gradient(circle at 10% 80%, rgba(168, 85, 247, 0.2) 0%, transparent 45%),
-                        radial-gradient(circle at 90% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
-            animation: meshMove 30s ease-in-out infinite alternate;
-            z-index: -2;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
         }
-        @keyframes meshMove {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(5%, 5%) scale(1.05); }
+
+        .lang-btn-wrap {
+            display: flex;
+            gap: 6px;
         }
-        /* Glassmorphism 2.0 */
-        .glass {
-            background: rgba(20, 30, 45, 0.4);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 2rem;
-            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255,255,255,0.05);
+
+        .lang-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Outfit', sans-serif;
         }
-        .glass-card {
-            background: rgba(18, 25, 40, 0.6);
-            backdrop-filter: blur(20px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 2rem;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
+
+        .lang-btn.active {
+            background: rgba(56,189,248,0.15);
+            border-color: rgba(56,189,248,0.4);
+            color: var(--accent);
         }
-        .glass-card:hover {
-            box-shadow: 0 25px 45px -12px rgba(6, 182, 212, 0.25);
+
+        /* ---- MATCHING SCREEN ---- */
+        .match-card {
+            padding: 48px 32px;
+            text-align: center;
         }
-        /* Micro-interactions */
-        .btn-glow {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        .match-spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 28px;
+            position: relative;
         }
-        .btn-glow:active {
-            transform: scale(0.94);
-            filter: brightness(1.2);
-        }
-        /* Custom scroll */
-        .scroll-custom::-webkit-scrollbar { width: 4px; }
-        .scroll-custom::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 10px; }
-        .scroll-custom::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.4); border-radius: 10px; }
-        /* Message animations */
-        .message-reaction {
-            transform-origin: bottom;
-            animation: popReaction 0.3s ease;
-        }
-        @keyframes popReaction {
-            0% { transform: scale(0); opacity: 0; }
-            70% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .double-tick path { stroke-dasharray: 18; stroke-dashoffset: 18; animation: drawTick 0.4s forwards; }
-        @keyframes drawTick { to { stroke-dashoffset: 0; } }
-        /* Typing indicator (lottie style) */
-        .typing-bounce span {
-            width: 8px; height: 8px;
-            background: #06b6d4;
+
+        .match-spinner::before,
+        .match-spinner::after {
+            content: '';
+            position: absolute;
             border-radius: 50%;
-            display: inline-block;
-            animation: bounce 1.4s infinite;
         }
-        .typing-bounce span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-bounce span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce {
-            0%,60%,100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); background: #3b82f6; }
+
+        .match-spinner::before {
+            inset: 0;
+            border: 3px solid rgba(56,189,248,0.15);
         }
-        /* Shake animation (new match) */
-        .shake {
-            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+
+        .match-spinner::after {
+            inset: 0;
+            border: 3px solid transparent;
+            border-top-color: var(--accent);
+            border-right-color: var(--accent2);
+            animation: spinRing 1s linear infinite;
         }
-        @keyframes shake {
-            10%,90% { transform: translate3d(-1px, 0, 0); }
-            20%,80% { transform: translate3d(2px, 0, 0); }
-            30%,50%,70% { transform: translate3d(-4px, 0, 0); }
-            40%,60% { transform: translate3d(4px, 0, 0); }
+
+        @keyframes spinRing {
+            to { transform: rotate(360deg); }
         }
-        /* Confetti (simplified) */
-        .confetti-piece {
-            position: absolute; width: 8px; height: 16px; background: cyan; opacity: 0.7;
-            animation: confettiRain 3s linear infinite;
+
+        .match-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
-        @keyframes confettiRain {
-            0% { transform: translateY(-100%) rotate(0deg); opacity: 0.7; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+
+        .match-countdown {
+            font-size: 15px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 28px;
         }
-        /* Avatar generation (gradient based on uid) */
+
+        /* ---- CHAT SCREEN ---- */
+        #chat-screen {
+            max-width: 640px;
+            height: 100dvh;
+            display: none;
+            flex-direction: column;
+        }
+
+        #chat-screen.active {
+            display: flex;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-bottom: 8px;
+        }
+
+        .chat-partner-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Generative Avatar */
         .avatar {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: linear-gradient(135deg, #06b6d4, #3b82f6);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; color: white; text-shadow: 0 2px 5px black;
-            box-shadow: 0 8px 20px rgba(6,182,212,0.3);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+            position: relative;
+        }
+
+        .avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 1px;
+            right: 1px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 2px solid var(--bg-dark);
+            transition: var(--transition);
+        }
+
+        .avatar.offline::after {
+            background: var(--text-muted);
+        }
+
+        .partner-name {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .partner-status {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 16px;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--warning);
+            border-radius: 50%;
+            animation: dotBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
             flex-shrink: 0;
         }
-        /* Lightbox */
-        .lightbox {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-            display: none; align-items: center; justify-content: center; z-index: 10000;
+
+        /* Messages Area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.1) transparent;
         }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 2rem; }
+
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        /* Message Bubbles */
+        .msg-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 78%;
+            position: relative;
+            animation: msgSlide 0.25s ease;
+        }
+
+        @keyframes msgSlide {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-wrapper.self {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .msg-wrapper.other {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+            position: relative;
+            cursor: default;
+            transition: transform 0.1s;
+        }
+
+        .msg-bubble:active {
+            transform: scale(0.98);
+        }
+
+        .msg-wrapper.self .msg-bubble {
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            color: #fff;
+            border-bottom-right-radius: 5px;
+        }
+
+        .msg-wrapper.other .msg-bubble {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            border-bottom-left-radius: 5px;
+        }
+
+        /* Emoji Reactions */
+        .reaction-picker {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            background: rgba(20,20,40,0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 6px 10px;
+            display: none;
+            gap: 6px;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .msg-wrapper.self .reaction-picker {
+            right: 0;
+        }
+
+        .msg-wrapper.other .reaction-picker {
+            left: 0;
+        }
+
+        .reaction-picker.visible {
+            display: flex;
+            animation: reactionPop 0.2s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes reactionPop {
+            from { opacity: 0; transform: scale(0.7) translateY(4px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .reaction-emoji {
+            font-size: 22px;
+            cursor: pointer;
+            transition: transform 0.15s;
+            line-height: 1;
+        }
+
+        .reaction-emoji:hover {
+            transform: scale(1.4);
+        }
+
+        .msg-reaction-display {
+            margin-top: 3px;
+            font-size: 16px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .reaction-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .reaction-badge:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        /* Message Meta (time + ticks) */
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 3px;
+            padding: 0 4px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .msg-ticks {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .msg-ticks.read {
+            color: var(--accent);
+        }
+
+        /* Image message */
+        .msg-image {
+            max-width: 240px;
+            max-height: 200px;
+            border-radius: 12px;
+            cursor: pointer;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.2s;
+        }
+
+        .msg-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* System message */
+        .msg-system {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 20px;
+            align-self: center;
+            max-width: 80%;
+        }
+
+        /* Voice message UI */
+        .voice-msg {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+        }
+
+        .voice-play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: var(--transition);
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .voice-play-btn:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        .voice-waveform {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 24px;
+        }
+
+        .voice-bar {
+            width: 3px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 2px;
+            transition: height 0.1s;
+        }
+
+        .voice-duration {
+            font-size: 12px;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        /* ---- CHAT INPUT AREA ---- */
+        .chat-input-area {
+            padding: 10px 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+
+        .chat-input-wrap {
+            flex: 1;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            padding: 6px 8px 6px 16px;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .chat-input-wrap:focus-within {
+            border-color: rgba(56,189,248,0.4);
+            box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+        }
+
+        #message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            padding: 6px 0;
+            line-height: 1.4;
+        }
+
+        #message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-action-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition);
+            flex-shrink: 0;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .input-action-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-primary);
+        }
+
+        .send-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition);
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(14,165,233,0.3);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 24px rgba(14,165,233,0.45);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Voice recording UI */
+        .voice-record-wrap {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            padding: 0 8px;
+        }
+
+        .voice-record-wrap.active {
+            display: flex;
+        }
+
+        .voice-record-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: recBlink 1s ease infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes recBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .voice-record-waves {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .voice-record-wave {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: waveAnim 0.5s ease infinite alternate;
+        }
+
+        @keyframes waveAnim {
+            from { height: 4px; }
+            to   { height: 20px; }
+        }
+
+        .voice-record-time {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--danger);
+            min-width: 40px;
+        }
+
+        /* ---- MODALS ---- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 28px;
+            background: rgba(10,15,30,0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+            animation: modalSlide 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes modalSlide {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.12);
+            color: var(--text-primary);
+        }
+
+        /* ---- FEEDBACK SCREEN ---- */
+        .feedback-stars {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .star-btn {
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0.4;
+            line-height: 1;
+            background: none;
+            border: none;
+        }
+
+        .star-btn.active {
+            opacity: 1;
+        }
+
+        .star-btn:hover {
+            transform: scale(1.3);
+        }
+
+        .feedback-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .feedback-tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .feedback-tag.selected {
+            border-color: var(--accent);
+            background: rgba(56,189,248,0.1);
+            color: var(--accent);
+        }
+
+        /* ---- LIGHTBOX ---- */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .lightbox.open {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .lightbox img {
+            max-width: 92vw;
+            max-height: 88vh;
+            border-radius: var(--radius-md);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+            animation: imgZoom 0.25s ease;
+        }
+
+        @keyframes imgZoom {
+            from { transform: scale(0.85); }
+            to   { transform: scale(1); }
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* ---- TOAST NOTIFICATIONS ---- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(10,15,30,0.95);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            backdrop-filter: blur(16px);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-16px) scale(0.9); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to   { opacity: 0; transform: translateY(-16px) scale(0.9); }
+        }
+
+        /* ---- CONFETTI ---- */
+        .confetti-piece {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            z-index: 800;
+            pointer-events: none;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ---- MATCH SHAKE ANIMATION ---- */
+        @keyframes matchShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+            20%, 40%, 60%, 80%     { transform: translateX(6px); }
+        }
+
+        .shake {
+            animation: matchShake 0.5s ease;
+        }
+
+        /* ---- TUTORIAL STEPS ---- */
+        .tutorial-step {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .tutorial-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .step-text h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ---- MISC ---- */
+        .divider {
+            height: 1px;
+            background: var(--glass-border);
+            margin: 20px 0;
+        }
+
+        /* Responsive for chat screen */
+        @media (max-width: 640px) {
+            #chat-screen {
+                max-width: 100%;
+            }
+
+            .msg-wrapper {
+                max-width: 88%;
+            }
+        }
+
+        /* Safe area for mobile */
+        .chat-input-area {
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        }
+
+        /* Loading animation overlay */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+
+        #loading-overlay.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="text-white antialiased">
-    <!-- Animated Background -->
-    <div class="mesh-bg"></div>
-    <!-- Confetti container (dynamically filled) -->
-    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
-    <!-- Lightbox -->
-    <div id="lightbox" class="lightbox" onclick="this.style.display='none'">
-        <img id="lightbox-img" src="" alt="">
-    </div>
+<body>
 
-    <!-- Main App Container -->
-    <div class="relative w-full max-w-4xl mx-auto p-3 sm:p-5 z-10">
-        <!-- Language Selector (glass) -->
-        <div class="absolute top-4 right-4 z-30">
-            <div class="glass flex items-center gap-1 px-2 py-1 rounded-full">
-                <button id="lang-az" class="px-3 py-1.5 rounded-full text-sm font-medium transition-all btn-glow" style="background: rgba(6,182,212,0.3);">AZ</button>
-                <button id="lang-tr" class="px-3 py-1.5 rounded-full text-sm font-medium transition-all btn-glow">TR</button>
-            </div>
+<!-- ===== ANIMATED BACKGROUND ===== -->
+<div id="bg-canvas">
+    <div class="mesh-orb orb1"></div>
+    <div class="mesh-orb orb2"></div>
+    <div class="mesh-orb orb3"></div>
+    <div class="mesh-orb orb4"></div>
+</div>
+
+<!-- ===== LOADING OVERLAY ===== -->
+<div id="loading-overlay">
+    <div style="text-align:center">
+        <div class="logo-icon" style="margin:0 auto 16px;">💬</div>
+        <div class="gradient-text" style="font-size:28px;font-weight:800;">AxtarGet</div>
+    </div>
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div id="toast-container"></div>
+
+<!-- ===== LANGUAGE SELECTOR ===== -->
+<div class="lang-selector">
+    <div class="lang-btn-wrap">
+        <button class="lang-btn active" id="az-btn" onclick="setLang('az')">🇦🇿 AZ</button>
+        <button class="lang-btn" id="tr-btn" onclick="setLang('tr')">🇹🇷 TR</button>
+    </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="app">
+
+    <!-- ============================
+         START SCREEN
+    ============================ -->
+    <div class="screen active" id="start-screen">
+        <!-- Logo -->
+        <div class="logo-wrap">
+            <div class="logo-icon">💬</div>
+            <h1 class="logo-title gradient-text">AxtarGet</h1>
+            <p class="logo-subtitle" id="t-subtitle">Pulsuz Online Chat Platforması</p>
         </div>
 
-        <!-- Start Screen -->
-        <div id="start-screen" class="glass-card p-6 sm:p-10 max-w-xl mx-auto mt-12 transition-all duration-500">
-            <h1 class="text-5xl sm:text-6xl font-black text-center bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">AxtarGet</h1>
-            <p class="text-center text-slate-300 mt-2 text-lg" data-i18n="subtitle">Pulsuz Anonim Söhbət</p>
-            <div class="mt-8 space-y-5">
-                <div class="glass px-4 py-3 rounded-2xl">
-                    <label class="text-sm font-medium text-slate-300" data-i18n="nameLabel">Adınız (istəyə bağlı)</label>
-                    <input type="text" id="username-input" maxlength="20" class="w-full bg-transparent border-b border-slate-600 py-2 text-lg focus:outline-none focus:border-cyan-400 transition" placeholder="...">
-                </div>
-                <button id="start-chat-btn" class="btn-glow w-full py-4 text-xl font-bold rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2">
-                    <span>⚡</span> <span data-i18n="startButton">Söhbətə Başla</span>
+        <!-- Card -->
+        <div class="glass-strong start-card">
+            <div class="alert-box">
+                <span>⚠️</span>
+                <span><strong id="t-alertTitle">Diqqət:</strong> <span id="t-alertText">Yazışmalarınız serverdə saxlanılmır. Söhbət bitdikdə avtomatik silinir.</span></span>
+            </div>
+
+            <label class="input-label" id="t-nameLabel">ADINIIZ (İSTƏYƏ BAĞLI)</label>
+            <input class="input-field" type="text" id="user-name-input" maxlength="20" placeholder="Adınızı yazın..." id="t-namePlaceholder">
+            <p class="input-hint" id="t-nameHint">Boş buraxsanız təsadüfi ad təyin olunacaq</p>
+
+            <div style="height:20px"></div>
+            <button class="btn btn-primary" onclick="handleStart()" id="t-startBtn">
+                <span>⚡</span> <span id="t-startBtnText">Söhbətə Başla</span>
+            </button>
+            <div style="height:10px"></div>
+            <button class="btn btn-ghost" onclick="openTutorial()" id="t-tutorialBtn">
+                ℹ️ <span id="t-tutorialBtnText">Necə İstifadə Olunur?</span>
+            </button>
+        </div>
+
+        <p class="start-footer" id="t-footer">AxtarGet — Azərbaycanda ən yaxşı pulsuz chat platforması.</p>
+    </div>
+
+    <!-- ============================
+         MATCHING SCREEN
+    ============================ -->
+    <div class="screen" id="matching-screen">
+        <div class="glass-strong match-card">
+            <div class="match-spinner"></div>
+            <p class="match-title" id="t-matchingText">Söhbət Tərəfdaşı Axtarılır...</p>
+            <p class="match-countdown" id="countdown-display">⏱ Qalan vaxt: 20 saniyə</p>
+            <button class="btn btn-danger" onclick="handleCancelMatching()">
+                ✕ <span id="t-cancelBtn">Ləğv Et</span>
+            </button>
+            <div id="retry-wrap" style="display:none;margin-top:20px;border-top:1px solid var(--glass-border);padding-top:20px;">
+                <p style="color:var(--warning);font-size:14px;margin-bottom:12px;" id="t-noUsers">Heç bir aktiv istifadəçi tapılmadı</p>
+                <button class="btn btn-primary" onclick="handleStart()">
+                    🔄 <span id="t-retryBtn">Yenidən Cəhd Et</span>
                 </button>
-                <button id="show-tutorial" class="w-full py-3 text-slate-300 hover:text-white transition text-sm" data-i18n="tutorialButton">Necə istifadə olunur?</button>
-            </div>
-            <p class="text-xs text-slate-600 text-center mt-8" data-i18n="footerText">AxtarGet · anonim · təhlükəsiz</p>
-        </div>
-
-        <!-- Matching Screen -->
-        <div id="matching-screen" class="glass-card p-10 max-w-xl mx-auto mt-12 hidden text-center">
-            <div class="flex justify-center mb-6">
-                <div class="w-24 h-24 border-4 border-slate-600 border-t-cyan-400 rounded-full animate-spin"></div>
-            </div>
-            <h2 class="text-3xl font-bold" data-i18n="matchingText">Söhbət tərəfdaşı axtarılır...</h2>
-            <p id="countdown" class="text-cyan-400 text-xl mt-2 font-mono">20 saniyə</p>
-            <button id="cancel-match" class="mt-8 px-8 py-3 bg-red-500/20 hover:bg-red-500/40 rounded-full transition text-red-200 btn-glow" data-i18n="cancelButton">Ləğv et</button>
-            <div id="retry-container" class="hidden mt-6">
-                <p class="text-yellow-300" data-i18n="noUsersText">Aktiv istifadəçi tapılmadı</p>
-                <button id="retry-match" class="mt-3 btn-glow px-6 py-2 bg-cyan-600 rounded-full" data-i18n="tryAgainText">Yenidən cəhd et</button>
-            </div>
-        </div>
-
-        <!-- Chat Screen -->
-        <div id="chat-screen" class="hidden glass-card h-[80vh] max-h-[800px] flex flex-col">
-            <!-- Header -->
-            <div class="flex items-center justify-between p-4 border-b border-white/10">
-                <div class="flex items-center gap-3">
-                    <div id="partner-avatar" class="avatar">👤</div>
-                    <div>
-                        <h3 id="partner-name" class="font-semibold text-lg">-</h3>
-                        <div class="flex items-center gap-2 text-xs">
-                            <span id="partner-language-indicator" class="px-2 py-0.5 bg-white/10 rounded-full">AZ</span>
-                            <span id="online-status" class="flex items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span> <span data-i18n="activeText">Aktiv</span></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button id="change-chat" class="p-2 glass rounded-full w-10 h-10 flex items-center justify-center btn-glow hover:bg-cyan-500/20" title="Yeni söhbət">
-                        <span class="text-xl">🔄</span>
-                    </button>
-                    <button id="close-chat" class="p-2 glass rounded-full w-10 h-10 flex items-center justify-center btn-glow hover:bg-red-500/20" title="Bağla">
-                        <span class="text-xl">✕</span>
-                    </button>
-                </div>
-            </div>
-            <!-- Messages -->
-            <div id="messages-container" class="flex-1 overflow-y-auto p-4 scroll-custom flex flex-col gap-3"></div>
-            <!-- Input Area (with multimedia) -->
-            <div class="p-4 border-t border-white/10">
-                <div class="flex items-center gap-2 glass px-3 py-1 rounded-full">
-                    <button id="attach-image" class="p-2 hover:text-cyan-400 transition btn-glow" title="Şəkil göndər">
-                        <span class="text-xl">📷</span>
-                    </button>
-                    <button id="voice-note" class="p-2 hover:text-cyan-400 transition btn-glow" title="Səsli mesaj (demo)">
-                        <span class="text-xl">🎤</span>
-                    </button>
-                    <input type="text" id="message-input" placeholder="Mesajınız..." class="flex-1 bg-transparent px-3 py-2 text-base focus:outline-none">
-                    <button id="send-message" class="p-2 bg-cyan-500 rounded-full w-10 h-10 flex items-center justify-center btn-glow shadow-lg shadow-cyan-500/30">
-                        <span class="text-xl">➤</span>
-                    </button>
-                </div>
-                <!-- Voice note simulator (hidden by default) -->
-                <div id="voice-sim" class="hidden mt-2 glass px-4 py-2 rounded-full flex items-center gap-3">
-                    <span class="text-red-400 animate-pulse">🔴</span>
-                    <span id="voice-timer">0:00</span>
-                    <div class="flex gap-1 items-center">
-                        <span class="w-1 h-4 bg-cyan-400 rounded-full animate-pulse"></span><span class="w-1 h-6 bg-cyan-400 rounded-full animate-pulse"></span><span class="w-1 h-3 bg-cyan-400 rounded-full"></span>
-                    </div>
-                    <button id="stop-voice" class="ml-auto text-red-300 btn-glow">✕</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tutorial Modal (glass) -->
-        <div id="tutorial-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
-            <div class="glass-card max-w-lg w-full p-8 space-y-4">
-                <h2 class="text-3xl font-bold text-cyan-400" data-i18n="tutorialTitle">AxtarGet - İstifadə qaydası</h2>
-                <ul class="space-y-3 text-slate-200">
-                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">1.</span> <span data-i18n="step1Text">Adınızı yazın və ya boş buraxın.</span></li>
-                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">2.</span> <span data-i18n="step2Text">Söhbətə başla düyməsinə basın, sistem sizi qoşacaq.</span></li>
-                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">3.</span> <span data-i18n="step3Text">Mesaj yazın, şəkil göndərin, reaksiya verin.</span></li>
-                    <li class="flex gap-3"><span class="text-cyan-400 font-bold">4.</span> <span data-i18n="step4Text">Hər şey anonim və müvəqqətidir.</span></li>
-                </ul>
-                <button id="close-tutorial" class="btn-glow w-full py-3 mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full font-semibold" data-i18n="understandButton">Başa düşdüm, başlayaq!</button>
-            </div>
-        </div>
-
-        <!-- Feedback Modal (after chat end) -->
-        <div id="feedback-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
-            <div class="glass-card max-w-md w-full p-6">
-                <h3 class="text-2xl font-bold" data-i18n="feedbackTitle">Söhbət bitdi. Rəy bildirin</h3>
-                <div class="flex gap-2 justify-center my-4 text-3xl">
-                    <button class="feedback-emoji btn-glow">😊</button>
-                    <button class="feedback-emoji btn-glow">😐</button>
-                    <button class="feedback-emoji btn-glow">☹️</button>
-                </div>
-                <button id="close-feedback" class="w-full py-2 glass rounded-full" data-i18n="closeButton">Bağla</button>
             </div>
         </div>
     </div>
 
-    <!-- Hidden file input for image sharing -->
-    <input type="file" id="image-upload" accept="image/*" class="hidden">
-
-    <script type="module">
-        // -------------------- FIREBASE INIT --------------------
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, runTransaction, deleteDoc, serverTimestamp, arrayUnion, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAAbLWwzSE9WgqFKK_n9hqsl5mokZlNacM",
-            authDomain: "axtargetbot.firebaseapp.com",
-            projectId: "axtargetbot",
-            storageBucket: "axtargetbot.firebasestorage.app",
-            messagingSenderId: "509543495829",
-            appId: "1:509543495829:web:833feb9c271328f8e4039c"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        // -------------------- STATE & VARIABLES --------------------
-        let currentUser = null;
-        let userId = null;
-        let userName = '';
-        let userLang = 'az';
-        let chatId = null;
-        let partnerId = null;
-        let partnerName = '';
-        let partnerLang = 'az';
-        let unsubscribeChat = null;
-        let matchingTimer = null;
-        let heartbeatInterval = null;
-        let renderedMsgIds = new Set();
-        
-        // DOM elements
-        const startScreen = document.getElementById('start-screen');
-        const matchingScreen = document.getElementById('matching-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        const messagesDiv = document.getElementById('messages-container');
-        const partnerNameSpan = document.getElementById('partner-name');
-        const partnerAvatarDiv = document.getElementById('partner-avatar');
-        const partnerLangSpan = document.getElementById('partner-language-indicator');
-        const usernameInput = document.getElementById('username-input');
-        const messageInput = document.getElementById('message-input');
-        const countdownSpan = document.getElementById('countdown');
-        const retryContainer = document.getElementById('retry-container');
-        
-        // Translations object (simplified, only keys used)
-        const translations = {
-            az: {
-                subtitle: 'Pulsuz Anonim Söhbət',
-                nameLabel: 'Adınız (istəyə bağlı)',
-                startButton: 'Söhbətə Başla',
-                tutorialButton: 'Necə istifadə olunur?',
-                footerText: 'AxtarGet · anonim · təhlükəsiz',
-                matchingText: 'Söhbət tərəfdaşı axtarılır...',
-                cancelButton: 'Ləğv et',
-                noUsersText: 'Aktiv istifadəçi tapılmadı',
-                tryAgainText: 'Yenidən cəhd et',
-                activeText: 'Aktiv',
-                typingText: 'yazır...',
-                changeButton: 'Dəyiş',
-                closeButton: 'Bağla',
-                partnerLeft: '❌ Tərəfdaş söhbətdən ayrıldı',
-                messageError: 'Mesaj göndərilmədi',
-                tutorialTitle: 'AxtarGet - İstifadə qaydası',
-                step1Text: 'Adınızı yazın və ya boş buraxın.',
-                step2Text: 'Söhbətə başla düyməsinə basın, sistem sizi qoşacaq.',
-                step3Text: 'Mesaj yazın, şəkil göndərin, reaksiya verin.',
-                step4Text: 'Hər şey anonim və müvəqqətidir.',
-                understandButton: 'Başa düşdüm, başlayaq!',
-                feedbackTitle: 'Söhbət bitdi. Rəy bildirin'
-            },
-            tr: {
-                subtitle: 'Ücretsiz Anonim Sohbet',
-                nameLabel: 'Adınız (isteğe bağlı)',
-                startButton: 'Sohbete Başla',
-                tutorialButton: 'Nasıl kullanılır?',
-                footerText: 'AxtarGet · anonim · güvenli',
-                matchingText: 'Sohbet partneri aranıyor...',
-                cancelButton: 'İptal et',
-                noUsersText: 'Aktif kullanıcı bulunamadı',
-                tryAgainText: 'Yeniden dene',
-                activeText: 'Aktif',
-                typingText: 'yazıyor...',
-                changeButton: 'Değiştir',
-                closeButton: 'Kapat',
-                partnerLeft: '❌ Partner sohbetten ayrıldı',
-                messageError: 'Mesaj gönderilemedi',
-                tutorialTitle: 'AxtarGet - Kullanım Kılavuzu',
-                step1Text: 'Adınızı yazın veya boş bırakın.',
-                step2Text: 'Sohbete başla butonuna basın, sistem sizi eşleştirecek.',
-                step3Text: 'Mesaj yazın, resim gönderin, reaksiyon verin.',
-                step4Text: 'Her şey anonim ve geçicidir.',
-                understandButton: 'Anladım, başlayalım!',
-                feedbackTitle: 'Sohbet bitti. Görüşleriniz'
-            }
-        };
-        
-        // -------------------- I18N --------------------
-        function setLanguage(lang) {
-            userLang = lang;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) {
-                    el.innerText = translations[lang][key];
-                }
-            });
-            document.getElementById('lang-az').style.background = lang === 'az' ? 'rgba(6,182,212,0.3)' : 'transparent';
-            document.getElementById('lang-tr').style.background = lang === 'tr' ? 'rgba(6,182,212,0.3)' : 'transparent';
-        }
-        document.getElementById('lang-az').addEventListener('click', () => setLanguage('az'));
-        document.getElementById('lang-tr').addEventListener('click', () => setLanguage('tr'));
-        
-        // -------------------- AVATAR GENERATOR --------------------
-        function getAvatar(uid, name) {
-            const colors = ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'];
-            const hash = uid ? uid.split('').reduce((a,b)=>a+b.charCodeAt(0),0) : 0;
-            const gradient = `linear-gradient(135deg, ${colors[hash%5]}, ${colors[(hash+3)%5]})`;
-            const letter = name ? name.charAt(0).toUpperCase() : '?';
-            return { gradient, letter };
-        }
-        
-        // -------------------- HEARTBEAT --------------------
-        function startHeartbeat() {
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(async () => {
-                if (userId) {
-                    try {
-                        await updateDoc(doc(db, 'chats', userId), { heartbeat: serverTimestamp(), isOnline: true });
-                    } catch (e) {}
-                }
-            }, 5000);
-        }
-        function stopHeartbeat() { clearInterval(heartbeatInterval); }
-        
-        // -------------------- MESSAGE RENDERING --------------------
-        function escapeHtml(unsafe) {
-            return unsafe.replace(/[&<>"]/g, function(m) {
-                if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; if(m === '"') return '&quot;';
-                return m;
-            });
-        }
-        
-        function addMessage(msg, isSelf, msgId) {
-            if (renderedMsgIds.has(msgId)) return;
-            renderedMsgIds.add(msgId);
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `flex ${isSelf ? 'justify-end' : 'justify-start'} message-reaction`;
-            msgDiv.setAttribute('data-msg-id', msgId);
-            
-            const isImage = msg.text && msg.text.startsWith('data:image') || (msg.text && msg.text.match(/\.(jpeg|jpg|gif|png|webp)$/i));
-            
-            let contentHtml = '';
-            if (isImage) {
-                contentHtml = `<img src="${escapeHtml(msg.text)}" class="max-w-[200px] max-h-[200px] rounded-2xl cursor-pointer shadow-xl" onclick="document.getElementById('lightbox-img').src=this.src;document.getElementById('lightbox').style.display='flex';">`;
-            } else {
-                contentHtml = `<span class="break-words">${escapeHtml(msg.text)}</span>`;
-            }
-            
-            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            
-            msgDiv.innerHTML = `
-                <div class="flex items-end gap-1 max-w-[70%]">
-                    ${!isSelf ? '<div class="avatar text-sm" style="background:'+getAvatar(msg.senderId, msg.senderName).gradient+'">'+getAvatar(msg.senderId, msg.senderName).letter+'</div>' : ''}
-                    <div class="glass px-4 py-2 rounded-2xl relative group">
-                        ${contentHtml}
-                        <div class="flex items-center justify-end gap-1 mt-1 text-[10px] text-slate-400">
-                            <span>${time}</span>
-                            ${isSelf ? `<span class="msg-status">✓✓</span>` : ''}
-                        </div>
-                        <!-- Reaction bar (on hover) -->
-                        <div class="absolute -bottom-5 left-0 hidden group-hover:flex glass rounded-full px-2 py-1 gap-1 text-lg z-10">
-                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '❤️')">❤️</span>
-                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '😂')">😂</span>
-                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '🔥')">🔥</span>
-                            <span class="cursor-pointer btn-glow hover:scale-125" onclick="reactToMessage('${msgId}', '👍')">👍</span>
-                        </div>
-                        <!-- Reaction display -->
-                        <div id="reaction-${msgId}" class="absolute -top-2 -right-2 text-xs bg-black/60 rounded-full px-1"></div>
+    <!-- ============================
+         CHAT SCREEN
+    ============================ -->
+    <div class="screen" id="chat-screen">
+        <!-- Header -->
+        <div class="glass chat-header">
+            <div class="chat-partner-info">
+                <!-- Generative avatar — JS tərəfindən doldurulur -->
+                <div class="avatar" id="partner-avatar">?</div>
+                <div>
+                    <div class="partner-name" id="partner-name">...</div>
+                    <div class="partner-status" id="partner-status">
+                        <span style="color:var(--success)">●</span>
+                        <span id="t-activeText">Aktiv</span>
                     </div>
                 </div>
-            `;
-            messagesDiv.appendChild(msgDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // Reaction function (global)
-        window.reactToMessage = async (msgId, emoji) => {
-            if (!chatId) return;
-            const msgRef = doc(db, 'chats', chatId, 'messages', msgId);
-            await updateDoc(msgRef, {
-                reaction: emoji
-            });
-            document.getElementById(`reaction-${msgId}`).innerText = emoji;
+            </div>
+            <div class="chat-actions">
+                <button class="btn btn-ghost btn-sm" onclick="handleChangeChat()">
+                    🔄 <span id="t-changeBtn">Dəyiş</span>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="handleCloseChat()">
+                    ✕ <span id="t-closeBtn">Bağla</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <!-- Input Area -->
+        <div class="glass chat-input-area">
+            <div class="chat-input-wrap" id="input-wrap">
+                <!-- Voice record mode (hidden default) -->
+                <div class="voice-record-wrap" id="voice-record-wrap">
+                    <div class="voice-record-indicator"></div>
+                    <div class="voice-record-waves" id="record-waves"></div>
+                    <div class="voice-record-time" id="record-time">0:00</div>
+                </div>
+                <!-- Normal input -->
+                <textarea
+                    id="message-input"
+                    rows="1"
+                    placeholder="Mesajınızı yazın..."
+                    oninput="autoResizeTextarea(this); handleTyping();"
+                    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"
+                ></textarea>
+                <!-- Image button -->
+                <button class="input-action-btn" onclick="triggerImagePicker()" title="Şəkil göndər">📷</button>
+                <!-- Voice button -->
+                <button class="input-action-btn" id="voice-btn" onmousedown="startVoiceRecord()" onmouseup="stopVoiceRecord()" ontouchstart="startVoiceRecord()" ontouchend="stopVoiceRecord()" title="Səsli mesaj">🎤</button>
+            </div>
+            <!-- Hidden file input -->
+            <input type="file" id="image-picker" accept="image/*" style="display:none" onchange="handleImageSelected(event)">
+            <!-- Send button -->
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+</div><!-- #app -->
+
+<!-- ===== TUTORIAL MODAL ===== -->
+<div class="modal-overlay" id="tutorial-modal">
+    <div class="modal-card">
+        <div class="modal-title">
+            <span id="t-tutorialTitle">AxtarGet Necə İstifadə Olunur?</span>
+            <button class="modal-close" onclick="closeTutorial()">✕</button>
+        </div>
+        <div class="tutorial-step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+                <h4 id="t-step1Title">Adınızı Yazın (İstəyə Bağlı)</h4>
+                <p id="t-step1Text">Adınızı yazın və ya boş buraxın. Boş buraxsanız, sistem təsadüfi ad verəcək.</p>
+            </div>
+        </div>
+        <div class="tutorial-step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+                <h4 id="t-step2Title">Söhbətə Başlayın</h4>
+                <p id="t-step2Text">"Söhbətə Başla" düyməsinə basın. Sistem sizi digər istifadəçilərlə qoşacaq.</p>
+            </div>
+        </div>
+        <div class="tutorial-step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+                <h4 id="t-step3Title">Söhbət Edin</h4>
+                <p id="t-step3Text">Şəkil göndərin, səsli mesaj bıraxın, reaksiyalar əlavə edin. Mesajlara uzun basan zaman emoji seçimi çıxacaq.</p>
+            </div>
+        </div>
+        <div class="tutorial-step">
+            <div class="step-num">4</div>
+            <div class="step-text">
+                <h4 id="t-step4Title">Dil Seçin</h4>
+                <p id="t-step4Text">Yuxarı sağ küncündən dil seçin. Seçilən dil qarşı tərəfdə görünür.</p>
+            </div>
+        </div>
+        <div style="margin-top:20px;">
+            <button class="btn btn-primary" onclick="closeTutorial()">
+                ✅ <span id="t-understandBtn">Başa düşdüm, Başlayaq!</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FEEDBACK MODAL ===== -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal-card" style="text-align:center;">
+        <div class="modal-title" style="justify-content:center;flex-direction:column;gap:6px;">
+            <span style="font-size:40px;">👋</span>
+            <span id="t-feedbackTitle">Söhbət necə keçdi?</span>
+        </div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;" id="t-feedbackSubtitle">Rəyiniz bizim üçün vacibdir</p>
+        <div class="feedback-stars" id="feedback-stars">
+            <button class="star-btn" data-val="1" onclick="setStarRating(1)">⭐</button>
+            <button class="star-btn" data-val="2" onclick="setStarRating(2)">⭐</button>
+            <button class="star-btn" data-val="3" onclick="setStarRating(3)">⭐</button>
+            <button class="star-btn" data-val="4" onclick="setStarRating(4)">⭐</button>
+            <button class="star-btn" data-val="5" onclick="setStarRating(5)">⭐</button>
+        </div>
+        <div class="feedback-tags" id="feedback-tags">
+            <button class="feedback-tag" onclick="toggleFeedbackTag(this)" id="t-tag1">Mehriban idi</button>
+            <button class="feedback-tag" onclick="toggleFeedbackTag(this)" id="t-tag2">Maraqlı söhbət</button>
+            <button class="feedback-tag" onclick="toggleFeedbackTag(this)" id="t-tag3">Tez bitdi</button>
+            <button class="feedback-tag" onclick="toggleFeedbackTag(this)" id="t-tag4">Münasib deyildi</button>
+        </div>
+        <button class="btn btn-primary" onclick="submitFeedback()" id="t-feedbackSubmit">Göndər</button>
+        <button class="btn btn-ghost" style="margin-top:10px;" onclick="skipFeedback()" id="t-feedbackSkip">Keç</button>
+    </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt="Full view">
+</div>
+
+<!-- =============================================
+     JAVASCRIPT — Full Logic
+============================================= -->
+<script>
+/* ================================================
+   TRANSLATIONS — AZ / TR
+================================================ */
+const T = {
+    az: {
+        subtitle: 'Pulsuz Online Chat Platforması',
+        alertTitle: 'Diqqət:',
+        alertText: 'Yazışmalarınız serverdə saxlanılmır. Söhbət bitdikdə avtomatik silinir.',
+        nameLabel: 'ADINIZ (İSTƏYƏ BAĞLI)',
+        namePlaceholder: 'Adınızı yazın...',
+        nameHint: 'Boş buraxsanız təsadüfi ad təyin olunacaq',
+        startBtnText: 'Söhbətə Başla',
+        tutorialBtnText: 'Necə İstifadə Olunur?',
+        footer: 'AxtarGet — Azərbaycanda ən yaxşı pulsuz chat platforması.',
+        matchingText: 'Söhbət Tərəfdaşı Axtarılır...',
+        cancelBtn: 'Ləğv Et',
+        noUsers: 'Heç bir aktiv istifadəçi tapılmadı',
+        retryBtn: 'Yenidən Cəhd Et',
+        activeText: 'Aktiv',
+        typingText: 'yazır...',
+        changeBtn: 'Dəyiş',
+        closeBtn: 'Bağla',
+        msgPlaceholder: 'Mesajınızı yazın...',
+        tutorialTitle: 'AxtarGet Necə İstifadə Olunur?',
+        step1Title: 'Adınızı Yazın (İstəyə Bağlı)',
+        step1Text: 'Adınızı yazın və ya boş buraxın. Boş buraxsanız, sistem təsadüfi ad verəcək.',
+        step2Title: 'Söhbətə Başlayın',
+        step2Text: '"Söhbətə Başla" düyməsinə basın. Sistem sizi digər istifadəçilərlə qoşacaq.',
+        step3Title: 'Söhbət Edin',
+        step3Text: 'Şəkil göndərin, səsli mesaj bıraxın, reaksiyalar əlavə edin.',
+        step4Title: 'Dil Seçin',
+        step4Text: 'Yuxarı sağ küncündən dil seçin. Seçilən dil qarşı tərəfdə görünür.',
+        understandBtn: 'Başa düşdüm, Başlayaq!',
+        feedbackTitle: 'Söhbət necə keçdi?',
+        feedbackSubtitle: 'Rəyiniz bizim üçün vacibdir',
+        tag1: 'Mehriban idi',
+        tag2: 'Maraqlı söhbət',
+        tag3: 'Tez bitdi',
+        tag4: 'Münasib deyildi',
+        feedbackSubmit: 'Göndər',
+        feedbackSkip: 'Keç',
+        partnerLeft: '❌ Tərəfdaş söhbəti bağladı',
+        msgError: '⚠️ Mesaj göndərilə bilmədi',
+        matchFound: '🎉 Tərəfdaş tapıldı!',
+        connecting: 'Qoşulur...',
+        you: 'Siz',
+    },
+    tr: {
+        subtitle: 'Ücretsiz Online Chat Platformu',
+        alertTitle: 'Dikkat:',
+        alertText: 'Yazışmalarınız sunucuda saklanmaz. Sohbet bittiğinde otomatik silinir.',
+        nameLabel: 'ADINIZ (İSTEĞE BAĞLI)',
+        namePlaceholder: 'Adınızı yazın...',
+        nameHint: 'Boş bırakırsanız rastgele ad atanacak',
+        startBtnText: 'Sohbete Başla',
+        tutorialBtnText: 'Nasıl Kullanılır?',
+        footer: 'AxtarGet — Azerbaycandaki en iyi ücretsiz chat platformu.',
+        matchingText: 'Sohbet Partneri Aranıyor...',
+        cancelBtn: 'İptal Et',
+        noUsers: 'Hiçbir aktif kullanıcı bulunamadı',
+        retryBtn: 'Yeniden Dene',
+        activeText: 'Aktif',
+        typingText: 'yazıyor...',
+        changeBtn: 'Değiştir',
+        closeBtn: 'Kapat',
+        msgPlaceholder: 'Mesajınızı yazın...',
+        tutorialTitle: 'AxtarGet Nasıl Kullanılır?',
+        step1Title: 'Adınızı Yazın (İsteğe Bağlı)',
+        step1Text: 'Adınızı yazın veya boş bırakın. Boş bırakırsanız, sistem rastgele ad verecek.',
+        step2Title: 'Sohbete Başlayın',
+        step2Text: '"Sohbete Başla" butonuna tıklayın.',
+        step3Title: 'Sohbet Edin',
+        step3Text: 'Fotoğraf gönderin, sesli mesaj bırakın, reaksiyonlar ekleyin.',
+        step4Title: 'Dil Seçin',
+        step4Text: 'Sağ üst köşeden dil seçin.',
+        understandBtn: 'Anladım, Başlayalım!',
+        feedbackTitle: 'Sohbet nasıldı?',
+        feedbackSubtitle: 'Görüşünüz bizim için önemli',
+        tag1: 'Nazikti',
+        tag2: 'İlginç sohbet',
+        tag3: 'Erken bitti',
+        tag4: 'Uygun değildi',
+        feedbackSubmit: 'Gönder',
+        feedbackSkip: 'Geç',
+        partnerLeft: '❌ Partner sohbeti kapattı',
+        msgError: '⚠️ Mesaj gönderilemedi',
+        matchFound: '🎉 Partner bulundu!',
+        connecting: 'Bağlanıyor...',
+        you: 'Siz',
+    }
+};
+
+/* ================================================
+   APP STATE
+================================================ */
+let lang = 'az'; // current language
+
+/* setLang — dili dəyiş */
+function setLang(l) {
+    lang = l;
+    document.getElementById('az-btn').classList.toggle('active', l === 'az');
+    document.getElementById('tr-btn').classList.toggle('active', l === 'tr');
+    applyTranslations();
+}
+
+/* Bütün UI mətnlərini tətbiq et */
+function applyTranslations() {
+    const t = T[lang];
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const setPlaceholder = (id, val) => { const el = document.getElementById(id); if(el) el.placeholder = val; };
+
+    set('t-subtitle', t.subtitle);
+    set('t-alertTitle', t.alertTitle);
+    set('t-alertText', t.alertText);
+    set('t-nameLabel', t.nameLabel);
+    setPlaceholder('user-name-input', t.namePlaceholder);
+    document.querySelector('.input-hint') && (document.querySelector('.input-hint').textContent = t.nameHint);
+    set('t-startBtnText', t.startBtnText);
+    set('t-tutorialBtnText', t.tutorialBtnText);
+    set('t-footer', t.footer);
+    set('t-matchingText', t.matchingText);
+    set('t-cancelBtn', t.cancelBtn);
+    set('t-noUsers', t.noUsers);
+    set('t-retryBtn', t.retryBtn);
+    set('t-activeText', t.activeText);
+    set('t-changeBtn', t.changeBtn);
+    set('t-closeBtn', t.closeBtn);
+    setPlaceholder('message-input', t.msgPlaceholder);
+    set('t-tutorialTitle', t.tutorialTitle);
+    set('t-step1Title', t.step1Title);
+    set('t-step1Text', t.step1Text);
+    set('t-step2Title', t.step2Title);
+    set('t-step2Text', t.step2Text);
+    set('t-step3Title', t.step3Title);
+    set('t-step3Text', t.step3Text);
+    set('t-step4Title', t.step4Title);
+    set('t-step4Text', t.step4Text);
+    set('t-understandBtn', t.understandBtn);
+    set('t-feedbackTitle', t.feedbackTitle);
+    set('t-feedbackSubtitle', t.feedbackSubtitle);
+    set('t-tag1', t.tag1);
+    set('t-tag2', t.tag2);
+    set('t-tag3', t.tag3);
+    set('t-tag4', t.tag4);
+    set('t-feedbackSubmit', t.feedbackSubmit);
+    set('t-feedbackSkip', t.feedbackSkip);
+}
+
+/* ================================================
+   SCREEN MANAGER
+================================================ */
+function showScreen(id) {
+    ['start-screen','matching-screen','chat-screen'].forEach(s => {
+        const el = document.getElementById(s);
+        el.classList.remove('active');
+    });
+    const target = document.getElementById(id);
+    target.classList.add('active');
+}
+
+/* ================================================
+   TUTORIAL
+================================================ */
+function openTutorial() {
+    document.getElementById('tutorial-modal').classList.add('open');
+}
+function closeTutorial() {
+    document.getElementById('tutorial-modal').classList.remove('open');
+}
+
+/* ================================================
+   TOAST NOTIFICATIONS
+================================================ */
+function showToast(msg, type = 'info', duration = 3000) {
+    const icons = { info: 'ℹ️', success: '✅', error: '❌', warning: '⚠️' };
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+/* ================================================
+   LIGHTBOX
+================================================ */
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+}
+
+/* ================================================
+   CONFETTI ANIMATION (Match Found!)
+================================================ */
+function launchConfetti() {
+    const colors = ['#38bdf8','#818cf8','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c'];
+    for (let i = 0; i < 80; i++) {
+        setTimeout(() => {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + 'vw';
+            piece.style.top = '-10px';
+            piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.width = (6 + Math.random() * 8) + 'px';
+            piece.style.height = (6 + Math.random() * 8) + 'px';
+            piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+            piece.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+            piece.style.animationDelay = Math.random() * 0.5 + 's';
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 4000);
+        }, i * 20);
+    }
+}
+
+/* Screen shake */
+function shakeScreen() {
+    document.getElementById('app').classList.add('shake');
+    setTimeout(() => document.getElementById('app').classList.remove('shake'), 600);
+}
+
+/* ================================================
+   GENERATIVE AVATAR — ID-based gradient
+================================================ */
+function generateAvatar(name, id = '') {
+    const colors = [
+        ['#0ea5e9','#6366f1'],
+        ['#10b981','#06b6d4'],
+        ['#f59e0b','#ef4444'],
+        ['#8b5cf6','#ec4899'],
+        ['#14b8a6','#3b82f6'],
+        ['#f97316','#a855f7'],
+    ];
+    // Seçim ID-ə görə deterministik olsun
+    const seed = (id + name).split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+    const pair = colors[seed % colors.length];
+    const initials = (name || '?').trim()[0].toUpperCase();
+
+    const avatar = document.getElementById('partner-avatar');
+    avatar.style.background = `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`;
+    avatar.textContent = initials;
+}
+
+/* ================================================
+   TIMESTAMP FORMATTER
+================================================ */
+function formatTime(ts) {
+    const d = ts ? new Date(ts) : new Date();
+    return d.toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDate(ts) {
+    const d = ts ? new Date(ts) : new Date();
+    const now = new Date();
+    const diff = Math.floor((now - d) / 86400000);
+    if (diff === 0) return formatTime(ts);
+    if (diff === 1) return lang === 'az' ? 'Dünən' : 'Dün';
+    if (diff < 7) return `${diff} ${lang === 'az' ? 'gün əvvəl' : 'gün önce'}`;
+    return d.toLocaleDateString('az-AZ');
+}
+
+/* ================================================
+   ESCAPE HTML
+================================================ */
+function esc(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+/* ================================================
+   TEXTAREA AUTO-RESIZE
+================================================ */
+function autoResizeTextarea(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+/* ================================================
+   VOICE MESSAGE UI
+================================================ */
+let isRecording = false;
+let recordTimer = null;
+let recordSeconds = 0;
+
+function startVoiceRecord() {
+    if (isRecording) return;
+    isRecording = true;
+    recordSeconds = 0;
+    document.getElementById('voice-record-wrap').classList.add('active');
+    document.getElementById('message-input').style.display = 'none';
+    // Build wave bars
+    const waves = document.getElementById('record-waves');
+    waves.innerHTML = '';
+    for (let i = 0; i < 24; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'voice-record-wave';
+        bar.style.height = (4 + Math.random() * 18) + 'px';
+        bar.style.animationDuration = (0.3 + Math.random() * 0.4) + 's';
+        bar.style.animationDelay = (Math.random() * 0.3) + 's';
+        waves.appendChild(bar);
+    }
+    recordTimer = setInterval(() => {
+        recordSeconds++;
+        const m = Math.floor(recordSeconds / 60);
+        const s = recordSeconds % 60;
+        document.getElementById('record-time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+}
+
+function stopVoiceRecord() {
+    if (!isRecording) return;
+    isRecording = false;
+    clearInterval(recordTimer);
+    document.getElementById('voice-record-wrap').classList.remove('active');
+    document.getElementById('message-input').style.display = '';
+    if (recordSeconds >= 1) {
+        // Simulate sending a voice message
+        sendVoiceMessage(recordSeconds);
+    }
+    recordSeconds = 0;
+}
+
+/* ================================================
+   IMAGE PICKER
+================================================ */
+function triggerImagePicker() {
+    document.getElementById('image-picker').click();
+}
+
+function handleImageSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+        showToast('Şəkil 3MB-dan kiçik olmalıdır', 'error');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const base64 = e.target.result;
+        sendImageMessage(base64);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+}
+
+/* ================================================
+   FEEDBACK
+================================================ */
+let feedbackRating = 0;
+
+function setStarRating(val) {
+    feedbackRating = val;
+    document.querySelectorAll('.star-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i < val);
+    });
+}
+
+function toggleFeedbackTag(el) {
+    el.classList.toggle('selected');
+}
+
+function submitFeedback() {
+    document.getElementById('feedback-modal').classList.remove('open');
+    showToast(lang === 'az' ? 'Rəyiniz üçün təşəkkür!' : 'Geri bildiriminiz için teşekkür!', 'success');
+    showScreen('start-screen');
+    document.getElementById('user-name-input').value = '';
+    feedbackRating = 0;
+}
+
+function skipFeedback() {
+    document.getElementById('feedback-modal').classList.remove('open');
+    showScreen('start-screen');
+    document.getElementById('user-name-input').value = '';
+}
+
+/* ================================================
+   REACTION SYSTEM
+================================================ */
+const REACTIONS = ['❤️', '😂', '🔥', '👍', '😢'];
+let reactionTimers = {};
+let currentReactionMsg = null;
+
+function attachReactionListeners(wrapper, msgId) {
+    let pressTimer;
+
+    const showPicker = () => {
+        // Close any open pickers
+        document.querySelectorAll('.reaction-picker.visible').forEach(p => {
+            if (p !== wrapper.querySelector('.reaction-picker'))
+                p.classList.remove('visible');
+        });
+        wrapper.querySelector('.reaction-picker').classList.add('visible');
+        currentReactionMsg = msgId;
+    };
+
+    // Long press (touch)
+    wrapper.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(showPicker, 450);
+    }, { passive: true });
+    wrapper.addEventListener('touchend', () => clearTimeout(pressTimer), { passive: true });
+    wrapper.addEventListener('touchmove', () => clearTimeout(pressTimer), { passive: true });
+
+    // Hover (desktop) — show after brief delay
+    wrapper.addEventListener('mouseenter', () => {
+        pressTimer = setTimeout(showPicker, 700);
+    });
+    wrapper.addEventListener('mouseleave', () => {
+        clearTimeout(pressTimer);
+        setTimeout(() => {
+            const picker = wrapper.querySelector('.reaction-picker');
+            if (picker && !picker.matches(':hover')) {
+                picker.classList.remove('visible');
+            }
+        }, 300);
+    });
+}
+
+function addReactionToMsg(msgId, emoji, isSelf) {
+    const wrapper = document.querySelector(`[data-msg-id="${msgId}"]`);
+    if (!wrapper) return;
+    let display = wrapper.querySelector('.msg-reaction-display');
+    if (!display) {
+        display = document.createElement('div');
+        display.className = 'msg-reaction-display';
+        wrapper.appendChild(display);
+    }
+    // Check if same emoji already exists
+    const existing = Array.from(display.querySelectorAll('.reaction-badge')).find(b => b.dataset.emoji === emoji);
+    if (existing) {
+        const count = parseInt(existing.dataset.count || '1') + 1;
+        existing.dataset.count = count;
+        existing.querySelector('.r-count').textContent = count > 1 ? count : '';
+    } else {
+        const badge = document.createElement('span');
+        badge.className = 'reaction-badge';
+        badge.dataset.emoji = emoji;
+        badge.dataset.count = '1';
+        badge.innerHTML = `${emoji}<span class="r-count"></span>`;
+        display.appendChild(badge);
+    }
+    wrapper.querySelector('.reaction-picker').classList.remove('visible');
+}
+
+/* ================================================
+   MESSAGE RENDERING
+================================================ */
+let renderedMessageIds = new Set();
+let shouldAutoScroll = true;
+
+const msgsContainer = () => document.getElementById('chat-messages');
+
+function addMessage({ id, senderName, text, isSelf, timestamp, type = 'text', imageData, voiceDuration }) {
+    if (id && renderedMessageIds.has(id)) return;
+    if (id) renderedMessageIds.add(id);
+
+    const container = msgsContainer();
+    const wrapper = document.createElement('div');
+    wrapper.className = `msg-wrapper ${isSelf ? 'self' : 'other'}`;
+    wrapper.dataset.msgId = id || Date.now();
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+
+    if (type === 'image' && imageData) {
+        const img = document.createElement('img');
+        img.className = 'msg-image';
+        img.src = imageData;
+        img.alt = 'Image';
+        img.onclick = () => openLightbox(imageData);
+        bubble.appendChild(img);
+    } else if (type === 'voice') {
+        bubble.innerHTML = `
+            <div class="voice-msg">
+                <button class="voice-play-btn" onclick="simulateVoicePlay(this)">▶</button>
+                <div class="voice-waveform">${generateWaveBars()}</div>
+                <span class="voice-duration">${formatVoiceDuration(voiceDuration || 0)}</span>
+            </div>`;
+    } else {
+        bubble.innerHTML = `<span>${esc(text)}</span>`;
+    }
+
+    // Reaction picker
+    const picker = document.createElement('div');
+    picker.className = 'reaction-picker';
+    REACTIONS.forEach(emoji => {
+        const btn = document.createElement('span');
+        btn.className = 'reaction-emoji';
+        btn.textContent = emoji;
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            addReactionToMsg(wrapper.dataset.msgId, emoji, isSelf);
+            // Send reaction to Firebase if needed
+            if (chatId && userId) {
+                sendReactionToFirebase(wrapper.dataset.msgId, emoji).catch(()=>{});
+            }
         };
-        
-        // -------------------- FIREBASE CHAT LISTENER --------------------
-        function setupChatListener() {
-            if (!chatId) return;
-            const chatRef = doc(db, 'chats', chatId);
-            unsubscribeChat = onSnapshot(chatRef, (snap) => {
-                if (!snap.exists()) {
-                    // Chat deleted, partner left
-                    addSystemMessage(translations[userLang].partnerLeft);
-                    setTimeout(() => disconnect(true), 2000);
-                    return;
-                }
-                const data = snap.data();
-                // Typing indicator
-                if (data.typingStatus && data.typingStatus[partnerId]) {
-                    document.getElementById('online-status').innerHTML = `<span class="w-2 h-2 bg-yellow-400 rounded-full"></span> <span>${translations[userLang].typingText}</span>`;
-                } else {
-                    document.getElementById('online-status').innerHTML = `<span class="w-2 h-2 bg-green-400 rounded-full"></span> <span>${translations[userLang].activeText}</span>`;
-                }
-                // Messages
-                if (data.messages) {
-                    data.messages.forEach((msg, idx) => {
-                        const msgId = `${msg.senderId}-${msg.timestamp}-${idx}`;
-                        addMessage(msg, msg.senderId === userId, msgId);
-                    });
-                }
-                // Read status (double tick) - just simulate for self
-            });
+        picker.appendChild(btn);
+    });
+    bubble.appendChild(picker);
+
+    // Meta (time + ticks)
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    if (isSelf) {
+        meta.innerHTML = `
+            <span class="msg-time">${formatDate(timestamp)}</span>
+            <span class="msg-ticks" id="ticks-${id||''}">✓✓</span>`;
+    } else {
+        meta.innerHTML = `<span class="msg-time">${formatDate(timestamp)}</span>`;
+    }
+
+    wrapper.appendChild(bubble);
+    wrapper.appendChild(meta);
+
+    // Attach reaction listeners
+    attachReactionListeners(wrapper, wrapper.dataset.msgId);
+
+    container.appendChild(wrapper);
+
+    // Smart auto-scroll
+    smartScroll();
+}
+
+function smartScroll() {
+    const c = msgsContainer();
+    const isNearBottom = c.scrollHeight - c.scrollTop - c.clientHeight < 120;
+    if (isNearBottom || shouldAutoScroll) {
+        c.scrollTop = c.scrollHeight;
+    }
+}
+
+function addSystemMessage(text) {
+    const container = msgsContainer();
+    const el = document.createElement('div');
+    el.className = 'msg-system';
+    el.textContent = text;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+}
+
+function generateWaveBars() {
+    let html = '';
+    const heights = [4,8,14,10,18,12,6,16,10,8,14,6,18,10,12];
+    heights.forEach(h => {
+        html += `<div class="voice-bar" style="height:${h}px"></div>`;
+    });
+    return html;
+}
+
+function formatVoiceDuration(secs) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function simulateVoicePlay(btn) {
+    btn.textContent = '⏸';
+    const waveform = btn.parentElement.querySelector('.voice-waveform');
+    // Animate bars
+    const bars = waveform.querySelectorAll('.voice-bar');
+    let frame = 0;
+    const anim = setInterval(() => {
+        bars.forEach(b => {
+            b.style.height = (4 + Math.random() * 18) + 'px';
+            b.style.background = '#38bdf8';
+        });
+        frame++;
+        if (frame > 30) {
+            clearInterval(anim);
+            bars.forEach(b => { b.style.height = '4px'; b.style.background = 'rgba(255,255,255,0.5)'; });
+            btn.textContent = '▶';
         }
-        
-        function addSystemMessage(text) {
-            const div = document.createElement('div');
-            div.className = 'text-center my-2 text-sm text-yellow-300';
-            div.innerText = text;
-            messagesDiv.appendChild(div);
-        }
-        
-        // -------------------- MATCHING & CHAT LOGIC --------------------
-        async function startMatching() {
-            if (!userId) return;
-            matchingScreen.classList.remove('hidden');
-            startScreen.classList.add('hidden');
-            let countdown = 20;
-            countdownSpan.innerText = countdown + ' saniyə';
-            matchingTimer = setInterval(() => {
-                countdown--;
-                countdownSpan.innerText = countdown + ' saniyə';
-                if (countdown <= 0) {
-                    clearInterval(matchingTimer);
-                    retryContainer.classList.remove('hidden');
-                }
-            }, 1000);
-            
-            // Add to queue
-            const queueRef = doc(db, 'chats', 'match_queue');
-            await setDoc(doc(db, 'chats', userId), { 
-                userName, userLang, isOnline: true, status: 'waiting', heartbeat: serverTimestamp() 
-            });
-            // Use transaction for matching
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const queueDoc = await transaction.get(queueRef);
-                    if (queueDoc.exists() && queueDoc.data().waitingUserId && queueDoc.data().waitingUserId !== userId) {
-                        // Match found
-                        const waiting = queueDoc.data();
-                        partnerId = waiting.waitingUserId;
-                        partnerName = waiting.waitingUserName;
-                        partnerLang = waiting.waitingUserLang;
-                        chatId = 'chat_' + Date.now() + '_' + Math.random().toString(36);
-                        
-                        // Create chat doc
-                        transaction.set(doc(db, 'chats', chatId), {
-                            users: { [userId]: { name: userName, lang: userLang }, [partnerId]: { name: partnerName, lang: partnerLang } },
-                            messages: [],
-                            typingStatus: {},
-                            createdAt: serverTimestamp(),
-                            status: 'active'
-                        });
-                        // Update partner's doc
-                        transaction.update(doc(db, 'chats', partnerId), { matched: true, chatId, partnerId: userId, partnerName: userName });
-                        // Clear queue
-                        transaction.set(queueRef, { waitingUserId: null, waitingUserName: null, waitingUserLang: null });
-                        
-                        // Show match and start chat
-                        clearInterval(matchingTimer);
-                        matchingScreen.classList.add('hidden');
-                        chatScreen.classList.remove('hidden');
-                        partnerNameSpan.innerText = partnerName;
-                        partnerLangSpan.innerText = partnerLang.toUpperCase();
-                        const { gradient, letter } = getAvatar(partnerId, partnerName);
-                        partnerAvatarDiv.style.background = gradient;
-                        partnerAvatarDiv.innerText = letter;
-                        setupChatListener();
-                        startHeartbeat();
-                        // Shake and confetti
-                        document.querySelector('.glass-card').classList.add('shake');
-                        setTimeout(()=> document.querySelector('.glass-card').classList.remove('shake'), 500);
-                        launchConfetti();
-                    } else {
-                        // No partner, add self to queue
-                        transaction.set(queueRef, { waitingUserId: userId, waitingUserName: userName, waitingUserLang: userLang, timestamp: serverTimestamp() });
-                    }
-                });
-            } catch (e) {
-                console.log('Matching error', e);
-            }
-        }
-        
-        function launchConfetti() {
-            for (let i=0; i<30; i++) {
-                let conf = document.createElement('div');
-                conf.className = 'confetti-piece';
-                conf.style.left = Math.random()*100+'%';
-                conf.style.background = `hsl(${Math.random()*360}, 70%, 60%)`;
-                conf.style.animationDuration = (Math.random()*2+2)+'s';
-                document.getElementById('confetti-container').appendChild(conf);
-                setTimeout(()=> conf.remove(), 5000);
-            }
-        }
-        
-        async function disconnect(showFeedback=false) {
-            stopHeartbeat();
-            if (unsubscribeChat) unsubscribeChat();
-            if (chatId) {
-                await updateDoc(doc(db, 'chats', chatId), { status: 'closed', closedBy: userId });
-                if (showFeedback) document.getElementById('feedback-modal').classList.remove('hidden');
-            }
-            await deleteDoc(doc(db, 'chats', userId)).catch(()=>{});
-            chatId = null; partnerId = null;
-            messagesDiv.innerHTML = '';
-            renderedMsgIds.clear();
-            chatScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-        }
-        
-        // -------------------- EVENT LISTENERS --------------------
-        document.getElementById('start-chat-btn').addEventListener('click', async () => {
-            if (!userId) return;
-            userName = usernameInput.value.trim() || (userLang === 'az' ? 'İstifadəçi' : 'Kullanıcı') + userId.substring(0,4);
-            startMatching();
-        });
-        
-        document.getElementById('cancel-match').addEventListener('click', async () => {
-            clearInterval(matchingTimer);
-            await deleteDoc(doc(db, 'chats', userId));
-            matchingScreen.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-        });
-        
-        document.getElementById('retry-match').addEventListener('click', () => {
-            retryContainer.classList.add('hidden');
-            startMatching();
-        });
-        
-        document.getElementById('send-message').addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-        
-        async function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text || !chatId) return;
-            messageInput.value = '';
-            const msg = {
-                senderId: userId,
-                senderName: userName,
-                text: text,
-                timestamp: new Date().toISOString()
-            };
-            try {
-                await updateDoc(doc(db, 'chats', chatId), {
-                    messages: arrayUnion(msg)
-                });
-            } catch (e) {
-                addSystemMessage(translations[userLang].messageError);
-            }
-        }
-        
-        // Typing indicator
-        messageInput.addEventListener('input', async () => {
-            if (!chatId) return;
-            await updateDoc(doc(db, 'chats', chatId), {
-                [`typingStatus.${userId}`]: messageInput.value.length > 0
-            });
-        });
-        
-        // Image sharing
-        document.getElementById('attach-image').addEventListener('click', () => {
-            document.getElementById('image-upload').click();
-        });
-        document.getElementById('image-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file || !chatId) return;
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const base64 = ev.target.result;
-                const msg = {
-                    senderId: userId,
-                    senderName: userName,
-                    text: base64,
-                    timestamp: new Date().toISOString()
-                };
-                await updateDoc(doc(db, 'chats', chatId), { messages: arrayUnion(msg) });
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        // Voice note simulation
-        document.getElementById('voice-note').addEventListener('click', () => {
-            document.getElementById('voice-sim').classList.remove('hidden');
-            let sec = 0;
-            const timer = setInterval(() => {
-                sec++;
-                document.getElementById('voice-timer').innerText = '0:' + (sec<10?'0'+sec:sec);
-            }, 1000);
-            document.getElementById('stop-voice').onclick = () => {
-                clearInterval(timer);
-                document.getElementById('voice-sim').classList.add('hidden');
-            };
-        });
-        
-        document.getElementById('change-chat').addEventListener('click', async () => {
-            if (!chatId) return;
-            await disconnect(false);
-            startMatching();
-        });
-        
-        document.getElementById('close-chat').addEventListener('click', () => disconnect(true));
-        
-        document.getElementById('close-feedback').addEventListener('click', () => {
-            document.getElementById('feedback-modal').classList.add('hidden');
-        });
-        
-        document.querySelectorAll('.feedback-emoji').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.getElementById('feedback-modal').classList.add('hidden');
-                alert('Rəyiniz üçün təşəkkürlər!');
-            });
-        });
-        
-        document.getElementById('show-tutorial').addEventListener('click', () => {
-            document.getElementById('tutorial-modal').classList.remove('hidden');
-        });
-        document.getElementById('close-tutorial').addEventListener('click', () => {
-            document.getElementById('tutorial-modal').classList.add('hidden');
-        });
-        
-        // -------------------- AUTH --------------------
+    }, 100);
+}
+
+/* ================================================
+   FIREBASE — Real-time Chat
+================================================ */
+</script>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import {
+    getFirestore, doc, updateDoc, onSnapshot, runTransaction,
+    deleteDoc, serverTimestamp, arrayUnion, getDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/* ---- Firebase Config ---- */
+const firebaseConfig = {
+    apiKey: "AIzaSyAAbLWwzSE9WgqFKK_n9hqsl5mokZlNacM",
+    authDomain: "axtargetbot.firebaseapp.com",
+    projectId: "axtargetbot",
+    storageBucket: "axtargetbot.firebasestorage.app",
+    messagingSenderId: "509543495829",
+    appId: "1:509543495829:web:833feb9c271328f8e4039c"
+};
+
+const CHAT_COLLECTION = `artifacts/axtarget-anonimchat/public/data/chats`;
+const MATCH_QUEUE_DOC = 'match_queue_doc';
+const MATCHING_SECONDS = 20;
+const HEARTBEAT_TIMEOUT = 10000;
+
+/* ---- State ---- */
+let app, db, auth;
+let userId = null, userName = null;
+let chatId = null, partnerId = null, partnerLanguage = null;
+let isAuthReady = false;
+let unsubscribeChat = null;
+let matchingTimeout = null;
+let typingTimeout = null;
+let heartbeatInterval = null, partnerHeartbeatInterval = null;
+let isFirstSnapshot = true;
+
+/* ---- Initialize ---- */
+async function initFirebase() {
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userId = user.uid;
-                currentUser = user;
-                // Auto-set default name
-                userName = userLang === 'az' ? 'İstifadəçi' : 'Kullanıcı';
+                isAuthReady = true;
+                // Hide loading overlay
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.add('hide');
+                setTimeout(() => overlay.remove(), 600);
             } else {
                 await signInAnonymously(auth);
             }
         });
-        
-        // Set default language
-        setLanguage('az');
-        
-        // Cleanup on page hide
-        window.addEventListener('beforeunload', () => {
-            if (userId) deleteDoc(doc(db, 'chats', userId));
+    } catch (e) {
+        console.error('Firebase init error:', e);
+        showToast('Bağlantı xətası', 'error');
+    }
+}
+
+/* ---- Heartbeat ---- */
+function startHeartbeat() {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    heartbeatInterval = setInterval(async () => {
+        if (!userId || !chatId) return;
+        try {
+            await updateDoc(doc(db, CHAT_COLLECTION, userId), {
+                lastSeen: serverTimestamp(),
+                isOnline: true,
+                heartbeat: serverTimestamp(),
+                language: lang
+            });
+        } catch(e) {}
+    }, 3000);
+}
+
+function startPartnerCheck() {
+    if (partnerHeartbeatInterval) clearInterval(partnerHeartbeatInterval);
+    partnerHeartbeatInterval = setInterval(async () => {
+        if (!partnerId || !chatId) return;
+        try {
+            const snap = await getDoc(doc(db, CHAT_COLLECTION, partnerId));
+            if (snap.exists()) {
+                const data = snap.data();
+                const last = data.heartbeat?.toDate?.() || data.lastSeen?.toDate?.();
+                if (last) {
+                    const diff = Date.now() - last.getTime();
+                    const avatar = document.getElementById('partner-avatar');
+                    const statusEl = document.getElementById('partner-status');
+                    if (diff < HEARTBEAT_TIMEOUT) {
+                        avatar.classList.remove('offline');
+                        statusEl.innerHTML = `<span style="color:var(--success)">●</span><span>${T[lang].activeText}</span>`;
+                    } else {
+                        avatar.classList.add('offline');
+                        statusEl.innerHTML = `<span style="color:var(--text-muted)">●</span><span>Offline</span>`;
+                    }
+                }
+            }
+        } catch(e) {}
+    }, 5000);
+}
+
+function stopHeartbeat() {
+    if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    if (partnerHeartbeatInterval) { clearInterval(partnerHeartbeatInterval); partnerHeartbeatInterval = null; }
+}
+
+/* ---- handleStart ---- */
+window.handleStart = async function() {
+    if (!isAuthReady || !userId) {
+        showToast(T[lang].connecting, 'info');
+        await new Promise(r => setTimeout(r, 1500));
+        if (!isAuthReady) return;
+    }
+
+    const nameInput = document.getElementById('user-name-input').value.trim();
+    const randomNames = ['Anonim','Qaranlıq','Gizli','Naməlum','Sirlər'];
+    userName = nameInput || randomNames[Math.floor(Math.random() * randomNames.length)] + '_' + Math.floor(Math.random() * 999);
+
+    showScreen('matching-screen');
+
+    // Countdown
+    let remaining = MATCHING_SECONDS;
+    document.getElementById('countdown-display').textContent = `⏱ ${T[lang].activeText !== 'Aktiv' ? 'Kalan süre:' : 'Qalan vaxt:'} ${remaining} ${lang === 'az' ? 'saniyə' : 'saniye'}`;
+    document.getElementById('retry-wrap').style.display = 'none';
+
+    matchingTimeout = setInterval(() => {
+        remaining--;
+        document.getElementById('countdown-display').textContent = `⏱ ${lang === 'az' ? 'Qalan vaxt' : 'Kalan süre'}: ${remaining} ${lang === 'az' ? 'saniyə' : 'saniye'}`;
+        if (remaining <= 0) {
+            clearInterval(matchingTimeout);
+            document.getElementById('retry-wrap').style.display = 'block';
+        }
+    }, 1000);
+
+    await startMatching();
+};
+
+async function startMatching() {
+    try {
+        const queueRef = doc(db, CHAT_COLLECTION, MATCH_QUEUE_DOC);
+
+        await runTransaction(db, async (transaction) => {
+            const queueDoc = await transaction.get(queueRef);
+            const qData = queueDoc.data() || {};
+
+            if (queueDoc.exists() && qData.waitingUserId && qData.waitingUserId !== userId) {
+                // MATCH FOUND
+                const waitingId = qData.waitingUserId;
+                const waitingName = qData.waitingUserName || 'Anonim';
+                const waitingLang = qData.waitingUserLanguage || 'az';
+                const newChatId = [userId, waitingId].sort().join('_');
+
+                // Clear queue
+                transaction.set(queueRef, { waitingUserId: null, waitingUserName: null, waitingUserLanguage: null });
+
+                // Create chat doc
+                transaction.set(doc(db, CHAT_COLLECTION, newChatId), {
+                    status: 'active',
+                    users: [userId, waitingId],
+                    messages: [],
+                    typingStatus: {},
+                    createdAt: serverTimestamp(),
+                    lastActivity: serverTimestamp()
+                });
+
+                // Notify self
+                transaction.set(doc(db, CHAT_COLLECTION, userId), {
+                    matched: true,
+                    chatId: newChatId,
+                    partnerId: waitingId,
+                    partnerName: waitingName,
+                    partnerLanguage: waitingLang,
+                    userName, userLanguage: lang, isOnline: true,
+                    lastSeen: serverTimestamp(), heartbeat: serverTimestamp()
+                });
+
+                // Notify waiting user
+                transaction.set(doc(db, CHAT_COLLECTION, waitingId), {
+                    matched: true,
+                    chatId: newChatId,
+                    partnerId: userId,
+                    partnerName: userName,
+                    partnerLanguage: lang,
+                    isOnline: true,
+                    lastSeen: serverTimestamp(), heartbeat: serverTimestamp()
+                });
+
+                clearInterval(matchingTimeout);
+
+                chatId = newChatId;
+                partnerId = waitingId;
+                partnerLanguage = waitingLang;
+
+                document.getElementById('partner-name').textContent = waitingName;
+                generateAvatar(waitingName, waitingId);
+
+                setTimeout(() => {
+                    shakeScreen();
+                    launchConfetti();
+                    showToast(T[lang].matchFound, 'success');
+                    showScreen('chat-screen');
+                    setupChatListener();
+                    startHeartbeat();
+                    startPartnerCheck();
+                    deleteDoc(doc(db, CHAT_COLLECTION, userId)).catch(()=>{});
+                }, 300);
+
+            } else {
+                // Add to queue
+                transaction.set(queueRef, {
+                    waitingUserId: userId,
+                    waitingUserName: userName,
+                    waitingUserLanguage: lang,
+                    timestamp: serverTimestamp()
+                });
+
+                transaction.set(doc(db, CHAT_COLLECTION, userId), {
+                    status: 'waiting',
+                    userName, userLanguage: lang,
+                    isOnline: true, lastSeen: serverTimestamp(), heartbeat: serverTimestamp()
+                });
+
+                startHeartbeat();
+                setupMatchingListener();
+            }
         });
-    </script>
+    } catch(e) {
+        console.error('Matching error:', e);
+        showToast(T[lang].msgError, 'error');
+    }
+}
+
+function setupMatchingListener() {
+    const userRef = doc(db, CHAT_COLLECTION, userId);
+    if (unsubscribeChat) unsubscribeChat();
+
+    unsubscribeChat = onSnapshot(userRef, (snap) => {
+        if (snap.exists() && snap.data().matched) {
+            const data = snap.data();
+            chatId = data.chatId;
+            partnerId = data.partnerId;
+            partnerLanguage = data.partnerLanguage || 'az';
+
+            document.getElementById('partner-name').textContent = data.partnerName;
+            generateAvatar(data.partnerName, partnerId);
+
+            if (unsubscribeChat) unsubscribeChat();
+            if (matchingTimeout) clearInterval(matchingTimeout);
+
+            setTimeout(() => {
+                shakeScreen();
+                launchConfetti();
+                showToast(T[lang].matchFound, 'success');
+                showScreen('chat-screen');
+                setupChatListener();
+                startPartnerCheck();
+                deleteDoc(userRef).catch(()=>{});
+            }, 400);
+        }
+    });
+}
+
+function setupChatListener() {
+    if (!chatId) return;
+    const chatRef = doc(db, CHAT_COLLECTION, chatId);
+    const container = document.getElementById('chat-messages');
+    const statusEl = document.getElementById('partner-status');
+
+    if (unsubscribeChat) unsubscribeChat();
+    container.innerHTML = '';
+    renderedMessageIds.clear();
+    isFirstSnapshot = true;
+
+    unsubscribeChat = onSnapshot(chatRef, (snap) => {
+        if (!snap.exists()) {
+            if (isFirstSnapshot) { isFirstSnapshot = false; return; }
+            if (unsubscribeChat) unsubscribeChat();
+            addSystemMessage(T[lang].partnerLeft);
+            setTimeout(() => openFeedback(), 1800);
+            return;
+        }
+
+        isFirstSnapshot = false;
+        const data = snap.data();
+
+        if (data.status === 'active') {
+            // Typing indicator
+            const isTyping = data.typingStatus?.[partnerId];
+            if (isTyping) {
+                statusEl.innerHTML = `
+                    <span style="color:var(--warning)">✍️</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span>${T[lang].typingText}</span>`;
+            } else {
+                statusEl.innerHTML = `<span style="color:var(--success)">●</span><span id="t-activeText">${T[lang].activeText}</span>`;
+            }
+
+            // Render messages
+            const messages = data.messages || [];
+            messages.forEach((msg, idx) => {
+                const id = `${msg.senderId}-${msg.timestamp}-${idx}`;
+                if (renderedMessageIds.has(id)) return;
+                addMessage({
+                    id,
+                    senderName: msg.senderName,
+                    text: msg.text || '',
+                    isSelf: msg.senderId === userId,
+                    timestamp: msg.timestamp,
+                    type: msg.type || 'text',
+                    imageData: msg.imageData,
+                    voiceDuration: msg.voiceDuration
+                });
+                // Mark read
+                if (msg.senderId !== userId) {
+                    markMessageRead(id);
+                }
+            });
+
+            // Reactions sync
+            if (data.reactions) {
+                Object.entries(data.reactions).forEach(([msgRef, emojis]) => {
+                    if (emojis) {
+                        Object.entries(emojis).forEach(([emoji, count]) => {
+                            // Update reaction display
+                        });
+                    }
+                });
+            }
+        } else if (data.status === 'closed') {
+            if (data.closedBy !== userId) {
+                if (unsubscribeChat) unsubscribeChat();
+                addSystemMessage(T[lang].partnerLeft);
+                setTimeout(() => openFeedback(), 1800);
+            }
+        }
+    }, (err) => console.error('Chat listener error:', err));
+}
+
+/* Mark message as read — show blue ticks */
+function markMessageRead(msgId) {
+    const el = document.getElementById(`ticks-${msgId}`);
+    if (el) { el.classList.add('read'); el.textContent = '✓✓'; }
+}
+
+/* ---- Send Reaction to Firebase ---- */
+async function sendReactionToFirebase(msgRef, emoji) {
+    if (!chatId || !userId) return;
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+            [`reactions.${msgRef}.${emoji}`]: arrayUnion(userId),
+            lastActivity: serverTimestamp()
+        });
+    } catch(e) {}
+}
+
+/* ---- Send Message ---- */
+window.sendMessage = async function() {
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    if (!text || !chatId || !userId) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    const msgData = {
+        senderId: userId,
+        senderName: userName,
+        text,
+        type: 'text',
+        timestamp: new Date().toISOString()
+    };
+
+    // Optimistic UI
+    addMessage({
+        id: `opt-${Date.now()}`,
+        senderName: userName,
+        text,
+        isSelf: true,
+        timestamp: msgData.timestamp
+    });
+
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+            [`typingStatus.${userId}`]: false,
+            messages: arrayUnion(msgData),
+            lastActivity: serverTimestamp()
+        });
+    } catch(e) {
+        console.error('Send error:', e);
+        showToast(T[lang].msgError, 'error');
+        input.value = text;
+    }
+};
+
+/* ---- Send Image ---- */
+window.sendImageMessage = async function(base64) {
+    if (!chatId || !userId) return;
+    showToast(lang === 'az' ? 'Şəkil göndərilir...' : 'Fotoğraf gönderiliyor...', 'info', 2000);
+    const msgData = {
+        senderId: userId, senderName: userName,
+        type: 'image', imageData: base64,
+        timestamp: new Date().toISOString(), text: ''
+    };
+    addMessage({ id: `img-${Date.now()}`, senderName: userName, isSelf: true, timestamp: msgData.timestamp, type: 'image', imageData: base64 });
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+            messages: arrayUnion(msgData),
+            lastActivity: serverTimestamp()
+        });
+    } catch(e) {
+        showToast(T[lang].msgError, 'error');
+    }
+};
+
+/* ---- Send Voice ---- */
+window.sendVoiceMessage = async function(duration) {
+    if (!chatId || !userId) return;
+    const msgData = {
+        senderId: userId, senderName: userName,
+        type: 'voice', voiceDuration: duration,
+        timestamp: new Date().toISOString(), text: ''
+    };
+    addMessage({ id: `voice-${Date.now()}`, senderName: userName, isSelf: true, timestamp: msgData.timestamp, type: 'voice', voiceDuration: duration });
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+            messages: arrayUnion(msgData),
+            lastActivity: serverTimestamp()
+        });
+    } catch(e) {}
+};
+
+/* ---- Typing ---- */
+window.handleTyping = async function() {
+    if (!chatId || !userId) return;
+    const text = document.getElementById('message-input').value.trim();
+    if (typingTimeout) clearTimeout(typingTimeout);
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+            [`typingStatus.${userId}`]: text.length > 0,
+            lastActivity: serverTimestamp()
+        });
+    } catch(e) {}
+    typingTimeout = setTimeout(async () => {
+        try {
+            await updateDoc(doc(db, CHAT_COLLECTION, chatId), {
+                [`typingStatus.${userId}`]: false
+            });
+        } catch(e) {}
+    }, 2000);
+};
+
+/* ---- Feedback ---- */
+function openFeedback() {
+    stopHeartbeat();
+    document.getElementById('feedback-modal').classList.add('open');
+    chatId = null; partnerId = null; partnerLanguage = null;
+    renderedMessageIds.clear();
+}
+
+/* ---- Handle Close Chat ---- */
+window.handleCloseChat = async function() {
+    if (!chatId) { await disconnect(true); return; }
+    const cId = chatId;
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, cId), { status: 'closed', closedBy: userId });
+    } catch(e) {}
+    await disconnect(false);
+    setTimeout(() => {
+        try { deleteDoc(doc(db, CHAT_COLLECTION, cId)); } catch(e) {}
+    }, 500);
+    openFeedback();
+};
+
+/* ---- Handle Change Chat ---- */
+window.handleChangeChat = async function() {
+    if (!chatId) return;
+    const cId = chatId;
+    showToast(lang === 'az' ? 'Yeni söhbət axtarılır...' : 'Yeni sohbet aranıyor...', 'info');
+    try {
+        await updateDoc(doc(db, CHAT_COLLECTION, cId), { status: 'closed', closedBy: userId });
+    } catch(e) {}
+    await disconnect(false);
+    setTimeout(() => { try { deleteDoc(doc(db, CHAT_COLLECTION, cId)); } catch(e) {} }, 300);
+    document.getElementById('chat-messages').innerHTML = '';
+    renderedMessageIds.clear();
+    showScreen('matching-screen');
+    await handleStart();
+};
+
+/* ---- Handle Cancel Matching ---- */
+window.handleCancelMatching = async function() {
+    if (matchingTimeout) clearInterval(matchingTimeout);
+    await disconnect(false);
+    showScreen('start-screen');
+};
+
+/* ---- Disconnect ---- */
+async function disconnect(clearUI = true) {
+    stopHeartbeat();
+    if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat = null; }
+    if (matchingTimeout) { clearInterval(matchingTimeout); matchingTimeout = null; }
+    if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+
+    try {
+        const queueRef = doc(db, CHAT_COLLECTION, MATCH_QUEUE_DOC);
+        await runTransaction(db, async (tx) => {
+            const qDoc = await tx.get(queueRef);
+            if (qDoc.exists() && qDoc.data().waitingUserId === userId) {
+                tx.set(queueRef, { waitingUserId: null, waitingUserName: null, waitingUserLanguage: null });
+            }
+        });
+    } catch(e) {}
+
+    try { await deleteDoc(doc(db, CHAT_COLLECTION, userId)); } catch(e) {}
+
+    chatId = null; partnerId = null; partnerLanguage = null;
+    if (clearUI) {
+        document.getElementById('chat-messages').innerHTML = '';
+        renderedMessageIds.clear();
+    }
+}
+
+/* ---- Cleanup on unload ---- */
+window.addEventListener('beforeunload', async () => {
+    stopHeartbeat();
+    try {
+        if (chatId) await updateDoc(doc(db, CHAT_COLLECTION, chatId), { status: 'closed', closedBy: userId });
+        await deleteDoc(doc(db, CHAT_COLLECTION, userId));
+        const queueRef = doc(db, CHAT_COLLECTION, MATCH_QUEUE_DOC);
+        await runTransaction(db, async (tx) => {
+            const qDoc = await tx.get(queueRef);
+            if (qDoc.exists() && qDoc.data().waitingUserId === userId) {
+                tx.set(queueRef, { waitingUserId: null, waitingUserName: null, waitingUserLanguage: null });
+            }
+        });
+    } catch(e) {}
+});
+
+/* ---- Tab visibility ---- */
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { stopHeartbeat(); }
+    else if (userId && chatId) { startHeartbeat(); startPartnerCheck(); }
+});
+
+/* ---- Close reaction pickers on outside click ---- */
+document.addEventListener('click', () => {
+    document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+});
+
+/* ---- Scroll tracking ---- */
+msgsContainer().addEventListener('scroll', () => {
+    const c = document.getElementById('chat-messages');
+    shouldAutoScroll = c.scrollHeight - c.scrollTop - c.clientHeight < 150;
+});
+
+/* ---- BOOT ---- */
+applyTranslations();
+initFirebase();
+
+</script>
 </body>
 </html>
