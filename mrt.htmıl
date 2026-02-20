@@ -1,553 +1,574 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="az">
-
-<!-- Göndərilən  smm.axtarget.xyz/ by CesiCoder sayt kopy/3.x [XR&CO'2017], Fri, 20 Feb 2026 08:36:18 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Hand Control - Precise Picking</title>
-    <!-- MediaPipe Libraries -->
-    <script src="../cdn.jsdelivr.net/npm/%40mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="../cdn.jsdelivr.net/npm/%40mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="../cdn.jsdelivr.net/npm/%40mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    
-    <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-purple: #ff00ea;
-            --neon-yellow: #ffea00;
-            --neon-green: #39ff14;
-            --neon-red: #ff3131;
-            --neon-white: #ffffff;
-            --dark-bg: #050505;
-            --panel-bg: rgba(0, 242, 255, 0.08);
-        }
-
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: var(--dark-bg);
-            font-family: 'Courier New', Courier, monospace;
-            color: var(--neon-blue);
-        }
-
-        #input_video { display: none; }
-
-        #output_canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 5;
-            transform: scaleX(-1);
-            will-change: transform;
-        }
-
-        .ui-overlay {
-            position: absolute;
-            top: 20px; left: 20px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .status-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-blue);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .mode-indicator {
-            font-size: 1.4rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 8px;
-            display: block;
-            text-shadow: 0 0 8px var(--neon-blue);
-        }
-
-        /* Naviqasiya Düymələri Konteyneri */
-        .nav-buttons {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: auto;
-        }
-
-        .planet-btn, .kainat-btn {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 12px 25px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-width: 160px;
-        }
-
-        /* Planet Butonu */
-        .planet-btn {
-            border: 2px solid var(--neon-purple);
-            color: var(--neon-purple);
-            box-shadow: 0 0 15px rgba(255, 0, 234, 0.3);
-        }
-
-        .planet-btn:hover {
-            background: var(--neon-purple);
-            color: #fff;
-            box-shadow: 0 0 30px var(--neon-purple);
-            transform: translateY(-2px);
-        }
-
-        /* Kainat Butonu */
-        .kainat-btn {
-            border: 2px solid var(--neon-green);
-            color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
-        }
-
-        .kainat-btn:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 30px var(--neon-green);
-            transform: translateY(-2px);
-        }
-
-        /* Rəng Paneli */
-        .color-palette {
-            position: absolute;
-            left: 20px;
-            top: 150px;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
-            pointer-events: auto;
-        }
-
-        .color-btn {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .color-btn:hover {
-            transform: scale(1.2);
-        }
-
-        .color-btn.active {
-            border-color: white;
-            box-shadow: 0 0 15px currentColor;
-        }
-
-        .clear-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 20;
-            background: rgba(255, 49, 49, 0.1);
-            border: 1px solid var(--neon-red);
-            color: var(--neon-red);
-            padding: 12px 20px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(255, 49, 49, 0.2);
-            pointer-events: auto;
-        }
-
-        .clear-btn:hover {
-            background: var(--neon-red);
-            color: #fff;
-            box-shadow: 0 0 20px var(--neon-red);
-        }
-
-        .instructions {
-            position: absolute;
-            bottom: 20px; right: 20px;
-            font-size: 0.85rem;
-            text-align: right;
-            background: rgba(0,0,0,0.85);
-            padding: 15px;
-            border-right: 4px solid var(--neon-blue);
-            z-index: 10;
-            line-height: 1.6;
-        }
-
-        #loading-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: var(--dark-bg);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .loader {
-            border: 3px solid #111;
-            border-top: 3px solid var(--neon-blue);
-            border-radius: 50%;
-            width: 40px; height: 40px;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ExamMaster · pro test · zero backend</title>
+  <!-- Tailwind + glass ui -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <!-- lucide icons (alternative) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- chart.js, qrcode, confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <style>
+    /* custom smooth scroll + glass morphism */
+    * { scroll-behavior: smooth; }
+    .glass { backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(17, 25, 40, 0.6); border: 1px solid rgba(255,255,255,0.125); }
+    .glass-light { backdrop-filter: blur(20px); background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6); }
+    body.dark .glass { background: rgba(15, 23, 42, 0.7); border-color: #334155; }
+    .slide-enter { animation: slideIn 0.2s ease; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:translateX(0); } }
+    .toast { transition: all 0.3s; }
+    .focus-outline{outline:2px solid #4f46e5;}
+    .cheat-flash{animation: warn 0.5s infinite;}
+    @keyframes warn{0%{background:rgba(239,68,68,0.2)}50%{background:rgba(239,68,68,0.5)}}
+  </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased dark transition-colors duration-300">
 
-    <div id="loading-screen">
-        <div class="loader"></div>
-        <p style="margin-top: 20px; letter-spacing: 3px;">YÜKLƏNİR...</p>
-    </div>
+  <!-- APP ROOT -->
+  <main id="app" class="max-w-7xl mx-auto p-3 md:p-5 relative z-10">
 
-    <!-- Naviqasiya Düymələri -->
-    <div class="nav-buttons">
-        <a href="saturn.html" class="planet-btn">🪐 PLANET</a>
-        <a href="kainat.html" class="kainat-btn">🌌 KAİNAT</a>
-    </div>
+    <!-- TOAST PORTAL -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 glass text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 translate-x-[200%] toast"></div>
 
-    <!-- Rəng Seçimi -->
-    <div class="color-palette">
-        <div class="color-btn active" onclick="changeColor('#ff3131', this)" style="background: var(--neon-red); color: var(--neon-red);"></div>
-        <div class="color-btn" onclick="changeColor('#00f2ff', this)" style="background: var(--neon-blue); color: var(--neon-blue);"></div>
-        <div class="color-btn" onclick="changeColor('#ffffff', this)" style="background: var(--neon-white); color: var(--neon-white);"></div>
-        <div class="color-btn" onclick="changeColor('#39ff14', this)" style="background: var(--neon-green); color: var(--neon-green);"></div>
-    </div>
-
-    <button class="clear-btn" onclick="clearCanvas()">🗑 TƏMİZLƏ</button>
-
-    <div class="ui-overlay">
-        <div class="status-panel">
-            <div style="font-size: 0.7rem; opacity: 0.7;">SİSTEM: OPTİMİZƏ EDİLDİ</div>
-            <div class="mode-indicator" id="current-mode">MÜŞAHİDƏ</div>
+    <!-- SCREENS (dynamic) -->
+    <!-- ENTRY -->
+    <div id="screen-entry" class="screen active">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl shadow-2xl">
+        <h1 class="text-5xl font-black bg-gradient-to-r from-indigo-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent mb-2">📋 ExamMaster</h1>
+        <p class="text-slate-300 mb-8">test yarat · paylaş · analiz et</p>
+        <div class="flex flex-col gap-3">
+          <button class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-2xl transition-all" onclick="ui.show('user-login')"><i data-lucide="log-in" class="w-5 h-5"></i> İstifadəçi girişi</button>
+          <button class="flex items-center justify-center gap-2 border border-slate-600 hover:bg-slate-800/60 px-6 py-3 rounded-2xl transition-all" onclick="ui.show('user-register')"><i data-lucide="user-plus"></i> Qeydiyyat</button>
+          <button class="flex items-center justify-center gap-2 border border-slate-600 hover:bg-slate-800/60 px-6 py-3 rounded-2xl transition-all" onclick="guestTakeTest()"><i data-lucide="link"></i> Link ilə test (qonaq)</button>
+          <button class="flex items-center justify-center gap-2 border border-amber-600/50 text-amber-300 hover:bg-amber-950/30 px-6 py-3 rounded-2xl transition-all" onclick="ui.show('admin-login')"><i data-lucide="crown"></i> Admin panel</button>
         </div>
+        <div class="flex justify-between mt-8 text-sm">
+          <button onclick="toggleTheme()" class="flex items-center gap-1 text-slate-400"><i data-lucide="moon" class="w-4"></i> Tema</button>
+          <span class="text-slate-500">v3.0 · local-first</span>
+        </div>
+      </div>
     </div>
 
-    <div class="instructions">
-        [TUTMA MƏNTİQİ]<br>
-        1. Obyektin xəttinə yaxınlaşın<br>
-        2. Baş və şəhadət barmağı sıxın (Pinch)<br>
-        3. <span style="color:var(--neon-green)">XƏTDƏN TUTUB</span> hərəkət etdirin
+    <!-- USER LOGIN -->
+    <div id="screen-user-login" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6 flex gap-2"><i data-lucide="log-in"></i> Giriş</h2>
+        <input type="email" id="login-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="login-pass" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl font-semibold" onclick="auth.login()">Daxil ol</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
     </div>
 
-    <video id="input_video"></video>
-    <canvas id="output_canvas"></canvas>
+    <!-- USER REGISTER -->
+    <div id="screen-user-register" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6"><i data-lucide="user-plus"></i> Qeydiyyat</h2>
+        <input type="text" id="reg-name" placeholder="Ad Soyad" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="email" id="reg-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="reg-pass" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl" onclick="auth.register()">Qeydiyyatdan keç</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
+    </div>
 
-    <script>
-        const videoElement = document.getElementById('input_video');
-        const canvasElement = document.getElementById('output_canvas');
-        const canvasCtx = canvasElement.getContext('2d', { alpha: false });
-        const modeText = document.getElementById('current-mode');
-        const loadingScreen = document.getElementById('loading-screen');
+    <!-- ADMIN LOGIN -->
+    <div id="screen-admin-login" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl border-amber-700/50">
+        <h2 class="text-3xl font-bold mb-6 text-amber-400"><i data-lucide="crown"></i> Admin giriş</h2>
+        <input type="text" id="admin-username" value="cesi" placeholder="İstifadəçi adı" class="w-full p-4 bg-slate-800/60 border border-amber-700/50 rounded-2xl mb-3">
+        <input type="password" id="admin-password" placeholder="Şifrə" class="w-full p-4 bg-slate-800/60 border border-amber-700/50 rounded-2xl mb-5">
+        <button class="w-full bg-amber-700 hover:bg-amber-800 py-4 rounded-2xl font-semibold" onclick="auth.adminLogin()">Giriş</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('entry')">← Geri</button>
+      </div>
+    </div>
 
-        let drawings = []; 
-        let currentPath = null;
-        let selectedDrawing = null;
-        let isDragging = false;
-        let currentMode = "MÜŞAHİDƏ";
-        let selectedColor = '#ff3131'; 
+    <!-- USER DASHBOARD -->
+    <div id="screen-user-dashboard" class="screen hidden">
+      <div class="glass p-6 rounded-3xl">
+        <div class="flex flex-wrap justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold flex gap-2"><i data-lucide="user"></i> <span id="dashboard-user-name">İstifadəçi</span></h2>
+          <div class="flex gap-2">
+            <button class="border border-slate-600 hover:bg-slate-700 px-4 py-2 rounded-xl" onclick="ui.show('edit-profile')"><i data-lucide="edit"></i> Redaktə</button>
+            <button class="border border-slate-600 hover:bg-slate-700 px-4 py-2 rounded-xl" onclick="auth.logout()"><i data-lucide="log-out"></i> Çıxış</button>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button class="bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl flex items-center gap-2" onclick="ui.show('test-create')"><i data-lucide="plus-circle"></i> Yeni test</button>
+          <button class="border border-slate-600 hover:bg-slate-800 px-5 py-3 rounded-xl flex items-center gap-2" onclick="mytest.load()"><i data-lucide="list"></i> Mənim testlərim</button>
+          <button class="border border-slate-600 hover:bg-slate-800 px-5 py-3 rounded-xl flex items-center gap-2" onclick="history.load()"><i data-lucide="history"></i> Tarixçə</button>
+        </div>
+        <div id="user-tests-list" class="text-slate-400 p-4 rounded-2xl bg-slate-900/40">Testləriniz burada görünəcək...</div>
+      </div>
+    </div>
 
-        let lastFingerPos = { x: 0, y: 0 };
-        let initialDistance = null;
-        let initialScale = 1;
-        let initialAngle = null;
-        let drawingBaseAngle = 0;
+    <!-- EDIT PROFILE -->
+    <div id="screen-edit-profile" class="screen hidden">
+      <div class="glass max-w-lg mx-auto mt-10 p-8 rounded-3xl">
+        <h2 class="text-3xl font-bold mb-6">Profili redaktə et</h2>
+        <input type="text" id="edit-name" placeholder="Ad Soyad" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="email" id="edit-email" placeholder="E-poçt" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="password" id="edit-pass" placeholder="Yeni şifrə (boş)" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-3">
+        <input type="text" id="edit-avatar" placeholder="Avatar emoji" class="w-full p-4 bg-slate-800/60 border border-slate-600 rounded-2xl mb-5">
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 py-4 rounded-2xl" onclick="profile.save()">Yadda saxla</button>
+        <button class="w-full mt-3 text-slate-400 py-2" onclick="ui.show('user-dashboard')">Geri</button>
+      </div>
+    </div>
 
-        function setupCanvas() {
-            canvasElement.width = window.innerWidth;
-            canvasElement.height = window.innerHeight;
+    <!-- TEST CREATE -->
+    <div id="screen-test-create" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-3xl mx-auto">
+        <h2 class="text-3xl font-bold mb-4"><i data-lucide="pen-tool"></i> Yeni test</h2>
+        <div class="grid md:grid-cols-2 gap-3 mb-3">
+          <input type="text" id="test-title" placeholder="Test adı" class="p-3 bg-slate-800/60 border rounded-xl">
+          <input type="text" id="test-category" placeholder="Kateqoriya" class="p-3 bg-slate-800/60 border rounded-xl">
+          <select id="test-difficulty" class="p-3 bg-slate-800/60 border rounded-xl"><option value="easy">Asan</option><option value="medium">Orta</option><option value="hard">Çətin</option></select>
+          <input type="number" id="test-timer" value="10" placeholder="Dəqiqə" class="p-3 bg-slate-800/60 border rounded-xl">
+        </div>
+        <div class="flex flex-wrap gap-4 mb-3">
+          <label class="flex items-center gap-2"><input type="checkbox" id="test-shuffle"> <span>Qarışdır</span></label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="test-public" checked> Public</label>
+          <input type="text" id="test-password" placeholder="Parol (private)" class="p-3 bg-slate-800/60 border rounded-xl flex-1">
+          <input type="number" id="test-max-attempts" value="0" placeholder="Maks cəhd" class="p-3 bg-slate-800/60 border rounded-xl w-32">
+        </div>
+        <label class="block mb-1 text-sm">Suallar (JSON)</label>
+        <textarea id="test-json" rows="6" class="w-full p-3 bg-slate-800/60 border rounded-xl font-mono" placeholder='[{"q":"2+2?","o":["3","4","5"],"a":1}]'></textarea>
+        <div class="flex gap-3 my-4">
+          <button class="bg-cyan-700 hover:bg-cyan-800 px-5 py-2 rounded-xl flex items-center gap-2" onclick="test.previewJson()"><i data-lucide="eye"></i> Preview</button>
+          <button class="bg-green-700 hover:bg-green-800 px-5 py-2 rounded-xl flex items-center gap-2" onclick="test.create()"><i data-lucide="save"></i> Yarat</button>
+          <button class="border border-slate-600 px-5 py-2 rounded-xl" onclick="ui.show('user-dashboard')">Ləğv et</button>
+        </div>
+        <div id="json-preview" class="bg-slate-900/60 p-3 rounded-xl text-sm"></div>
+      </div>
+    </div>
+
+    <!-- TEST SHARE (QR) -->
+    <div id="screen-test-share" class="screen hidden">
+      <div class="glass max-w-md mx-auto mt-10 p-8 rounded-3xl text-center">
+        <h2 class="text-3xl font-bold mb-4">🎉 Test hazırdır</h2>
+        <div class="flex bg-slate-800/80 rounded-full p-1 mb-4">
+          <input type="text" id="share-link" readonly class="w-full bg-transparent px-4 py-2 outline-none">
+          <button class="bg-indigo-600 hover:bg-indigo-700 px-4 rounded-full" onclick="copyShareLink()"><i data-lucide="copy"></i></button>
+        </div>
+        <div id="qr-code-container" class="flex justify-center my-4"></div>
+        <div class="flex justify-center gap-3 mb-6">
+          <a id="whatsapp-share" target="_blank" class="bg-green-700 p-3 rounded-full"><i data-lucide="message-circle"></i></a>
+          <a id="telegram-share" target="_blank" class="bg-sky-700 p-3 rounded-full"><i data-lucide="send"></i></a>
+        </div>
+        <button class="border border-slate-600 px-6 py-2 rounded-full" onclick="ui.show('user-dashboard')">Dashboard</button>
+      </div>
+    </div>
+
+    <!-- TEST TAKING -->
+    <div id="screen-test-take" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="take-test-title" class="text-2xl font-bold"></h3>
+          <span id="take-timer" class="bg-indigo-600/50 px-4 py-1 rounded-full text-xl font-mono">00:00</span>
+        </div>
+        <div class="h-2 bg-slate-700 rounded-full mb-4"><div id="take-progress" class="h-2 bg-indigo-500 rounded-full" style="width:0%"></div></div>
+        <div id="take-question-text" class="text-xl mb-6 min-h-[80px]"></div>
+        <div id="take-options" class="space-y-3 mb-6"></div>
+        <div class="flex justify-between">
+          <button class="border border-slate-600 px-5 py-2 rounded-xl" id="prevBtn" onclick="take.prev()">← Geri</button>
+          <button class="bg-indigo-600 px-5 py-2 rounded-xl" id="nextBtn" onclick="take.next()">Növbəti →</button>
+        </div>
+        <button class="w-full mt-4 bg-rose-700 hover:bg-rose-800 py-3 rounded-xl" onclick="take.submit()">Testi bitir</button>
+      </div>
+    </div>
+
+    <!-- REVIEW / RESULT -->
+    <div id="screen-test-review" class="screen hidden">
+      <div class="glass p-6 rounded-3xl max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold flex gap-2"><i data-lucide="pie-chart"></i> Nəticələr</h2>
+        <div class="text-6xl font-black my-4" id="review-score">0%</div>
+        <div class="flex gap-5 text-lg">
+          <span>Düzgün: <span id="review-correct">0</span></span>
+          <span>Səhv: <span id="review-wrong">0</span></span>
+        </div>
+        <div id="review-detail" class="max-h-96 overflow-auto my-4 space-y-2"></div>
+        <canvas id="resultChart" class="w-full h-40 my-3"></canvas>
+        <button class="bg-indigo-600 px-6 py-2 rounded-full" onclick="ui.show('entry')">Ana səhifə</button>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD (COMMAND CENTER) -->
+    <div id="screen-admin-dashboard" class="screen hidden">
+      <div class="glass p-6 rounded-3xl border-amber-700/50">
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <h2 class="text-3xl font-bold text-amber-400"><i data-lucide="crown"></i> Komanda mərkəzi</h2>
+          <div class="flex gap-2 ml-auto">
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.listUsers()">İstifadəçilər</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.listTests()">Testlər</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.exportData()">Export</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="admin.importData()">Import</button>
+            <button class="border border-amber-700/50 hover:bg-amber-950/40 px-4 py-2 rounded-xl" onclick="auth.logout()">Çıxış</button>
+          </div>
+        </div>
+        <!-- live log & health -->
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+          <div class="bg-black/40 p-3 rounded-xl border border-amber-900/30">
+            <p class="text-xs text-amber-400">LIVE LOG</p>
+            <div id="live-log" class="h-32 overflow-auto text-xs font-mono text-green-300"></div>
+          </div>
+          <div class="bg-black/40 p-3 rounded-xl border border-amber-900/30 col-span-2">
+            <p class="text-amber-400 mb-2">Sistem sağlamlığı</p>
+            <div class="flex gap-4 flex-wrap"><span>💾 Local: <span id="storage-size">0</span> KB</span><span>📊 Test sayı: <span id="test-count">0</span></span><span>👥 User: <span id="user-count">0</span></span></div>
+            <div class="w-full bg-slate-700 h-2 mt-2 rounded-full"><div id="storage-bar" class="h-2 bg-amber-500 rounded-full" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div id="admin-content" class="bg-slate-900/60 p-4 rounded-2xl max-h-[400px] overflow-auto"></div>
+      </div>
+    </div>
+
+    <!-- announcement bar (admin broadcast) -->
+    <div id="announcement-bar" class="fixed top-0 left-0 w-full bg-amber-700 text-white text-center py-2 hidden z-50">📢 </div>
+  </main>
+
+  <script>
+    (function() {
+      "use strict";
+      // ---------- GLOBAL STATE (store) ----------
+      window.store = {
+        users: JSON.parse(localStorage.getItem('exam_users')) || [],
+        tests: JSON.parse(localStorage.getItem('exam_tests')) || [],
+        results: JSON.parse(localStorage.getItem('exam_results')) || [],
+        settings: JSON.parse(localStorage.getItem('exam_settings')) || { theme: 'dark', announcement: '' },
+        currentUser: null,
+        currentTest: null,         // taking test object
+        currentAnswers: {},
+        currentQuestionIndex: 0,
+        timerInterval: null,
+        timerSeconds: 0,
+        tabWarnings: 0,
+        cheatLog: []
+      };
+
+      // default admin
+      if (!store.users.find(u => u.role === 'admin')) {
+        store.users.push({ id: 'admin1', name: 'Admin', email: 'cesi', password: 'cesi123', role: 'admin', avatar: '🛡️', createdAt: Date.now() });
+      }
+      // sample test
+      if (store.tests.length === 0) {
+        store.tests.push({ id: 'sample1', title: 'Nümunə: paytaxt', category: 'ümumi', difficulty: 'easy', timer: 2, isPublic: true, password: '', shuffle: false, maxAttempts: 0, createdBy: 'admin1', approved: true, questions: [{ q: 'Azərbaycanın paytaxtı?', o: ['Bakı','Gəncə','Sumqayıt'], a: 0 }] });
+      }
+      store.settings.theme = store.settings.theme || 'dark';
+      if (store.settings.theme === 'light') document.body.classList.remove('dark'); else document.body.classList.add('dark');
+
+      // IndexedDB mock (localStorage istifadə olunur, real IndexedDB əvəzinə sadə saxlanılır)
+      // Lakin böyük datalar üçün localStorage kifayətdir.
+
+      // Helper: save all
+      function saveAll() {
+        localStorage.setItem('exam_users', JSON.stringify(store.users));
+        localStorage.setItem('exam_tests', JSON.stringify(store.tests));
+        localStorage.setItem('exam_results', JSON.stringify(store.results));
+        localStorage.setItem('exam_settings', JSON.stringify(store.settings));
+      }
+
+      // Toast
+      function toast(msg, type = 'success') {
+        let t = document.getElementById('toast');
+        t.innerHTML = `<i data-lucide="${type==='error'?'alert-circle':'check-circle'}" class="w-5"></i> <span>${msg}</span>`;
+        t.classList.remove('translate-x-[200%]'); t.classList.add('translate-x-0');
+        if (type === 'error') t.classList.add('bg-rose-900'); else t.classList.remove('bg-rose-900');
+        setTimeout(() => t.classList.add('translate-x-[200%]'), 3000);
+        lucide.createIcons();
+      }
+      window.toast = toast;
+
+      // UI router
+      window.ui = {
+        show: (id) => {
+          document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+          document.getElementById(`screen-${id}`).classList.remove('hidden');
+          if (id === 'user-dashboard' && store.currentUser) {
+            document.getElementById('dashboard-user-name').innerText = store.currentUser.name || store.currentUser.email;
+            mytest.load();
+          }
+          if (id === 'admin-dashboard') { admin.listUsers(); updateHealth(); }
+          lucide.createIcons();
         }
-        window.addEventListener('resize', setupCanvas);
-        setupCanvas();
+      };
 
-        function clearCanvas() {
-            drawings = [];
-            selectedDrawing = null;
-            currentPath = null;
+      // Theme
+      window.toggleTheme = () => {
+        document.body.classList.toggle('dark');
+        store.settings.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        saveAll();
+      };
+
+      // ---------- AUTH ----------
+      window.auth = {
+        register: () => {
+          let name = document.getElementById('reg-name').value.trim();
+          let email = document.getElementById('reg-email').value.trim();
+          let pass = document.getElementById('reg-pass').value.trim();
+          if (!email || !pass) return toast('Email və şifrə tələb olunur', 'error');
+          if (store.users.find(u => u.email === email)) return toast('Email mövcuddur', 'error');
+          let user = { id: 'u'+Date.now(), name: name || email.split('@')[0], email, password: pass, role: 'user', avatar: '👤', createdAt: Date.now() };
+          store.users.push(user); saveAll(); toast('Qeydiyyat uğurlu'); ui.show('user-login');
+        },
+        login: () => {
+          let email = document.getElementById('login-email').value.trim();
+          let pass = document.getElementById('login-pass').value.trim();
+          let user = store.users.find(u => u.email === email && u.password === pass && u.role !== 'admin');
+          if (user) { store.currentUser = user; toast('Xoş gəldiniz'); ui.show('user-dashboard'); } 
+          else toast('Email və ya şifrə yanlış', 'error');
+        },
+        adminLogin: () => {
+          let u = document.getElementById('admin-username').value;
+          let p = document.getElementById('admin-password').value;
+          let admin = store.users.find(us => us.role === 'admin' && us.password === p && us.email === u);
+          if (admin || (u === 'cesi' && p === 'cesi123')) {
+            if (!admin) admin = store.users.find(us => us.role === 'admin');
+            store.currentUser = admin; toast('Admin girişi'); ui.show('admin-dashboard'); logEvent('Admin giriş');
+          } else toast('Admin kredensialları səhv', 'error');
+        },
+        logout: () => { store.currentUser = null; clearInterval(store.timerInterval); ui.show('entry'); }
+      };
+
+      // log for admin
+      function logEvent(msg) {
+        let logDiv = document.getElementById('live-log');
+        if (logDiv) {
+          let time = new Date().toLocaleTimeString();
+          logDiv.innerHTML += `<div>🕒 ${time} → ${msg}</div>`;
+          logDiv.scrollTop = logDiv.scrollHeight;
         }
+        store.cheatLog.push({ time: Date.now(), msg });
+      }
 
-        function changeColor(color, btn) {
-            selectedColor = color;
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+      // ANTI-CHEAT: tab switch
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && store.currentTest) {
+          store.tabWarnings++;
+          logEvent(`🚨 Tələbə tab dəyişdi (${store.tabWarnings})`);
+          toast('Xəbərdarlıq: Tərk etməyin!', 'error');
+          document.body.classList.add('cheat-flash');
+          setTimeout(()=>document.body.classList.remove('cheat-flash'),1000);
         }
+      });
 
-        function getDist(p1, p2) {
-            return Math.sqrt(Math.pow((p1.x - p2.x) * canvasElement.width, 2) + Math.pow((p1.y - p2.y) * canvasElement.height, 2));
+      // right click disable
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('copy', e => e.preventDefault());
+
+      // fullscreen lock for test
+      function lockFullscreen() {
+        if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
+      }
+
+      // ---------- TEST CREATION ----------
+      window.test = {
+        previewJson: () => {
+          try {
+            let js = JSON.parse(document.getElementById('test-json').value);
+            document.getElementById('json-preview').innerHTML = `<span class="text-green-400">✓ ${js.length} sual</span><pre class="text-xs">${JSON.stringify(js[0], null, 2)}</pre>`;
+          } catch (e) { document.getElementById('json-preview').innerHTML = `<span class="text-rose-400">JSON xətası: ${e.message}</span>`; }
+        },
+        create: () => {
+          if (!store.currentUser) return toast('Daxil olun', 'error');
+          let title = document.getElementById('test-title').value.trim() || 'Adsız';
+          let cat = document.getElementById('test-category').value.trim() || 'ümumi';
+          let diff = document.getElementById('test-difficulty').value;
+          let timer = parseInt(document.getElementById('test-timer').value) || 10;
+          let shuffle = document.getElementById('test-shuffle').checked;
+          let isPublic = document.getElementById('test-public').checked;
+          let pwd = document.getElementById('test-password').value;
+          let maxAttempts = parseInt(document.getElementById('test-max-attempts').value) || 0;
+          let jsonStr = document.getElementById('test-json').value.trim();
+          let questions;
+          try { questions = JSON.parse(jsonStr); } catch (e) { return toast('JSON formatı səhv', 'error'); }
+          if (!Array.isArray(questions) || questions.length === 0) return toast('Suallar boş', 'error');
+          for (let q of questions) { if (!q.q || !Array.isArray(q.o) || q.a === undefined) return toast('Hər sualda q, o (array) və a olmalıdır', 'error'); }
+          let testId = 't_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);
+          let newTest = { id: testId, title, category: cat, difficulty: diff, timer, shuffle, isPublic, password: pwd, maxAttempts, createdBy: store.currentUser.id, createdAt: Date.now(), approved: false, questions };
+          store.tests.push(newTest); saveAll();
+          logEvent(`Yeni test yaradıldı: ${title}`);
+          // share screen
+          let link = window.location.origin + window.location.pathname + '?test=' + testId;
+          document.getElementById('share-link').value = link;
+          let qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+          document.getElementById('qr-code-container').innerHTML = qr.createImgTag(4);
+          document.getElementById('whatsapp-share').href = `https://wa.me/?text=${encodeURIComponent(link)}`;
+          document.getElementById('telegram-share').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
+          ui.show('test-share');
         }
+      };
 
-        function isFist(landmarks) {
-            const tips = [8, 12, 16, 20];
-            const pips = [6, 10, 14, 18];
-            const wrist = landmarks[0];
-            return tips.every((tIdx, i) => {
-                const tipDist = getDist(landmarks[tIdx], wrist);
-                const pipDist = getDist(landmarks[pips[i]], wrist);
-                return tipDist < pipDist;
-            });
+      // ---------- MY TESTS ----------
+      window.mytest = {
+        load: () => {
+          if (!store.currentUser) return;
+          let my = store.tests.filter(t => t.createdBy === store.currentUser.id);
+          let html = '<h3 class="font-bold mb-2">Mənim testlərim</h3><ul class="space-y-2">';
+          my.forEach(t => html += `<li class="flex justify-between bg-slate-800/40 p-3 rounded-xl"><span>${t.title} (${t.questions.length} sual) ${t.approved?'✅':'⏳'}</span> <div><button class="text-cyan-400 mr-2" onclick="shareTest('${t.id}')"><i data-lucide="share"></i></button><button class="text-rose-400" onclick="deleteTest('${t.id}')"><i data-lucide="trash"></i></button></div></li>`);
+          html += '</ul>';
+          document.getElementById('user-tests-list').innerHTML = html; lucide.createIcons();
         }
+      };
+      window.deleteTest = (id) => { store.tests = store.tests.filter(t => !(t.id === id && t.createdBy === store.currentUser.id)); saveAll(); mytest.load(); toast('Test silindi'); };
+      window.shareTest = (id) => {
+        let test = store.tests.find(t => t.id === id); if (!test) return;
+        let link = window.location.origin + window.location.pathname + '?test=' + id;
+        document.getElementById('share-link').value = link;
+        let qr = qrcode(0, 'M'); qr.addData(link); qr.make();
+        document.getElementById('qr-code-container').innerHTML = qr.createImgTag(4);
+        ui.show('test-share');
+      };
 
-        function isPalmOpen(landmarks) {
-            const tips = [8, 12, 16, 20];
-            const pips = [6, 10, 14, 18];
-            return tips.every((tIdx, i) => landmarks[tIdx].y < landmarks[pips[i]].y);
+      // ---------- TAKE TEST (guest / user) ----------
+      window.take = {
+        start: (test, guestMode = true) => {
+          clearInterval(store.timerInterval);
+          store.currentTest = JSON.parse(JSON.stringify(test)); // clone
+          store.currentAnswers = {};
+          store.currentQuestionIndex = 0;
+          store.timerSeconds = (store.currentTest.timer || 10) * 60;
+          store.tabWarnings = 0;
+          document.getElementById('take-test-title').innerText = store.currentTest.title;
+          take.renderQuestion();
+          take.startTimer();
+          ui.show('test-take');
+          lockFullscreen();
+          logEvent(`Test başladı: ${test.title}`);
+        },
+        renderQuestion: () => {
+          let q = store.currentTest.questions[store.currentQuestionIndex];
+          document.getElementById('take-question-text').innerText = q.q;
+          let html = '';
+          q.o.forEach((opt, idx) => {
+            let sel = store.currentAnswers[store.currentQuestionIndex] === idx ? 'bg-indigo-900/60 border-indigo-400' : 'bg-slate-800/40 border-transparent';
+            html += `<div class="option p-4 rounded-xl border-2 cursor-pointer hover:bg-slate-700/60 ${sel}" onclick="take.select(${idx})">${opt}</div>`;
+          });
+          document.getElementById('take-options').innerHTML = html;
+          document.getElementById('take-progress').style.width = ((store.currentQuestionIndex+1)/store.currentTest.questions.length*100)+'%';
+          document.getElementById('nextBtn').innerText = (store.currentQuestionIndex === store.currentTest.questions.length-1) ? 'Bitir' : 'Növbəti';
+        },
+        select: (idx) => { store.currentAnswers[store.currentQuestionIndex] = idx; take.renderQuestion(); },
+        next: () => {
+          if (store.currentQuestionIndex < store.currentTest.questions.length-1) { store.currentQuestionIndex++; take.renderQuestion(); } 
+          else take.submit();
+        },
+        prev: () => { if (store.currentQuestionIndex > 0) { store.currentQuestionIndex--; take.renderQuestion(); } },
+        startTimer: () => {
+          store.timerInterval = setInterval(() => {
+            if (store.timerSeconds <= 0) { clearInterval(store.timerInterval); take.submit(); return; }
+            store.timerSeconds--;
+            let m = Math.floor(store.timerSeconds/60).toString().padStart(2,'0');
+            let s = (store.timerSeconds%60).toString().padStart(2,'0');
+            document.getElementById('take-timer').innerText = `${m}:${s}`;
+          },1000);
+        },
+        submit: () => {
+          clearInterval(store.timerInterval);
+          let correct = 0;
+          store.currentTest.questions.forEach((q, i) => { if (store.currentAnswers[i] === q.a) correct++; });
+          let total = store.currentTest.questions.length;
+          let wrong = total - correct;
+          let score = Math.round((correct/total)*100);
+          let result = { id: 'r'+Date.now(), testId: store.currentTest.id, userId: store.currentUser ? store.currentUser.id : 'guest_'+Date.now(), answers: store.currentAnswers, score, correct, wrong, completedAt: Date.now(), tabWarns: store.tabWarnings };
+          store.results.push(result); saveAll();
+          if (score === 100) confetti({particleCount:150, spread:80});
+          document.getElementById('review-score').innerText = score+'%';
+          document.getElementById('review-correct').innerText = correct;
+          document.getElementById('review-wrong').innerText = wrong;
+          let detail = '';
+          store.currentTest.questions.forEach((q, i) => {
+            let u = store.currentAnswers[i] ?? -1;
+            let st = u === q.a ? '✅' : (u===-1?'⚠️ boş':'❌');
+            detail += `<div class="border-b border-slate-700 pb-2"><b>${i+1}. ${q.q}</b> ${st}<br> <span class="text-sm">Siz: ${u!==-1?q.o[u]:'—'} | Düzgün: ${q.o[q.a]}</span></div>`;
+          });
+          document.getElementById('review-detail').innerHTML = detail;
+          // chart
+          new Chart(document.getElementById('resultChart'), { type: 'doughnut', data: { labels: ['Düzgün','Səhv'], datasets: [{ data: [correct, wrong], backgroundColor: ['#10b981','#ef4444'] }] } });
+          ui.show('test-review');
+          logEvent(`Test bitdi. Bal: ${score}%`);
         }
+      };
+      window.take = take;
 
-        function findDrawingAt(x, y) {
-            const hitPadding = 30; 
-            
-            for (let i = drawings.length - 1; i >= 0; i--) {
-                const d = drawings[i];
-                for (let j = 0; j < d.points.length; j++) {
-                    const p = d.points[j];
-                    const dx = x - p.x;
-                    const dy = y - p.y;
-                    if (Math.sqrt(dx*dx + dy*dy) < hitPadding * (d.scale || 1)) {
-                        return d;
-                    }
-                }
-            }
-            return null;
+      // guest start from link
+      window.guestTakeTest = () => {
+        let link = prompt('Test linkini daxil edin:');
+        if (!link) return;
+        try {
+          let url = new URL(link);
+          let testId = url.searchParams.get('test');
+          let test = store.tests.find(t => t.id === testId);
+          if (test) take.start(test, true);
+          else toast('Test tapılmadı', 'error');
+        } catch { toast('Düzgün link daxil edin', 'error'); }
+      };
+
+      // check url on load
+      (function initFromUrl() {
+        let params = new URLSearchParams(window.location.search);
+        let testId = params.get('test');
+        if (testId) {
+          let test = store.tests.find(t => t.id === testId);
+          if (test) take.start(test, true);
         }
+      })();
 
-        function onResults(results) {
-            if (loadingScreen.style.display !== 'none') loadingScreen.style.display = 'none';
+      // ---------- ADMIN ----------
+      window.admin = {
+        listUsers: () => {
+          let html = '<h3 class="text-lg mb-2">👥 İstifadəçilər</h3>';
+          store.users.forEach(u => html += `<div class="flex justify-between p-2 border-b border-slate-700"><span>${u.avatar||'👤'} ${u.name||u.email} (${u.role})</span><button class="text-rose-400" onclick="admin.deleteUser('${u.id}')"><i data-lucide="ban"></i></button></div>`);
+          document.getElementById('admin-content').innerHTML = html; lucide.createIcons();
+        },
+        deleteUser: (id) => { if (store.currentUser && store.currentUser.id === id) return toast('Özünüzü silə bilməzsiniz','error'); store.users = store.users.filter(u=>u.id!==id); saveAll(); admin.listUsers(); },
+        listTests: () => {
+          let html = '<h3>📋 Bütün testlər</h3>';
+          store.tests.forEach(t => html += `<div class="p-2 border-b flex justify-between"><span>${t.title} (${t.questions.length}) - ${t.approved?'✅ təsdiqləndi':'⏳ gözləyir'}</span><div><button class="text-green-400 mr-2" onclick="admin.approveTest('${t.id}')">✔</button><button class="text-rose-400" onclick="admin.deleteTest('${t.id}')">🗑</button></div></div>`);
+          document.getElementById('admin-content').innerHTML = html;
+        },
+        approveTest: (id) => { let t = store.tests.find(t=>t.id===id); if(t) t.approved = true; saveAll(); admin.listTests(); },
+        deleteTest: (id) => { store.tests = store.tests.filter(t=>t.id!==id); saveAll(); admin.listTests(); },
+        exportData: () => { let data = { users: store.users, tests: store.tests, results: store.results }; let blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'exam_backup.json'; a.click(); },
+        importData: () => { let input = document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange = e => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = ee => { try { let j = JSON.parse(ee.target.result); if(j.users) store.users = j.users; if(j.tests) store.tests = j.tests; if(j.results) store.results = j.results; saveAll(); toast('İdxal edildi'); admin.listUsers(); } catch(ex){ toast('Xəta','error'); } }; reader.readAsText(file); }; input.click(); }
+      };
 
-            requestAnimationFrame(() => {
-                canvasCtx.fillStyle = '#050505';
-                canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+      function updateHealth() {
+        let size = new Blob([localStorage.getItem('exam_tests')||'']).size / 1024;
+        document.getElementById('storage-size').innerText = size.toFixed(1);
+        document.getElementById('test-count').innerText = store.tests.length;
+        document.getElementById('user-count').innerText = store.users.length;
+        let percent = Math.min(100, (size / 5000)*100);
+        document.getElementById('storage-bar').style.width = percent+'%';
+      }
 
-                drawAll();
-
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    const hands = results.multiHandLandmarks;
-
-                    if (hands.length === 2 && isPalmOpen(hands[0]) && isPalmOpen(hands[1])) {
-                        processScale(hands[0], hands[1]);
-                    } else {
-                        processSingleHand(hands[0]);
-                        initialDistance = null;
-                    }
-
-                    hands.forEach(drawHandUI);
-                } else {
-                    setMode("MÜŞAHİDƏ");
-                    currentPath = null;
-                    isDragging = false;
-                    selectedDrawing = null;
-                    initialAngle = null;
-                }
-            });
+      // profile
+      window.profile = {
+        save: () => {
+          let name = document.getElementById('edit-name').value.trim();
+          let email = document.getElementById('edit-email').value.trim();
+          let pass = document.getElementById('edit-pass').value.trim();
+          let avatar = document.getElementById('edit-avatar').value.trim();
+          if (email && email !== store.currentUser.email) {
+            if (store.users.find(u=>u.email===email && u.id!==store.currentUser.id)) return toast('Email istifadə olunur','error');
+            store.currentUser.email = email;
+          }
+          if (name) store.currentUser.name = name;
+          if (pass) store.currentUser.password = pass;
+          if (avatar) store.currentUser.avatar = avatar;
+          saveAll(); toast('Yeniləndi'); ui.show('user-dashboard');
         }
+      };
 
-        function processSingleHand(hand) {
-            const thumbTip = hand[4];
-            const indexTip = hand[8];
-            const middleTip = hand[12];
-            const wrist = hand[0];
+      // copy link
+      window.copyShareLink = () => { let link = document.getElementById('share-link'); link.select(); document.execCommand('copy'); toast('Link kopyalandı'); };
 
-            const pinchX = ((thumbTip.x + indexTip.x) / 2) * canvasElement.width;
-            const pinchY = ((thumbTip.y + indexTip.y) / 2) * canvasElement.height;
-
-            const pinchDist = getDist(thumbTip, indexTip);
-            const isPinching = pinchDist < 40;
-
-            if (isFist(hand)) {
-                setMode("DÖNDÜRMƏ");
-                if (!selectedDrawing) selectedDrawing = findDrawingAt(pinchX, pinchY);
-                if (selectedDrawing) {
-                    const angle = Math.atan2(indexTip.y - wrist.y, indexTip.x - wrist.x);
-                    if (initialAngle === null) {
-                        initialAngle = angle;
-                        drawingBaseAngle = selectedDrawing.rotation || 0;
-                    } else {
-                        selectedDrawing.rotation = drawingBaseAngle + (angle - initialAngle);
-                    }
-                }
-            } else if (isPinching) {
-                setMode("DAŞIMA");
-                if (!isDragging) {
-                    selectedDrawing = findDrawingAt(pinchX, pinchY);
-                    if (selectedDrawing) {
-                        isDragging = true;
-                        lastFingerPos = { x: pinchX, y: pinchY };
-                    }
-                }
-                
-                if (isDragging && selectedDrawing) {
-                    const dx = pinchX - lastFingerPos.x;
-                    const dy = pinchY - lastFingerPos.y;
-                    
-                    selectedDrawing.points.forEach(p => {
-                        p.x += dx;
-                        p.y += dy;
-                    });
-                    lastFingerPos = { x: pinchX, y: pinchY };
-                }
-                currentPath = null;
-            } else if (indexTip.y < hand[6].y && middleTip.y > hand[10].y) {
-                setMode("CIZMA");
-                selectedDrawing = null;
-                isDragging = false;
-                initialAngle = null;
-
-                if (!currentPath) {
-                    currentPath = { points: [], scale: 1, rotation: 0, color: selectedColor };
-                    drawings.push(currentPath);
-                }
-                currentPath.points.push({ x: indexTip.x * canvasElement.width, y: indexTip.y * canvasElement.height });
-            } else {
-                setMode("MÜŞAHİDƏ");
-                currentPath = null;
-                selectedDrawing = null;
-                isDragging = false;
-                initialAngle = null;
-            }
-        }
-
-        function processScale(h1, h2) {
-            setMode("BÖYÜTMƏ");
-            const d = getDist(h1[8], h2[8]);
-            const midX = (h1[8].x + h2[8].x) / 2 * canvasElement.width;
-            const midY = (h1[8].y + h2[8].y) / 2 * canvasElement.height;
-
-            if (!selectedDrawing) selectedDrawing = findDrawingAt(midX, midY);
-
-            if (selectedDrawing) {
-                if (initialDistance === null) {
-                    initialDistance = d;
-                    initialScale = selectedDrawing.scale || 1;
-                } else {
-                    selectedDrawing.scale = initialScale * (d / initialDistance);
-                }
-            }
-        }
-
-        function setMode(m) {
-            if (currentMode !== m) {
-                currentMode = m;
-                modeText.innerText = m;
-                const colors = {
-                    "CIZMA": "var(--neon-blue)",
-                    "DAŞIMA": "var(--neon-green)",
-                    "DÖNDÜRMƏ": "var(--neon-yellow)",
-                    "BÖYÜTMƏ": "var(--neon-purple)",
-                    "MÜŞAHİDƏ": "var(--neon-blue)"
-                };
-                modeText.style.color = colors[m] || "white";
-            }
-        }
-
-        function drawAll() {
-            for (let i = 0; i < drawings.length; i++) {
-                const d = drawings[i];
-                if (d.points.length < 2) continue;
-                
-                canvasCtx.save();
-                const cx = d.points[0].x;
-                const cy = d.points[0].y;
-                
-                canvasCtx.translate(cx, cy);
-                canvasCtx.scale(d.scale || 1, d.scale || 1);
-                canvasCtx.rotate(d.rotation || 0);
-                canvasCtx.translate(-cx, -cy);
-
-                canvasCtx.beginPath();
-                if (selectedDrawing === d) {
-                    canvasCtx.strokeStyle = "#ffffff";
-                    canvasCtx.shadowBlur = 20;
-                    canvasCtx.shadowColor = d.color;
-                    canvasCtx.lineWidth = 6;
-                } else {
-                    canvasCtx.strokeStyle = d.color;
-                    canvasCtx.lineWidth = 4;
-                    canvasCtx.shadowBlur = 5;
-                    canvasCtx.shadowColor = d.color;
-                }
-
-                canvasCtx.lineCap = 'round';
-                canvasCtx.lineJoin = 'round';
-
-                canvasCtx.moveTo(d.points[0].x, d.points[0].y);
-                for (let j = 1; j < d.points.length; j++) {
-                    canvasCtx.lineTo(d.points[j].x, d.points[j].y);
-                }
-                canvasCtx.stroke();
-                canvasCtx.restore();
-            }
-        }
-
-        function drawHandUI(landmarks) {
-            canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
-            canvasCtx.lineWidth = 2;
-            
-            // MediaPipe HAND_CONNECTIONS variable is usually available globally
-            const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-            
-            connections.forEach(([start, end]) => {
-                const p1 = landmarks[start];
-                const p2 = landmarks[end];
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(p1.x * canvasElement.width, p1.y * canvasElement.height);
-                canvasCtx.lineTo(p2.x * canvasElement.width, p2.y * canvasElement.height);
-                canvasCtx.stroke();
-            });
-
-            const tipIdx = (currentMode === "DAŞIMA") ? 4 : 8;
-            const tip = landmarks[tipIdx];
-            canvasCtx.beginPath();
-            canvasCtx.arc(tip.x * canvasElement.width, tip.y * canvasElement.height, 8, 0, Math.PI*2);
-            canvasCtx.fillStyle = (currentMode === "DAŞIMA") ? "var(--neon-green)" : "var(--neon-blue)";
-            canvasCtx.fill();
-        }
-
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
-
-        hands.setOptions({
-            maxNumHands: 2,
-            modelComplexity: 0, 
-            minDetectionConfidence: 0.65,
-            minTrackingConfidence: 0.65
-        });
-        hands.onResults(onResults);
-
-        const camera = new Camera(videoElement, {
-            onFrame: async () => await hands.send({ image: videoElement }),
-            width: 640, 
-            height: 480
-        });
-        camera.start();
-    </script>
+      // init icons
+      lucide.createIcons();
+    })();
+  </script>
 </body>
-
-<!-- Göndərilən  smm.axtarget.xyz/ by CesiCoder sayt kopy/3.x [XR&CO'2017], Fri, 20 Feb 2026 08:36:23 GMT -->
 </html>
