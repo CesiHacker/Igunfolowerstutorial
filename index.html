@@ -4012,14 +4012,22 @@ initFirebase();
      NEW: FIREBASE — Auth / Friends / DM / Profile
 ===================================================== -->
 <script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+/* ─── IMPORTANT: Reuse the SAME Firebase app that was initialized
+       in the first module above. We import getApp() to grab it,
+       so both modules share the SAME auth + Firestore instance.
+       This solves "Missing or insufficient permissions" because
+       the anonymous sign-in done in initFirebase() is visible here.
+─── */
+import { getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged as onAuthChanged,
-    deleteUser
+    deleteUser,
+    linkWithCredential,
+    EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import {
     getFirestore,
@@ -4029,24 +4037,16 @@ import {
     increment
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-/* ---- Firebase (reuse existing app if already initialized) ---- */
-const firebaseConfig = {
-    apiKey: "AIzaSyAAbLWwzSE9WgqFKK_n9hqsl5mokZlNacM",
-    authDomain: "axtargetbot.firebaseapp.com",
-    projectId: "axtargetbot",
-    storageBucket: "axtargetbot.firebasestorage.app",
-    messagingSenderId: "509543495829",
-    appId: "1:509543495829:web:833feb9c271328f8e4039c"
-};
-
-const fbApp = getApps().find(a => a.name === '[DEFAULT]') || initializeApp(firebaseConfig, 'social');
+/* ---- Reuse the [DEFAULT] app — no new initializeApp() ---- */
+const fbApp = getApp();          // same app as the anon chat module
 const db2   = getFirestore(fbApp);
 const auth2 = getAuth(fbApp);
 
-/* ---- Firestore collections ---- */
-const USERS_COL     = 'artifacts/axtarget-anonimchat/public/data/users';
-const FRIENDS_COL   = 'artifacts/axtarget-anonimchat/public/data/friends';
-const DM_COL        = 'artifacts/axtarget-anonimchat/public/data/dms';
+/* ---- Collection paths — must sit under the same root that
+        Firestore rules already allow for authenticated users ---- */
+const BASE          = 'artifacts/axtarget-anonimchat/public/data';
+const USERS_COL     = `${BASE}/users`;
+const DM_COL        = `${BASE}/dms`;
 
 /* ---- Current user state ---- */
 let _myUid  = null;
@@ -4056,7 +4056,9 @@ let _unsubDm = null;
 let _pendingCount = 0;
 
 /* ==================================================
-   REGISTRATION
+   REGISTRATION — Link e-mail credential to the
+   existing anonymous user so Firestore rules that
+   allow  request.auth != null  keep working.
 ================================================== */
 window.doRegister = async function() {
     const username     = document.getElementById('register-username')?.value.trim().toLowerCase();
@@ -4073,7 +4075,7 @@ window.doRegister = async function() {
 
     setAuthBtnLoading('register-btn', true);
     try {
-        // Check username uniqueness
+        // 1. Check username uniqueness
         const usernameQuery = query(collection(db2, USERS_COL), where('username','==', username));
         const snap = await getDocs(usernameQuery);
         if(!snap.empty) {
@@ -4082,11 +4084,34 @@ window.doRegister = async function() {
             return;
         }
 
-        // Create account
-        const cred = await createUserWithEmailAndPassword(auth2, email, password);
-        const uid  = cred.user.uid;
+        let uid;
+        const currentUser = auth2.currentUser;
 
-        // Save profile
+        if(currentUser && currentUser.isAnonymous) {
+            // 2a. Link e-mail credential to existing anon session
+            //     This preserves the same UID so Firestore rules stay valid
+            const credential = EmailAuthProvider.credential(email, password);
+            try {
+                await linkWithCredential(currentUser, credential);
+                uid = currentUser.uid;
+            } catch(linkErr) {
+                // If already linked / account exists — fall back to normal create
+                if(linkErr.code === 'auth/email-already-in-use') {
+                    showAuthError('auth-register-error', 'Bu e-poçt artıq istifadə olunur.');
+                    setAuthBtnLoading('register-btn', false);
+                    return;
+                }
+                // Credential already linked to another account — just create fresh
+                const cred2 = await createUserWithEmailAndPassword(auth2, email, password);
+                uid = cred2.user.uid;
+            }
+        } else {
+            // 2b. No anon session yet — create new account directly
+            const cred = await createUserWithEmailAndPassword(auth2, email, password);
+            uid = cred.user.uid;
+        }
+
+        // 3. Save profile document
         const profile = {
             uid, username, displayName, email,
             bio: '',
@@ -4105,9 +4130,11 @@ window.doRegister = async function() {
         _myProfile = profile;
         onAuthSuccess(profile);
         showToast(`Xoş gəldiniz, ${displayName}! 🎉`, 'success');
+        startFriendsListener();
     } catch(e) {
         const msg = e.code === 'auth/email-already-in-use' ? 'Bu e-poçt artıq istifadə olunur.' :
-                    e.code === 'auth/invalid-email' ? 'E-poçt formatı səhvdir.' : e.message;
+                    e.code === 'auth/invalid-email' ? 'E-poçt formatı səhvdir.' :
+                    e.code === 'auth/weak-password' ? 'Şifrə çox zəifdir.' : e.message;
         showAuthError('auth-register-error', msg);
     }
     setAuthBtnLoading('register-btn', false);
@@ -4125,24 +4152,35 @@ window.doLogin = async function() {
     try {
         const cred = await signInWithEmailAndPassword(auth2, email, password);
         const uid  = cred.user.uid;
-        // Load profile
-        const snap = await getDoc(doc(db2, USERS_COL, uid));
-        if(snap.exists()) {
-            _myUid = uid;
-            _myProfile = snap.data();
-            // Set online
-            await updateDoc(doc(db2, USERS_COL, uid), { status: 'online', lastSeen: serverTimestamp() });
-            onAuthSuccess(_myProfile);
-            showToast(`Xoş gəldiniz, ${_myProfile.displayName}! 👋`, 'success');
-            // Start listening for friend notifications
-            startFriendsListener();
-        } else {
-            showAuthError('auth-login-error', 'Profil tapılmadı. Yenidən qeydiyyatdan keçin.');
+        _myUid = uid;
+
+        // Load profile — if not found, create a minimal one
+        let snap = await getDoc(doc(db2, USERS_COL, uid));
+        if(!snap.exists()) {
+            // Create a default profile if missing (e.g. account created before profiles existed)
+            const fallbackProfile = {
+                uid, username: 'user_' + uid.slice(0,6),
+                displayName: email.split('@')[0],
+                email, bio: '', status: 'online',
+                createdAt: serverTimestamp(),
+                friendCount: 0, chatCount: 0, msgCount: 0,
+                friends: [], pendingIn: [], pendingOut: []
+            };
+            await setDoc(doc(db2, USERS_COL, uid), fallbackProfile);
+            snap = await getDoc(doc(db2, USERS_COL, uid));
         }
+
+        _myProfile = snap.data();
+        await updateDoc(doc(db2, USERS_COL, uid), { status: 'online', lastSeen: serverTimestamp() });
+        onAuthSuccess(_myProfile);
+        showToast(`Xoş gəldiniz, ${_myProfile.displayName}! 👋`, 'success');
+        startFriendsListener();
     } catch(e) {
-        const msg = e.code === 'auth/user-not-found' ? 'İstifadəçi tapılmadı.' :
-                    e.code === 'auth/wrong-password' ? 'Şifrə səhvdir.' :
-                    e.code === 'auth/invalid-credential' ? 'E-poçt və ya şifrə səhvdir.' : e.message;
+        const msg = e.code === 'auth/user-not-found'     ? 'İstifadəçi tapılmadı.' :
+                    e.code === 'auth/wrong-password'      ? 'Şifrə səhvdir.' :
+                    e.code === 'auth/invalid-credential'  ? 'E-poçt və ya şifrə səhvdir.' :
+                    e.code === 'auth/invalid-email'       ? 'E-poçt formatı səhvdir.' :
+                    e.code === 'auth/too-many-requests'   ? 'Çox cəhd edildi. Bir az gözləyin.' : e.message;
         showAuthError('auth-login-error', msg);
     }
     setAuthBtnLoading('login-btn', false);
